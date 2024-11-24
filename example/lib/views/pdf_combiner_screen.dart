@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../view_models/pdf_combiner_view_model.dart';
-import 'common/copiable_text.dart';
+import 'common/copyable_text.dart';
 
 class PdfCombinerScreen extends StatefulWidget {
   const PdfCombinerScreen({super.key});
