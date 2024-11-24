@@ -36,9 +36,8 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             } else {
                 result("error")
             }
-        }else if call.method == "createImageFromPDF" {
-            if let args = call.arguments as? Dictionary<String, Any>{
-                
+        } else if call.method == "createImageFromPDF" {
+            if let args = call.arguments as? Dictionary<String, Any> {
                 DispatchQueue.global().async {
                     let imageFromPDF = PdfCombinerPlugin.createImageFromPDF(args : args)
                     DispatchQueue.main.sync {
@@ -48,9 +47,8 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             } else {
                 result("error")
             }
-        }else if call.method == "sizeForLocalFilePath" {
-            if let args = call.arguments as? Dictionary<String, Any>{
-                
+        } else if call.method == "sizeForLocalFilePath" {
+            if let args = call.arguments as? Dictionary<String, Any> {
                 DispatchQueue.global().async {
                     let sizeForFilePath = PdfCombinerPlugin.sizeForLocalFilePath(args : args)
                     DispatchQueue.main.sync {
@@ -60,28 +58,22 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             } else {
                 result("error")
             }
-        }else if call.method == "buildDate" {
-            
+        } else if call.method == "buildDate" {
             let buildDateResponse = PdfCombinerPlugin.buildDate()
             result(buildDateResponse)
-        }else if call.method == "buildDateWithTime" {
-            
+        } else if call.method == "buildDateWithTime" {
             let buildDateWithTimeResponse = PdfCombinerPlugin.buildDateWithTime()
             result(buildDateWithTimeResponse)
-        }else if call.method == "versionName" {
-            
+        } else if call.method == "versionName" {
             let versionNameResponse = PdfCombinerPlugin.versionName()
             result(versionNameResponse)
-        }else if call.method == "versionCode" {
-            
+        } else if call.method == "versionCode" {
             let versionCodeResponse = PdfCombinerPlugin.versionCode()
             result(versionCodeResponse)
-        }else if call.method == "packageName" {
-            
+        } else if call.method == "packageName" {
             let packageNameResponse = PdfCombinerPlugin.packageName()
             result(packageNameResponse)
-        }else if call.method == "appName" {
-            
+        } else if call.method == "appName" {
             let appNameResponse = PdfCombinerPlugin.appName()
             result(appNameResponse)
         } else{
@@ -91,7 +83,6 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
     
     class func mergeMultiplePDF(args: Dictionary<String, Any>) -> String? {
         if let paths = args["paths"] as? [String], let outputDirPath = args["outputDirPath"] as? String {
-            
             guard UIGraphicsBeginPDFContextToFile(outputDirPath, CGRect.zero, nil) else {
                 return "error"
             }
@@ -138,19 +129,15 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             
             for index in 0 ..< paths.count {
                 guard let  img  = UIImage(contentsOfFile: paths[index])  else { return "error" }
-                
-                if(needImageCompressor){
-                    let  resizedImage =  resizeImage(img : img,
-                                                     maxWidthGet : maxWidth, maxHeightGet : maxHeight)
+                if needImageCompressor {
+                    let resizedImage = resizeImage(img : img, maxWidthGet : maxWidth, maxHeightGet : maxHeight)
                     images.append(resizedImage)
-                }else{
+                } else {
                     images.append(img)
                 }
             }
-            
+
             guard let  image = mergeVertically(images : images) else {  return "error" }
-            
-            
             let pdfData = NSMutableData()
             let imgView = UIImageView.init(image: image)
             let imageRect = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
@@ -214,21 +201,18 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
                 
                 let convertUIImage = UIImage(cgImage: image)
                 
-                let  resizeUIImage =  resizeImage(img : convertUIImage,
-                                                  maxWidthGet : maxWidth, maxHeightGet : maxHeight)
+                let  resizeUIImage =  resizeImage(img : convertUIImage, maxWidthGet : maxWidth, maxHeightGet : maxHeight)
                 
                 images.append(resizeUIImage)
                 
-                if(!createOneImage){
+                if !createOneImage {
                     
                     let pathName = outputDirPath.components(separatedBy: ".")
-                    
                     let finalPath = pathName[0] + String(i) + "." + pathName[1]
-                    
+
                     pdfImagesPath.append(finalPath)
-                    
+
                     let urlOutputDirPath = NSURL(fileURLWithPath: finalPath)
-                    
                     let imageDestination = CGImageDestinationCreateWithURL(urlOutputDirPath as CFURL,kUTTypePNG, 1, nil)!
                     
                     CGImageDestinationAddImage(imageDestination, resizeUIImage.cgImage ?? image, nil)
@@ -236,8 +220,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
                 }
             }
             
-            
-            if(createOneImage){
+            if createOneImage {
                 guard let  image = mergeVertically(images : images) else {  return nil }
                 
                 pdfImagesPath.append(outputDirPath)
@@ -258,8 +241,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
     }
     
     class func  sizeForLocalFilePath(args: Dictionary<String, Any>) -> String? {
-        
-        if let path = args["path"] as? String{
+        if let path = args["path"] as? String {
             
             do {
                 let fileAttributes = try FileManager.default.attributesOfItem(atPath: path)
@@ -277,7 +259,6 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
                 return "error"
             }
         }
-        
         return "error"
     }
     
@@ -290,7 +271,6 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             dateFormatter.dateFormat = "dd/MM/yyyy"
             return dateFormatter.string(from: creation)
         }
-        
         return "error"
     }
     
@@ -309,23 +289,17 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
     
     
     class func  versionName() -> String? {
-        
         if let appVersion =  Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-            
             return appVersion
         }
-        
         return "error"
     }
     
     
     class func  versionCode() -> String? {
-        
         if let appVersionCode =  Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-            
             return appVersionCode
         }
-        
         return "error"
     }
     
@@ -335,32 +309,24 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             
             return bundleID
         }
-        
         return "error"
     }
     
     class func  appName() -> String? {
-        
         if let appName = Bundle.main.infoDictionary?[kCFBundleNameKey as String] as? String {
-            
             return appName
         }
-        
         return "error"
     }
     
     
     public static func mergeVertically(images: [UIImage]) -> UIImage? {
-        
         var maxWidth:CGFloat = 0.0
         var maxHeight:CGFloat = 0.0
-        
-        
-        for image in images
-        {
+
+        for image in images {
             maxHeight += image.size.height
-            if image.size.width > maxWidth
-            {
+            if image.size.width > maxWidth {
                 maxWidth = image.size.width
             }
         }
@@ -371,8 +337,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
         
         var runningHeight: CGFloat = 0.0
         
-        for image in images
-        {
+        for image in images {
             image.draw(in: CGRect(x: 0.0, y: runningHeight, width: image.size.width, height: image.size.height))
             runningHeight += image.size.height
         }
@@ -400,26 +365,19 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
                 imgRatio = maxHeight / actualHeight
                 actualWidth = imgRatio * actualWidth
                 actualHeight = maxHeight
-            }
-            else if imgRatio > maxRatio {
+            } else if imgRatio > maxRatio {
                 //adjust height according to maxWidth
                 imgRatio = maxWidth / actualWidth
                 actualHeight = imgRatio * actualHeight
                 actualWidth = maxWidth
-            }
-            else {
+            } else {
                 actualHeight = maxHeight
                 actualWidth = maxWidth
             }
         }
         
         let rect = CGRect(x: 0.0, y: 0.0, width: CGFloat(actualWidth),  height: CGFloat(actualHeight))
-        
-        
-        let newSize = AVMakeRect(
-            aspectRatio: img.size,
-            insideRect: rect
-        ).size
+        let newSize = AVMakeRect( aspectRatio: img.size, insideRect: rect).size
         
         //        UIGraphicsBeginImageContext(rect.size)
         
