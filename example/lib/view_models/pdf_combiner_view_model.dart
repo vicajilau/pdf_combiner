@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
@@ -23,6 +24,9 @@ class PdfCombinerViewModel {
       );
 
       if (result != null && result.files.isNotEmpty) {
+        for (var element in result.files) {
+          debugPrint("${element.name}, ");
+        }
         selectedFiles = result.files.map((file) => file.path!).toList();
       }
     }
@@ -78,10 +82,10 @@ class PdfCombinerViewModel {
   }
 
   // Function to copy the selected files' paths to the clipboard
-  Future<void> copySelectedFilesToClipboard() async {
+  Future<void> copySelectedFilesToClipboard(int index) async {
     if (selectedFiles.isNotEmpty) {
       await Clipboard.setData(ClipboardData(
-          text: selectedFiles.join('\n'))); // Copy selected files to clipboard
+          text: selectedFiles[index])); // Copy selected files to clipboard
     }
   }
 }

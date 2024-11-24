@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 
 import '../view_models/pdf_combiner_view_model.dart';
-import 'common/copyable_text.dart';
 
 class PdfCombinerScreen extends StatefulWidget {
   const PdfCombinerScreen({super.key});
@@ -22,28 +22,70 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton(
-              onPressed: _pickFiles, // Button to pick files
-              child: const Text('Select PDF Files'),
-            ),
-            ElevatedButton(
-              onPressed: _viewModel.selectedFiles.isNotEmpty
-                  ? _combinePdfs
-                  : null, // Button to combine PDFs (enabled only if files are selected)
-              child: const Text('Combine PDFs'),
+            // Output File Section
+            if (_viewModel.outputFile.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Output File:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                      p.basename(_viewModel
+                          .outputFile), // Show only the name of the file
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.copy),
+                      onPressed: _copyOutputToClipboard,
+                    ),
+                  ),
+                  const Divider(),
+                ],
+              ),
+            // Input Files Section
+            Expanded(
+              child: ListView.builder(
+                itemCount: _viewModel.selectedFiles.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(
+                      p.basename(_viewModel.selectedFiles[
+                          index]), // Show only file name
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.copy),
+                      onPressed: () => _copySelectedFilesToClipboard(index),
+                    ),
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 20),
-            CopyableText(
-              text: 'Selected Files:\n${_viewModel.selectedFiles.join('\n')}',
-              onCopy: _copySelectedFilesToClipboard,
-            ),
-            const SizedBox(height: 20),
-            CopyableText(
-              text: 'Output File:\n${_viewModel.outputFile}',
-              onCopy: _copyOutputToClipboard,
-              textStyle: const TextStyle(fontSize: 14, color: Colors.green),
+            // Buttons Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: _pickFiles,
+                  child: const Text('Select PDF Files'),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed:
+                      _viewModel.selectedFiles.isNotEmpty ? _combinePdfs : null,
+                  child: const Text('Combine PDFs'),
+                ),
+              ],
             ),
           ],
         ),
@@ -70,9 +112,9 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   }
 
   // Function to copy the selected files' paths to the clipboard
-  Future<void> _copySelectedFilesToClipboard() async {
-    await _viewModel.copySelectedFilesToClipboard();
-    _showSnackbarSafely('Selected files copied to clipboard');
+  Future<void> _copySelectedFilesToClipboard(int index) async {
+    await _viewModel.copySelectedFilesToClipboard(index);
+    _showSnackbarSafely('Selected file copied to clipboard');
   }
 
   // Function to copy the output file path to the clipboard
