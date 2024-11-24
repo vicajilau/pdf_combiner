@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pdf_combiner_example/pdf_combiner_example.dart';
+import 'package:pdf_combiner_example/views/pdf_combiner_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'PDF Combiner Example',
-      home: PdfCombinerExample(),
+      home: PdfCombinerScreen(),
     );
   }
 }
