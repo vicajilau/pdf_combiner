@@ -88,4 +88,9 @@ class PdfCombinerViewModel {
           text: selectedFiles[index])); // Copy selected files to clipboard
     }
   }
+
+  // Function to remove the selected files
+  void removeFileAt(int index) {
+    selectedFiles.removeAt(index);
+  }
 }

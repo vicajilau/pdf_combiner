@@ -37,8 +37,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                   ),
                   ListTile(
                     title: Text(
-                      p.basename(_viewModel
-                          .outputFile), // Show only the name of the file
+                      p.basename(_viewModel.outputFile),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -52,19 +51,36 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
               ),
             // Input Files Section
             Expanded(
-              child: ListView.builder(
+              child: ReorderableListView.builder(
                 itemCount: _viewModel.selectedFiles.length,
+                onReorder: _onReorderFiles,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      p.basename(_viewModel.selectedFiles[
-                          index]), // Show only file name
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+                  return Dismissible(
+                    key: ValueKey(_viewModel.selectedFiles[index]),
+                    direction: DismissDirection.startToEnd,
+                    onDismissed: (direction) {
+                      setState(() {
+                        _viewModel.removeFileAt(index);
+                      });
+                      _showSnackbarSafely(
+                          'File ${p.basename(_viewModel.selectedFiles[index])} removed.');
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.only(left: 16),
+                      child: const Icon(Icons.delete, color: Colors.white),
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.copy),
-                      onPressed: () => _copySelectedFilesToClipboard(index),
+                    child: ListTile(
+                      title: Text(
+                        p.basename(_viewModel.selectedFiles[index]),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.copy),
+                        onPressed: () => _copySelectedFilesToClipboard(index),
+                      ),
                     ),
                   );
                 },
@@ -121,6 +137,17 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   Future<void> _copyOutputToClipboard() async {
     await _viewModel.copyOutputToClipboard();
     _showSnackbarSafely('Output path copied to clipboard');
+  }
+
+  // Handle reordering of files
+  void _onReorderFiles(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final file = _viewModel.selectedFiles.removeAt(oldIndex);
+      _viewModel.selectedFiles.insert(newIndex, file);
+    });
   }
 
   // Helper function to show SnackBar safely, checking if the widget is still mounted
