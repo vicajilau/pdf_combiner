@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
@@ -65,12 +64,7 @@ class PdfCombinerViewModel {
 
   // Function to check if storage permission is granted (Android-specific)
   Future<bool> _checkStoragePermission() async {
-    if (Platform.isAndroid) {
-      final status = await Permission.storage
-          .request(); // Request storage permission on Android
-      return status.isGranted; // Return whether the permission is granted
-    }
-    return true; // For iOS, no permission is needed
+    return true; // For Android API 33+ and iOS, no permission is needed
   }
 
   // Function to copy the output file path to the clipboard
