@@ -1,5 +1,4 @@
 import 'package:get/get_utils/src/get_utils/get_utils.dart';
-import 'package:pdf_combiner/responses/build_info_response.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
@@ -28,7 +27,7 @@ class PdfCombiner {
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation (either the success message or an error message).
-  Future<MergeMultiplePDFResponse> mergeMultiplePDF(
+  static Future<MergeMultiplePDFResponse> mergeMultiplePDF(
       {required List<String> filePaths, required String outputPath}) async {
     MergeMultiplePDFResponse mergeMultiplePDFResponse =
         MergeMultiplePDFResponse();
@@ -77,7 +76,7 @@ class PdfCombiner {
   /// paths is a list of paths, example List<String> allSelectedFilePath.
   /// outputDirPath is output path with filename, example /user/android/download/ABC.pdf
   /// Optional params maxWidth : default set to 360, maxHeight : default set to 360, needImageCompressor : default set to true.
-  Future<PdfFromMultipleImageResponse> createPDFFromMultipleImage(
+  static Future<PdfFromMultipleImageResponse> createPDFFromMultipleImage(
       {required List<String> paths,
       required String outputDirPath,
       int maxWidth = 360,
@@ -135,7 +134,7 @@ class PdfCombiner {
   /// paths selected file path (String). Example user/android.downlaod/MYPDF.pdf
   /// outputDirPath is output path with filename, example /user/android/download/ABC.pdf
   /// Optional params maxWidth : default set to 360, maxHeight : default set to 360, createOneImage : default set to true.
-  Future<ImageFromPDFResponse> createImageFromPDF(
+  static Future<ImageFromPDFResponse> createImageFromPDF(
       {required String path,
       required String outputDirPath,
       int maxWidth = 360,
@@ -189,7 +188,7 @@ class PdfCombiner {
 
   /// Check File Size of any File
   /// paths selected file path (String). Example user/android.downlaod/MYPDF.pdf
-  static Future<SizeFromPathResponse> sizeFormPath(
+  static Future<SizeFromPathResponse> sizeFromPath(
       {required String path}) async {
     SizeFromPathResponse sizeFormFilePathResponse = SizeFromPathResponse();
     if (path == "") {
@@ -218,29 +217,5 @@ class PdfCombiner {
     }
 
     return sizeFormFilePathResponse;
-  }
-
-  /// For Information about build, example buildDate, app versionName, app versionCode, packageName, packageName.
-  Future<BuildInfoResponse> buildInfo() async {
-    String buildDate = await PdfCombinerPlatform.instance.buildDate();
-    String buildDateWithTime = await PdfCombinerPlatform.instance.buildDateWithTime();
-    String versionName = await PdfCombinerPlatform.instance.versionName();
-    String versionCode = await PdfCombinerPlatform.instance.versionCode();
-    String packageName = await PdfCombinerPlatform.instance.packageName();
-    String appName = await PdfCombinerPlatform.instance.appName();
-
-    return BuildInfoResponse(
-        buildDate: buildDate == "null" || buildDate == "error" ? "" : buildDate,
-        buildDateWithTime:
-            buildDateWithTime == "null" || buildDateWithTime == "error"
-                ? ""
-                : buildDateWithTime,
-        versionNumber:
-            versionName == "null" || versionName == "error" ? "" : versionName,
-        buildNumber:
-            versionCode == "null" || versionCode == "error" ? "" : versionCode,
-        packageName:
-            packageName == "null" || packageName == "error" ? "" : packageName,
-        appName: appName == "null" || appName == "error" ? "" : appName);
   }
 }

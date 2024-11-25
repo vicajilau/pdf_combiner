@@ -5,12 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
   String outputFile = ""; // Path for the combined output file
 
-  // Function to pick PDF files from the device
+  // Function to pick PDF files from the device (old method)
   Future<void> pickFiles() async {
     bool isGranted =
         await _checkStoragePermission(); // Check storage permission
@@ -31,6 +32,27 @@ class PdfCombinerViewModel {
     }
   }
 
+  // Function to pick PDF files with debug log (new method)
+  Future<void> pickFilesWithLogs() async {
+    bool isGranted =
+        await _checkStoragePermission(); // Check storage permission
+
+    if (isGranted) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: true, // Allow picking multiple files
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        selectedFiles = result.files.map((file) => file.path!).toList();
+        for (var file in selectedFiles) {
+          debugPrint("Picked file: $file");
+        }
+      }
+    }
+  }
+
   // Function to combine selected PDF files into a single output file
   Future<void> combinePdfs() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
@@ -38,12 +60,17 @@ class PdfCombinerViewModel {
     try {
       final directory = await _getOutputDirectory(); // Get the output directory
       final outputFilePath = '${directory.path}/combined_output.pdf';
-
-      final combiner = PdfCombiner();
-      await combiner.mergeMultiplePDF(filePaths: selectedFiles, outputPath: outputFilePath); // Combine the PDFs
+      MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDF(
+          filePaths: selectedFiles,
+          outputPath: outputFilePath); // Combine the PDFs
 
       outputFile =
           outputFilePath; // Update the output file path after successful combination
+      if (response.status == "success") {
+        debugPrint("Combining PDFs success");
+      } else {
+        throw Exception('Error combining PDFs: ${response.message}');
+      }
     } catch (e) {
       throw Exception('Error combining PDFs: ${e.toString()}');
     }

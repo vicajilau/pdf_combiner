@@ -28,14 +28,13 @@ void main() {
 
     // Test for successfully combining multiple PDFs using PdfCombiner.
     test('combine (PdfCombiner)', () async {
-      PdfCombiner pdfCombinerPlugin = PdfCombiner();
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
       // Replace the platform instance with the mock implementation.
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await pdfCombinerPlugin.mergeMultiplePDF(
+      final result = await PdfCombiner.mergeMultiplePDF(
         filePaths: ['path1.pdf', 'path2.pdf'],
         outputPath: 'output/path',
       );
@@ -48,8 +47,6 @@ void main() {
 
     // Test for error handling when the platform simulates a failure in the mergeMultiplePDF method.
     test('combine - Error handling (PdfCombiner)', () async {
-      PdfCombiner pdfCombinerPlugin = PdfCombiner();
-
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
           MockPdfCombinerPlatformWithError();
@@ -58,7 +55,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatformWithError;
 
       // Call the method and check the response.
-      final result = await pdfCombinerPlugin.mergeMultiplePDF(
+      final result = await PdfCombiner.mergeMultiplePDF(
         filePaths: ['path1', 'path2'],
         outputPath: 'output/path',
       );

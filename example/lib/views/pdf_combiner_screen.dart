@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
 
 import '../view_models/pdf_combiner_view_model.dart';
@@ -41,9 +42,18 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.copy),
-                      onPressed: _copyOutputToClipboard,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.copy),
+                          onPressed: _copyOutputToClipboard,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.open_in_new),
+                          onPressed: _openOutputFile,
+                        ),
+                      ],
                     ),
                   ),
                   const Divider(),
@@ -137,6 +147,16 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   Future<void> _copyOutputToClipboard() async {
     await _viewModel.copyOutputToClipboard();
     _showSnackbarSafely('Output path copied to clipboard');
+  }
+
+  // Function to open the output file
+  Future<void> _openOutputFile() async {
+    if (_viewModel.outputFile.isNotEmpty) {
+      final result = await OpenFile.open(_viewModel.outputFile);
+      if (result.type != ResultType.done) {
+        _showSnackbarSafely('Failed to open file. Error: ${result.message}');
+      }
+    }
   }
 
   // Handle reordering of files
