@@ -5,7 +5,7 @@ import 'package:pdf_combiner/pdf_combiner_platform_interface.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
 
-// Mock de la plataforma que simula un error en mergeMultiplePDF
+// Mock platform that simulates an error in the mergeMultiplePDF method.
 class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDF({
@@ -18,38 +18,55 @@ class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
 
 void main() {
   group('PdfCombiner', () {
+    // Preserve the initial platform to reset it later if necessary.
     final PdfCombinerPlatform initialPlatform = PdfCombinerPlatform.instance;
 
-    // Test para comprobar la instancia predeterminada
-    test('$MethodChannelPdfCombiner es la instancia predeterminada', () {
+    // Test to verify the default instance of PdfCombinerPlatform.
+    test('$MethodChannelPdfCombiner is the default instance', () {
       expect(initialPlatform, isInstanceOf<MethodChannelPdfCombiner>());
     });
 
-    // Test para combinar PDFs
+    // Test for successfully combining multiple PDFs using PdfCombiner.
     test('combine (PdfCombiner)', () async {
       PdfCombiner pdfCombinerPlugin = PdfCombiner();
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
       PdfCombinerPlatform.instance = fakePlatform;
 
-      final result =
-          await pdfCombinerPlugin.combine(['path1', 'path2'], 'output/path');
+      // Call the method and check the response.
+      final result = await pdfCombinerPlugin.mergeMultiplePDF(
+        filePaths: ['path1.pdf', 'path2.pdf'],
+        outputPath: 'output/path',
+      );
 
-      expect(result, 'Merged PDF');
+      // Verify the result matches the expected mock values.
+      expect(result.status, 'success');
+      expect(result.response, 'Merged PDF');
+      expect(result.message, 'Processed successfully');
     });
 
-    // Test de manejo de errores en combine (simulando un error en el mock)
+    // Test for error handling when the platform simulates a failure in the mergeMultiplePDF method.
     test('combine - Error handling (PdfCombiner)', () async {
       PdfCombiner pdfCombinerPlugin = PdfCombiner();
 
-      // Creamos un Mock que simula un error en el método mergeMultiplePDF
+      // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
           MockPdfCombinerPlatformWithError();
+
+      // Replace the platform instance with the error mock implementation.
       PdfCombinerPlatform.instance = fakePlatformWithError;
 
-      final result =
-          await pdfCombinerPlugin.combine(['path1', 'path2'], 'output/path');
+      // Call the method and check the response.
+      final result = await pdfCombinerPlugin.mergeMultiplePDF(
+        filePaths: ['path1', 'path2'],
+        outputPath: 'output/path',
+      );
 
-      expect(result, 'Error combining the PDFs: Simulated Error');
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, 'error');
+      expect(result.message, 'Only PDF file allowed');
     });
   });
 }

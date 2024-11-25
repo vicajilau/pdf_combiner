@@ -5,11 +5,12 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 ///
 /// This class simulates the platform-specific implementation of the methods in the
 /// [PdfCombinerPlatform] interface, allowing you to test the behavior of the PdfCombiner
-/// class without needing access to a real native platform. It returns mock responses
+/// class without requiring access to a real native platform. It returns mock responses
 /// for each method.
 class MockPdfCombinerPlatform
     with MockPlatformInterfaceMixin
     implements PdfCombinerPlatform {
+
   /// Mocks the `mergeMultiplePDF` method.
   ///
   /// Simulates combining multiple PDFs into a single PDF. It returns a mock result
@@ -75,15 +76,54 @@ class MockPdfCombinerPlatform
   /// [path] The file path whose size is to be fetched.
   @override
   Future<String?> sizeForPath(String path) {
-    return Future.value('1024');
+    return Future.value('1024'); // Mock size in bytes.
   }
 
-  /// Mocks the `buildInfo` method.
+  /// Mocks the `appName` method.
   ///
-  /// Simulates retrieving build information, such as version and build number.
-  /// It returns a mock map of build information.
+  /// Simulates retrieving the application name.
   @override
-  Future<Map<String, String>> buildInfo() {
-    return Future.value({'version': '1.0', 'build': '42'});
+  Future<String> appName() {
+    return Future.value('MockPdfCombiner');
+  }
+
+  /// Mocks the `buildDate` method.
+  ///
+  /// Simulates retrieving the application's build date.
+  @override
+  Future<String> buildDate() {
+    return Future.value('2024-01-01');
+  }
+
+  /// Mocks the `buildDateWithTime` method.
+  ///
+  /// Simulates retrieving the application's build date with time.
+  @override
+  Future<String> buildDateWithTime() {
+    return Future.value('2024-01-01T12:00:00Z');
+  }
+
+  /// Mocks the `packageName` method.
+  ///
+  /// Simulates retrieving the application package name.
+  @override
+  Future<String> packageName() {
+    return Future.value('com.example.mockpdfcombiner');
+  }
+
+  /// Mocks the `versionCode` method.
+  ///
+  /// Simulates retrieving the application's version code.
+  @override
+  Future<String> versionCode() {
+    return Future.value('1');
+  }
+
+  /// Mocks the `versionName` method.
+  ///
+  /// Simulates retrieving the application's version name.
+  @override
+  Future<String> versionName() {
+    return Future.value('1.0.0');
   }
 }

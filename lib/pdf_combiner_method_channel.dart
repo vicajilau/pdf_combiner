@@ -150,24 +150,4 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
       return null;
     }
   }
-
-  /// Retrieves build information such as version name and build date.
-  ///
-  /// This method sends a request to the native platform to retrieve the build information
-  /// for the application, such as version name and build date.
-  ///
-  /// Returns:
-  /// - A `Future<Map<String, String>>` representing the build information as a map
-  ///   of string key-value pairs (e.g., version name, build date).
-  ///   If the operation fails, it returns an empty map.
-  @override
-  Future<Map<String, String>> buildInfo() async {
-    try {
-      final result = await methodChannel.invokeMethod<Map<dynamic, dynamic>>('buildInfo');
-      return result?.map((key, value) => MapEntry(key.toString(), value.toString())) ?? {};
-    } catch (e) {
-      debugPrint('Error fetching build info: $e');
-      return {};
-    }
-  }
 }
