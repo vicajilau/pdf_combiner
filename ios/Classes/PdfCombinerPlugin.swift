@@ -14,7 +14,6 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         if call.method == "mergeMultiplePDF" {
             if let args = call.arguments as? Dictionary<String, Any>{
-                
                 DispatchQueue.global().async {
                     let singlePDFFromMultiplePDF =  PdfCombinerPlugin.mergeMultiplePDF(args : args)
                     DispatchQueue.main.sync {
@@ -26,7 +25,6 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             }
         } else if call.method == "createPDFFromMultipleImage" {
             if let args = call.arguments as? Dictionary<String, Any>{
-                
                 DispatchQueue.global().async {
                     let pdfFromMultipleImage = PdfCombinerPlugin.createPDFFromMultipleImage(args : args)
                     DispatchQueue.main.sync {
@@ -47,35 +45,6 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             } else {
                 result("error")
             }
-        } else if call.method == "sizeForLocalFilePath" {
-            if let args = call.arguments as? Dictionary<String, Any> {
-                DispatchQueue.global().async {
-                    let sizeForFilePath = PdfCombinerPlugin.sizeForLocalFilePath(args : args)
-                    DispatchQueue.main.sync {
-                        result(sizeForFilePath)
-                    }
-                }
-            } else {
-                result("error")
-            }
-        } else if call.method == "buildDate" {
-            let buildDateResponse = PdfCombinerPlugin.buildDate()
-            result(buildDateResponse)
-        } else if call.method == "buildDateWithTime" {
-            let buildDateWithTimeResponse = PdfCombinerPlugin.buildDateWithTime()
-            result(buildDateWithTimeResponse)
-        } else if call.method == "versionName" {
-            let versionNameResponse = PdfCombinerPlugin.versionName()
-            result(versionNameResponse)
-        } else if call.method == "versionCode" {
-            let versionCodeResponse = PdfCombinerPlugin.versionCode()
-            result(versionCodeResponse)
-        } else if call.method == "packageName" {
-            let packageNameResponse = PdfCombinerPlugin.packageName()
-            result(packageNameResponse)
-        } else if call.method == "appName" {
-            let appNameResponse = PdfCombinerPlugin.appName()
-            result(appNameResponse)
         } else{
             result("Not Implemented")
         }
@@ -239,87 +208,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
         
         return nil
     }
-    
-    class func  sizeForLocalFilePath(args: Dictionary<String, Any>) -> String? {
-        if let path = args["path"] as? String {
-            
-            do {
-                let fileAttributes = try FileManager.default.attributesOfItem(atPath: path)
-                if let fileSize = fileAttributes[FileAttributeKey.size]  {
-                    
-                    let unitFile = (fileSize as! NSNumber).uint64Value
-                    
-                    let  fileSizeString = covertToFileString(size : unitFile)
-                    
-                    return fileSizeString
-                } else {
-                    return "error"
-                }
-            } catch {
-                return "error"
-            }
-        }
-        return "error"
-    }
-    
-    class func  buildDate() -> String? {
-        
-        if let executableURL = Bundle.main.executableURL,
-           let creation = (try? executableURL.resourceValues(forKeys: [.creationDateKey]))?.creationDate {
-            
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd/MM/yyyy"
-            return dateFormatter.string(from: creation)
-        }
-        return "error"
-    }
-    
-    class func  buildDateWithTime() -> String? {
-        
-        if let executableURL = Bundle.main.executableURL,
-           let creation = (try? executableURL.resourceValues(forKeys: [.creationDateKey]))?.creationDate {
-            
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd-MM-yyyy HH:mm:ss"
-            return dateFormatter.string(from: creation)
-        }
-        
-        return "error"
-    }
-    
-    
-    class func  versionName() -> String? {
-        if let appVersion =  Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-            return appVersion
-        }
-        return "error"
-    }
-    
-    
-    class func  versionCode() -> String? {
-        if let appVersionCode =  Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-            return appVersionCode
-        }
-        return "error"
-    }
-    
-    class func  packageName() -> String? {
-        
-        if let bundleID = Bundle.main.bundleIdentifier {
-            
-            return bundleID
-        }
-        return "error"
-    }
-    
-    class func  appName() -> String? {
-        if let appName = Bundle.main.infoDictionary?[kCFBundleNameKey as String] as? String {
-            return appName
-        }
-        return "error"
-    }
-    
-    
+
     public static func mergeVertically(images: [UIImage]) -> UIImage? {
         var maxWidth:CGFloat = 0.0
         var maxHeight:CGFloat = 0.0
