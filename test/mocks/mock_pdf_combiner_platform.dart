@@ -67,15 +67,4 @@ class MockPdfCombinerPlatform
   }) {
     return Future.value(['image1.png', 'image2.png']);
   }
-
-  /// Mocks the `sizeForPath` method.
-  ///
-  /// Simulates retrieving the size of a file located at the specified path.
-  /// It returns a mock size value.
-  ///
-  /// [path] The file path whose size is to be fetched.
-  @override
-  Future<String?> sizeForPath(String path) {
-    return Future.value('1024'); // Mock size in bytes.
-  }
 }
