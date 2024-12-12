@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:pdf_combiner/pdf_combiner_method_channel.dart';
-import 'package:pdf_combiner/pdf_combiner_platform_interface.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
 

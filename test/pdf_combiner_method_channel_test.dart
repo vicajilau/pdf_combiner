@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pdf_combiner/pdf_combiner_method_channel.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
