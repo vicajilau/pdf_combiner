@@ -4,15 +4,15 @@ import 'package:external_path/external_path.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
-import 'package:pdf_combiner/responses/size_from_path_response.dart';
+import 'package:pdf_combiner_example/utils/custom_logs.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:get/get.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,12 +31,6 @@ class _MyAppState extends State<MyApp> {
   String singleFile = "";
 
   @override
-  void initState() {
-    super.initState();
-    clear();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       home: Scaffold(
@@ -49,19 +43,19 @@ class _MyAppState extends State<MyApp> {
               child: Column(children: [
                 TextButton(
                   style: ButtonStyle(overlayColor:
-                  WidgetStateProperty.resolveWith<Color>(
+                      WidgetStateProperty.resolveWith<Color>(
                           (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.focused)) {
-                          return Colors.red;
-                        }
-                        if (states.contains(WidgetState.hovered)) {
-                          return Colors.green;
-                        }
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.blue;
-                        }
-                        return Colors.black; // Defer to the widget's default.
-                      })),
+                    if (states.contains(WidgetState.focused)) {
+                      return Colors.red;
+                    }
+                    if (states.contains(WidgetState.hovered)) {
+                      return Colors.green;
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return Colors.blue;
+                    }
+                    return Colors.black; // Defer to the widget's default.
+                  })),
                   child: const Text(
                     "Chose File",
                     style: TextStyle(fontSize: 14.0),
@@ -73,19 +67,19 @@ class _MyAppState extends State<MyApp> {
                 const SizedBox(height: 10),
                 TextButton(
                   style: ButtonStyle(overlayColor:
-                  WidgetStateProperty.resolveWith<Color>(
+                      WidgetStateProperty.resolveWith<Color>(
                           (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.focused)) {
-                          return Colors.red;
-                        }
-                        if (states.contains(WidgetState.hovered)) {
-                          return Colors.green;
-                        }
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.blue;
-                        }
-                        return Colors.black; // Defer to the widget's default.
-                      })),
+                    if (states.contains(WidgetState.focused)) {
+                      return Colors.red;
+                    }
+                    if (states.contains(WidgetState.hovered)) {
+                      return Colors.green;
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return Colors.blue;
+                    }
+                    return Colors.black; // Defer to the widget's default.
+                  })),
                   child: const Text(
                     "Merge Multiple PDF",
                     style: TextStyle(fontSize: 14.0),
@@ -97,19 +91,19 @@ class _MyAppState extends State<MyApp> {
                 const SizedBox(height: 10),
                 TextButton(
                   style: ButtonStyle(overlayColor:
-                  WidgetStateProperty.resolveWith<Color>(
+                      WidgetStateProperty.resolveWith<Color>(
                           (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.focused)) {
-                          return Colors.red;
-                        }
-                        if (states.contains(WidgetState.hovered)) {
-                          return Colors.green;
-                        }
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.blue;
-                        }
-                        return Colors.black; // Defer to the widget's default.
-                      })),
+                    if (states.contains(WidgetState.focused)) {
+                      return Colors.red;
+                    }
+                    if (states.contains(WidgetState.hovered)) {
+                      return Colors.green;
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return Colors.blue;
+                    }
+                    return Colors.black; // Defer to the widget's default.
+                  })),
                   child: const Text(
                     "Create PDF From Multiple Image",
                     style: TextStyle(fontSize: 14.0),
@@ -121,67 +115,43 @@ class _MyAppState extends State<MyApp> {
                 const SizedBox(height: 10),
                 TextButton(
                   style: ButtonStyle(overlayColor:
-                  WidgetStateProperty.resolveWith<Color>(
+                      WidgetStateProperty.resolveWith<Color>(
                           (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.focused)) {
-                          return Colors.red;
-                        }
-                        if (states.contains(WidgetState.hovered)) {
-                          return Colors.green;
-                        }
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.blue;
-                        }
-                        return Colors.black; // Defer to the widget's default.
-                      })),
+                    if (states.contains(WidgetState.focused)) {
+                      return Colors.red;
+                    }
+                    if (states.contains(WidgetState.hovered)) {
+                      return Colors.green;
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return Colors.blue;
+                    }
+                    return Colors.black; // Defer to the widget's default.
+                  })),
                   child: const Text(
                     "Create Image From PDF",
                     style: TextStyle(fontSize: 14.0),
                   ),
                   onPressed: () {
-                    singleFilePicker(1);
+                    singleFilePicker();
                   },
                 ),
                 const SizedBox(height: 10),
                 TextButton(
                   style: ButtonStyle(overlayColor:
-                  WidgetStateProperty.resolveWith<Color>(
+                      WidgetStateProperty.resolveWith<Color>(
                           (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.focused)) {
-                          return Colors.red;
-                        }
-                        if (states.contains(WidgetState.hovered)) {
-                          return Colors.green;
-                        }
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.blue;
-                        }
-                        return Colors.black; // Defer to the widget's default.
-                      })),
-                  child: const Text(
-                    "Get File Size",
-                    style: TextStyle(fontSize: 14.0),
-                  ),
-                  onPressed: () {
-                    singleFilePicker(2);
-                  },
-                ),
-                const SizedBox(height: 10),
-                TextButton(
-                  style: ButtonStyle(overlayColor:
-                  WidgetStateProperty.resolveWith<Color>(
-                          (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.focused)) {
-                          return Colors.red;
-                        }
-                        if (states.contains(WidgetState.hovered)) {
-                          return Colors.green;
-                        }
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.blue;
-                        }
-                        return Colors.black; // Defer to the widget's default.
-                      })),
+                    if (states.contains(WidgetState.focused)) {
+                      return Colors.red;
+                    }
+                    if (states.contains(WidgetState.hovered)) {
+                      return Colors.green;
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return Colors.blue;
+                    }
+                    return Colors.black; // Defer to the widget's default.
+                  })),
                   child: const Text(
                     "Clear",
                     style: TextStyle(fontSize: 14.0),
@@ -208,8 +178,10 @@ class _MyAppState extends State<MyApp> {
 
     if (isGranted) {
       try {
-        FilePickerResult? result =
-        await FilePicker.platform.pickFiles(allowMultiple: true);
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+            allowMultiple: true,
+            type: FileType.custom,
+            allowedExtensions: ['jpg', 'pdf']);
 
         if (result != null) {
           files.addAll(result.files);
@@ -221,12 +193,12 @@ class _MyAppState extends State<MyApp> {
           // User canceled the picker
         }
       } on Exception catch (e) {
-        print('never reached$e');
+        printInDebug('never reached$e');
       }
     }
   }
 
-  Future<void> singleFilePicker(int type) async {
+  Future<void> singleFilePicker() async {
     bool isGranted = GetPlatform.isIOS || GetPlatform.isAndroid
         ? await checkPermission()
         : true;
@@ -234,24 +206,15 @@ class _MyAppState extends State<MyApp> {
     if (isGranted) {
       try {
         FilePickerResult? result =
-        await FilePicker.platform.pickFiles(allowMultiple: false);
+            await FilePicker.platform.pickFiles(allowMultiple: false);
         if (result != null) {
           singleFile = result.files[0].path!;
-
-          switch (type) {
-            case 1:
-              callMethod(3);
-              break;
-
-            case 2:
-              callMethod(4);
-              break;
-          }
+          callMethod(3);
         } else {
           // User canceled the picker
         }
       } on Exception catch (e) {
-        print('never reached$e');
+        printInDebug('never reached$e');
       }
     }
   }
@@ -272,10 +235,6 @@ class _MyAppState extends State<MyApp> {
         String dirPath = await getFilePathImage("TestPDFMerger");
         createImageFromPDF(dirPath);
         break;
-
-      case 4:
-        sizeForLocalFilePath();
-        break;
     }
   }
 
@@ -292,9 +251,9 @@ class _MyAppState extends State<MyApp> {
         OpenFile.open(response.response);
       }
 
-      print(response.status);
+      printInDebug(response.status);
     } on PlatformException {
-      print('Failed to get platform version.');
+      printInDebug('Failed to get platform version.');
     }
   }
 
@@ -303,8 +262,8 @@ class _MyAppState extends State<MyApp> {
     try {
       /// Get response either success or error
       PdfFromMultipleImageResponse response =
-      await PdfCombiner.createPDFFromMultipleImage(
-          paths: filesPath, outputDirPath: outputDirPath);
+          await PdfCombiner.createPDFFromMultipleImage(
+              paths: filesPath, outputDirPath: outputDirPath);
 
       Get.snackbar("Info", response.message!);
 
@@ -312,9 +271,9 @@ class _MyAppState extends State<MyApp> {
         OpenFile.open(response.response);
       }
 
-      print(response.status);
+      printInDebug(response.status);
     } on PlatformException {
-      print('Failed to get platform version.');
+      printInDebug('Failed to get platform version.');
     }
   }
 
@@ -322,7 +281,7 @@ class _MyAppState extends State<MyApp> {
     /// Platform messages may fail, so we use a try/catch PlatformException.
     try {
       /// Get response either success or error
-        ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
+      ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
           path: singleFile, outputDirPath: outputDirPath, createOneImage: true);
 
       Get.snackbar("Info", response.status!);
@@ -331,26 +290,9 @@ class _MyAppState extends State<MyApp> {
         OpenFile.open(response.response![0]);
       }
 
-      print(response.message);
+      printInDebug(response.message);
     } on PlatformException {
-      print('Failed to get platform version.');
-    }
-  }
-
-  Future<void> sizeForLocalFilePath() async {
-    /// Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      /// Get response either success or error
-      SizeFromPathResponse response =
-      await PdfCombiner.sizeFromPath(path: singleFile);
-
-      if (response.status == "success") {
-        Get.snackbar("Info", response.response!);
-      }
-
-      print(response.status);
-    } on PlatformException {
-      print('Failed to get platform version.');
+      printInDebug('Failed to get platform version.');
     }
   }
 
@@ -359,11 +301,11 @@ class _MyAppState extends State<MyApp> {
     var status = await Permission.storage.request();
 
     // Imprime el estado actual del permiso
-    print(status);
+    printInDebug(status);
 
     if (status.isPermanentlyDenied) {
       // Informa al usuario que debe habilitar el permiso desde configuración
-      print("Go to Settings and provide media access");
+      printInDebug("Go to Settings and provide media access");
       return false;
     } else if (status.isGranted) {
       // El permiso fue otorgado
@@ -373,7 +315,6 @@ class _MyAppState extends State<MyApp> {
       return false;
     }
   }
-
 
   Future<String> getFilePath(String fileStartName) async {
     String path = "";

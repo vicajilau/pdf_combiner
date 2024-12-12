@@ -2,7 +2,6 @@ import 'package:get/get_utils/src/get_utils/get_utils.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
-import 'package:pdf_combiner/responses/size_from_path_response.dart';
 import 'package:pdf_combiner/responses/status.dart';
 
 import 'pdf_combiner_platform_interface.dart';
@@ -184,38 +183,5 @@ class PdfCombiner {
     }
 
     return createImageFromPDFResponse;
-  }
-
-  /// Check File Size of any File
-  /// paths selected file path (String). Example user/android.downlaod/MYPDF.pdf
-  static Future<SizeFromPathResponse> sizeFromPath(
-      {required String path}) async {
-    SizeFromPathResponse sizeFormFilePathResponse = SizeFromPathResponse();
-    if (path == "") {
-      sizeFormFilePathResponse.status = Status.error;
-      sizeFormFilePathResponse.message = Status.errorMessage;
-    } else {
-      try {
-        final String? response =
-            await PdfCombinerPlatform.instance.sizeForPath(path);
-
-        if (response != "error") {
-          sizeFormFilePathResponse.status = Status.success;
-          sizeFormFilePathResponse.message = Status.successMessage;
-          sizeFormFilePathResponse.response = response;
-        } else {
-          sizeFormFilePathResponse.status = Status.error;
-          sizeFormFilePathResponse.message = Status.errorMessage;
-        }
-      } on Exception catch (exception) {
-        sizeFormFilePathResponse.status = Status.error;
-        sizeFormFilePathResponse.message = exception.toString();
-      } catch (e) {
-        sizeFormFilePathResponse.status = Status.error;
-        sizeFormFilePathResponse.message = e.toString();
-      }
-    }
-
-    return sizeFormFilePathResponse;
   }
 }

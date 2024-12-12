@@ -99,19 +99,4 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   }) {
     throw UnimplementedError('createImageFromPDF() has not been implemented.');
   }
-
-  /// Gets the size of a file at the specified path.
-  ///
-  /// Platform-specific implementations should override this method to retrieve
-  /// the size of the file at the given path.
-  ///
-  /// Parameters:
-  /// - `path`: The file path of the file whose size needs to be retrieved.
-  ///
-  /// Returns:
-  /// - A `Future<String?>` representing the file size as a string. By default,
-  ///   this throws an [UnimplementedError].
-  Future<String?> sizeForPath(String path) {
-    throw UnimplementedError('sizeForPath() has not been implemented.');
-  }
 }

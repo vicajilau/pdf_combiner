@@ -125,29 +125,4 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
       return null;
     }
   }
-
-  /// Retrieves the size of a file located at the specified path.
-  ///
-  /// This method sends a request to the native platform to retrieve the size of the
-  /// file located at the `path`.
-  ///
-  /// Parameters:
-  /// - `path`: The file path of the file whose size needs to be retrieved.
-  ///
-  /// Returns:
-  /// - A `Future<String?>` representing the size of the file as a string. If the operation
-  ///   is successful, it returns the file size; otherwise, it returns `null`.
-  @override
-  Future<String?> sizeForPath(String path) async {
-    try {
-      final result = await methodChannel.invokeMethod<String>(
-        'sizeForPath',
-        {'path': path},
-      );
-      return result;
-    } catch (e) {
-      debugPrint('Error getting file size: $e');
-      return null;
-    }
-  }
 }
