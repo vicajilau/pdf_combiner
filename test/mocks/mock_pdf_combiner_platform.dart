@@ -1,4 +1,4 @@
-import 'package:pdf_combiner/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 /// A mock implementation of the [PdfCombinerPlatform] interface for testing purposes.

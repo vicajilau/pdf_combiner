@@ -1,4 +1,4 @@
-import 'package:pdf_combiner/responses/status.dart';
+import '../communication/status.dart';
 
 class PdfFromMultipleImageResponse {
   String? status, response, message;
