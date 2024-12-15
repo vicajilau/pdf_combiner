@@ -1,4 +1,4 @@
-name: Dart
+name: Flutter CI
 
 on: push
 
@@ -13,9 +13,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ matrix.sdk }}
+
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v4
 
       - name: Print Dart SDK version
         run: dart --version
