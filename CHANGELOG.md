@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Updated min SDK of Dart to 3.0
+* Updated min SDK of Flutter to 3.0
+
 ## 1.0.0
 
 * Initial release of the PDF Combiner package.
