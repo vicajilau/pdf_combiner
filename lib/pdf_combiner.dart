@@ -1,4 +1,4 @@
-import 'package:get/get_utils/src/get_utils/get_utils.dart';
+import 'package:pdf_combiner/document_utils.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
@@ -38,7 +38,7 @@ class PdfCombiner {
         bool isPDF = true;
 
         for (int i = 0; i < filePaths.length; i++) {
-          if (!GetUtils.isPDF(filePaths[i])) {
+          if (!DocumentUtils.isPDF(filePaths[i])) {
             isPDF = false;
           }
         }
@@ -91,7 +91,7 @@ class PdfCombiner {
         bool isImage = true;
 
         for (int i = 0; i < paths.length; i++) {
-          if (!GetUtils.isImage(paths[i])) {
+          if (!DocumentUtils.isImage(paths[i])) {
             isImage = false;
           }
         }
@@ -146,7 +146,7 @@ class PdfCombiner {
       createImageFromPDFResponse.message = Status.errorMessage;
     } else {
       try {
-        bool isImage = GetUtils.isPDF(path);
+        bool isImage = DocumentUtils.isPDF(path);
 
         if (!isImage) {
           createImageFromPDFResponse.status = Status.error;
