@@ -1,98 +1,98 @@
-
 # pdf_combiner
 
-`pdf_combiner` is a lightweight and efficient Flutter plugin designed to merge multiple PDF documents into a single file effortlessly.
+A Flutter plugin for combining and manipulating PDF files. The plugin supports Android and iOS platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
 
 ## Features
 
-- Select multiple PDF files.
-- Merge selected PDFs into one output file.
-- Supports both Android and iOS platforms.
-- Handles storage permission requests on Android.
-- Displays success and error messages with SnackBars.
+### Merge Multiple PDFs
 
-## Getting Started
+Combine multiple PDF files into a single document.
 
-To get started with the `pdf_combiner` plugin, follow the steps below:
-
-### 1. Add the Dependency
-
-Add `pdf_combiner` to your `pubspec.yaml` file:
-
-```yaml
-dependencies:
-  pdf_combiner: ^0.0.1
-```
-
-### 2. Install Dependencies
-
-Run the following command to fetch the package:
-
-```bash
-flutter pub get
-```
-
-### 3. Android Setup
-
-For Android, you need to configure the app with the appropriate permissions. Open the `AndroidManifest.xml` file in your android/app/src/main directory and add the following permissions:
-
-```xml
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-```
-
-### 4. iOS Setup
-
-For iOS, ensure that the following permissions are included in your `Info.plist`:
-
-```xml
-<key>NSDocumentsFolderUsageDescription</key>
-<string>We need access to your documents folder to save the merged PDF</string>
-<key>NSPhotoLibraryUsageDescription</key>
-<string>We need access to your photo library to select files</string>
-```
-
-### 5. Usage Example
-
-Here is a simple example of how to use the pdf_combiner plugin to select and merge PDF files:
+**Required Parameters:**
+- `filePaths`: A list of strings representing the paths of the PDF files to be combined.
+- `outputPath`: A string representing the directory where the combined PDF should be saved.
 
 ```dart
-import 'package:pdf_combiner/pdf_combiner.dart';
+MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDF(
+  filePaths: filesPath, 
+  outputPath: outputDirPath,
+);
 
-// Example to combine selected PDFs
-PdfCombiner pdfCombiner = PdfCombiner();
-await pdfCombiner.combine(selectedFiles, outputFilePath);
+if (response.status == "success") {
+  // response.response contains the output path as a String
+  // response.message contains a success message as a String
+}
 ```
-In the above example, replace `selectedFiles` with the list of file paths of the PDFs to be merged, and `outputFilePath` with the desired output path for the merged file.
 
-### 6. Handling Permissions
+### Create PDF From Multiple Images
 
-On Android, the plugin requests storage permissions to access the selected files. The plugin will automatically handle permission requests when using the `_checkStoragePermission()` method. Ensure your app requests the appropriate permissions when needed.
+Convert a list of image files into a single PDF document.
 
-## Example
+**Required Parameters:**
+- `paths`: A list of strings representing the paths of the image files.
+- `outputDirPath`: A string representing the directory where the generated PDF should be saved.
 
-A full example of using the `pdf_combiner` plugin in a Flutter app can be found in the `example` directory of this repository. It includes:
+**Optional Parameters:**
+- `maxWidth` (default: 360): Maximum width for image compression.
+- `maxHeight` (default: 360): Maximum height for image compression.
+- `needImageCompressor` (default: true): Whether to compress the images.
 
-- A UI to select PDF files.
-- A button to trigger the merge process.
-- Displaying output and error messages.
+```dart
+PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImage(
+  paths: imagePaths, 
+  outputDirPath: outputPath,
+  maxWidth: 480, // Optional
+  maxHeight: 640, // Optional
+  needImageCompressor: false, // Optional
+);
 
-## Contributing
+if (response.status == "success") {
+  // response.response contains the output path as a String
+  // response.message contains a success message as a String
+}
+```
 
-Contributions are welcome! Please feel free to fork this repository and submit pull requests with improvements.
+### Create Images From PDF
 
-### Steps to contribute:
+Extract images from a PDF file.
 
-1. Fork this repository.
-2. Clone your fork to your local machine.
-3. Make your changes.
-4. Push your changes to your fork.
-5. Create a pull request.
+**Required Parameters:**
+- `path`: A string representing the file path of the PDF to extract images from.
+- `outputDirPath`: A string representing the directory where the extracted images should be saved.
 
-## License
+**Optional Parameters:**
+- `maxWidth` (default: 360): Maximum width for the extracted images.
+- `maxHeight` (default: 360): Maximum height for the extracted images.
+- `createOneImage` (default: true): Whether to create a single composite image from the PDF.
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+```dart
+ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
+  path: pdfFilePath, 
+  outputDirPath: outputPath,
+  maxWidth: 720, // Optional
+  maxHeight: 1080, // Optional
+  createOneImage: false, // Optional
+);
 
-## Contact
+if (response.status == "success") {
+  // response.response contains a list of output paths as List<String>
+  // response.message contains a success message as a String
+}
+```
 
-For any questions or feedback, feel free to open an issue or contact the repository owner.
+## Usage
+
+This plugin works with `file_picker` or `image_picker` for selecting files. Ensure you handle permissions using `permission_handler` before invoking the plugin.
+
+### Dependencies
+- [file_picker](https://pub.dev/packages/file_picker)
+- [image_picker](https://pub.dev/packages/image_picker)
+- [permission_handler](https://pub.dev/packages/permission_handler)
+
+## Support
+
+The plugin supports both Android and iOS platforms.
+
+## Notes
+
+No additional configuration is required for Android or iOS. Ensure the necessary dependencies for file selection and permissions are added to your project.
