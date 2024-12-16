@@ -9,6 +9,9 @@
 * BREAKING CHANGE: `outputDirPath` parameter has been renamed by `outputPath` in createPDFFromMultipleImages method.
 * BREAKING CHANGE: `path` parameter has been renamed by `inputPath` in createPDFFromMultipleImages method.
 * BREAKING CHANGE: `outputDirPath` parameter has been renamed by `outputPath` in createImageFromPDF method.
+* BREAKING CHANGE: response.status is not a String anymore, now it is a PdfCombinerStatus enum value.
+* Added more tests.
+* Improved documentation.
 
 ## 1.0.1
 
