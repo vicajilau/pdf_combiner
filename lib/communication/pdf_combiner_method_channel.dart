@@ -1,5 +1,6 @@
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+
 import 'pdf_combiner_platform_interface.dart';
 
 /// Implementation of PdfCombinerPlatform using MethodChannel.
@@ -9,7 +10,6 @@ import 'pdf_combiner_platform_interface.dart';
 /// PDFs from images, extracting images from PDFs, and retrieving file size information.
 /// It uses the `MethodChannel` to communicate with the platform.
 class MethodChannelPdfCombiner extends PdfCombinerPlatform {
-
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final MethodChannel methodChannel = const MethodChannel('pdf_combiner');
@@ -109,7 +109,8 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     bool? createOneImage,
   }) async {
     try {
-      final List<dynamic>? result = await methodChannel.invokeMethod<List<dynamic>>(
+      final List<dynamic>? result =
+          await methodChannel.invokeMethod<List<dynamic>>(
         'createImageFromPDF',
         {
           'path': path,

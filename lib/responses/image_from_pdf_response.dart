@@ -1,4 +1,3 @@
-
 import '../communication/status.dart';
 
 class ImageFromPDFResponse {

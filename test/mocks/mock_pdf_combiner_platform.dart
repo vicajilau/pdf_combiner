@@ -10,7 +10,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockPdfCombinerPlatform
     with MockPlatformInterfaceMixin
     implements PdfCombinerPlatform {
-
   /// Mocks the `mergeMultiplePDF` method.
   ///
   /// Simulates combining multiple PDFs into a single PDF. It returns a mock result
