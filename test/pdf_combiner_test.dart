@@ -8,9 +8,9 @@ import 'mocks/mock_pdf_combiner_platform.dart';
 // Mock platform that simulates an error in the mergeMultiplePDF method.
 class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
   @override
-  Future<String?> mergeMultiplePDF({
-    required List<String> paths,
-    required String outputDirPath,
+  Future<String?> mergeMultiplePDFs({
+    required List<String> inputPaths,
+    required String outputPath,
   }) {
     return Future.error('Simulated Error');
   }
@@ -34,8 +34,8 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.mergeMultiplePDF(
-        filePaths: ['path1.pdf', 'path2.pdf'],
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: ['path1.pdf', 'path2.pdf'],
         outputPath: 'output/path',
       );
 
@@ -55,8 +55,8 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatformWithError;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.mergeMultiplePDF(
-        filePaths: ['path1', 'path2'],
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: ['path1', 'path2'],
         outputPath: 'output/path',
       );
 

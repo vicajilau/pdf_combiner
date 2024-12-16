@@ -17,24 +17,24 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// Merges multiple PDF files into a single PDF.
   ///
   /// This method sends a request to the native platform to merge the PDF files
-  /// specified in the `paths` parameter and saves the result in the `outputDirPath`.
+  /// specified in the `paths` parameter and saves the result in the `outputPath`.
   ///
   /// Parameters:
-  /// - `paths`: A list of file paths of the PDFs to be merged.
-  /// - `outputDirPath`: The directory path where the merged PDF should be saved.
+  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
+  /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. If the operation
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
-  Future<String?> mergeMultiplePDF({
-    required List<String> paths,
-    required String outputDirPath,
+  Future<String?> mergeMultiplePDFs({
+    required List<String> inputPaths,
+    required String outputPath,
   }) async {
     try {
       final result = await methodChannel.invokeMethod<String>(
         'mergeMultiplePDF',
-        {'paths': paths, 'outputDirPath': outputDirPath},
+        {'paths': inputPaths, 'outputDirPath': outputPath},
       );
       return result;
     } catch (e) {
@@ -47,11 +47,11 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   ///
   /// This method sends a request to the native platform to create a PDF from the
   /// images specified in the `paths` parameter. The resulting PDF is saved in the
-  /// `outputDirPath` directory.
+  /// `outputPath` directory.
   ///
   /// Parameters:
-  /// - `paths`: A list of file paths of the images to be converted into a PDF.
-  /// - `outputDirPath`: The directory path where the created PDF should be saved.
+  /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
+  /// - `outputPath`: The directory path where the created PDF should be saved.
   /// - `maxWidth`: The maximum width of each image in the PDF (default is 360).
   /// - `maxHeight`: The maximum height of each image in the PDF (default is 360).
   /// - `needImageCompressor`: Whether to compress images before converting them to PDF (default is `true`).
@@ -60,9 +60,9 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// - A `Future<String?>` representing the result of the operation. If the operation
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
-  Future<String?> createPDFFromMultipleImage({
-    required List<String> paths,
-    required String outputDirPath,
+  Future<String?> createPDFFromMultipleImages({
+    required List<String> inputPaths,
+    required String outputPath,
     int? maxWidth,
     int? maxHeight,
     bool? needImageCompressor,
@@ -71,8 +71,8 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
       final result = await methodChannel.invokeMethod<String>(
         'createPDFFromMultipleImage',
         {
-          'paths': paths,
-          'outputDirPath': outputDirPath,
+          'paths': inputPaths,
+          'outputDirPath': outputPath,
           'maxWidth': maxWidth ?? 360,
           'maxHeight': maxHeight ?? 360,
           'needImageCompressor': needImageCompressor ?? true,
@@ -91,8 +91,8 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// PDF file specified in the `path` parameter and saves the images in the `outputDirPath` directory.
   ///
   /// Parameters:
-  /// - `path`: The file path of the PDF from which images will be extracted.
-  /// - `outputDirPath`: The directory path where the images should be saved.
+  /// - `inputPath`: The file path of the PDF from which images will be extracted.
+  /// - `outputPath`: The directory path where the images should be saved.
   /// - `maxWidth`: The maximum width of each extracted image (default is 360).
   /// - `maxHeight`: The maximum height of each extracted image (default is 360).
   /// - `createOneImage`: Whether to create a single image from all PDF pages or separate images for each page (default is `true`).
@@ -102,8 +102,8 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   ///   is successful, it returns a list of file paths to the extracted images; otherwise, it returns `null`.
   @override
   Future<List<String>?> createImageFromPDF({
-    required String path,
-    required String outputDirPath,
+    required String inputPath,
+    required String outputPath,
     int? maxWidth,
     int? maxHeight,
     bool? createOneImage,
@@ -113,8 +113,8 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
           await methodChannel.invokeMethod<List<dynamic>>(
         'createImageFromPDF',
         {
-          'path': path,
-          'outputDirPath': outputDirPath,
+          'path': inputPath,
+          'outputDirPath': outputPath,
           'maxWidth': maxWidth ?? 360,
           'maxHeight': maxHeight ?? 360,
           'createOneImage': createOneImage ?? true,

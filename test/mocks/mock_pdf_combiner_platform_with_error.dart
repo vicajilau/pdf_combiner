@@ -8,9 +8,9 @@ class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
   ///
   /// This method will throw an error with the message 'Simulated Error' when called.
   @override
-  Future<String?> mergeMultiplePDF({
-    required List<String> paths,
-    required String outputDirPath,
+  Future<String?> mergeMultiplePDFs({
+    required List<String> inputPaths,
+    required String outputPath,
   }) {
     return Future.error('Simulated Error');
   }

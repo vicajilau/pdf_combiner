@@ -242,8 +242,8 @@ class _MyAppState extends State<MyApp> {
     /// Platform messages may fail, so we use a try/catch PlatformException.
     try {
       /// Get response either success or error
-      MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDF(
-          filePaths: filesPath, outputPath: outputDirPath);
+      MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
+          inputPaths: filesPath, outputPath: outputDirPath);
 
       Get.snackbar("Info", response.message!);
 
@@ -262,8 +262,8 @@ class _MyAppState extends State<MyApp> {
     try {
       /// Get response either success or error
       PdfFromMultipleImageResponse response =
-          await PdfCombiner.createPDFFromMultipleImage(
-              paths: filesPath, outputDirPath: outputDirPath);
+          await PdfCombiner.createPDFFromMultipleImages(
+              inputPaths: filesPath, outputPath: outputDirPath);
 
       Get.snackbar("Info", response.message!);
 
@@ -282,7 +282,7 @@ class _MyAppState extends State<MyApp> {
     try {
       /// Get response either success or error
       ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
-          path: singleFile, outputDirPath: outputDirPath, createOneImage: true);
+          inputPath: singleFile, outputPath: outputDirPath, createOneImage: true);
 
       Get.snackbar("Info", response.status!);
 
@@ -297,21 +297,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<bool> checkPermission() async {
-    // Solicita permisos para almacenamiento
     var status = await Permission.storage.request();
 
-    // Imprime el estado actual del permiso
     printInDebug(status);
 
     if (status.isPermanentlyDenied) {
-      // Informa al usuario que debe habilitar el permiso desde configuración
       printInDebug("Go to Settings and provide media access");
       return false;
     } else if (status.isGranted) {
-      // El permiso fue otorgado
       return true;
     } else {
-      // Cualquier otro estado implica que el permiso no fue otorgado
       return false;
     }
   }

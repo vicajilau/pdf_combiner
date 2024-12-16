@@ -15,12 +15,12 @@ class MockPdfCombinerPlatform
   /// Simulates combining multiple PDFs into a single PDF. It returns a mock result
   /// indicating a successful merge.
   ///
-  /// [paths] A list of file paths to the PDF files to be merged.
-  /// [outputDirPath] The path where the merged PDF should be saved.
+  /// [inputPaths] A list of file paths to the PDF files to be merged.
+  /// [outputPath] The path where the merged PDF should be saved.
   @override
-  Future<String?> mergeMultiplePDF({
-    required List<String> paths,
-    required String outputDirPath,
+  Future<String?> mergeMultiplePDFs({
+    required List<String> inputPaths,
+    required String outputPath,
   }) {
     return Future.value('Merged PDF');
   }
@@ -30,15 +30,15 @@ class MockPdfCombinerPlatform
   /// Simulates the creation of a PDF from multiple image files. It returns a mock result
   /// indicating that a PDF was created successfully from images.
   ///
-  /// [paths] A list of file paths to the images.
-  /// [outputDirPath] The path where the created PDF should be saved.
+  /// [inputPaths] A list of file paths to the images.
+  /// [outputPath] The path where the created PDF should be saved.
   /// [maxWidth] The maximum width for resizing the images (optional).
   /// [maxHeight] The maximum height for resizing the images (optional).
   /// [needImageCompressor] Whether to compress the images (optional).
   @override
-  Future<String?> createPDFFromMultipleImage({
-    required List<String> paths,
-    required String outputDirPath,
+  Future<String?> createPDFFromMultipleImages({
+    required List<String> inputPaths,
+    required String outputPath,
     int? maxWidth,
     int? maxHeight,
     bool? needImageCompressor,
@@ -51,15 +51,15 @@ class MockPdfCombinerPlatform
   /// Simulates the creation of images from a PDF file. It returns a mock result
   /// indicating the creation of two image files.
   ///
-  /// [path] The path to the PDF file.
-  /// [outputDirPath] The path where the images should be saved.
+  /// [inputPath] The path to the PDF file.
+  /// [outputPath] The path where the images should be saved.
   /// [maxWidth] The maximum width for resizing the images (optional).
   /// [maxHeight] The maximum height for resizing the images (optional).
   /// [createOneImage] Whether to create a single image from the entire PDF (optional).
   @override
   Future<List<String>?> createImageFromPDF({
-    required String path,
-    required String outputDirPath,
+    required String inputPath,
+    required String outputPath,
     int? maxWidth,
     int? maxHeight,
     bool? createOneImage,

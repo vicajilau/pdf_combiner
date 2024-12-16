@@ -35,9 +35,9 @@ void main() {
     String outputDirPath = '/path/to/output/';
 
     // Act
-    final result = await platform.mergeMultiplePDF(
-      paths: paths,
-      outputDirPath: outputDirPath,
+    final result = await platform.mergeMultiplePDFs(
+      inputPaths: paths,
+      outputPath: outputDirPath,
     );
 
     // Assert

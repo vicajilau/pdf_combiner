@@ -60,8 +60,8 @@ class PdfCombinerViewModel {
     try {
       final directory = await _getOutputDirectory(); // Get the output directory
       final outputFilePath = '${directory.path}/combined_output.pdf';
-      MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDF(
-          filePaths: selectedFiles,
+      MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
+          inputPaths: selectedFiles,
           outputPath: outputFilePath); // Combine the PDFs
 
       outputFile =

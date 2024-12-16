@@ -36,15 +36,15 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// multiple PDFs and return the result.
   ///
   /// Parameters:
-  /// - `paths`: A list of file paths of the PDFs to be merged.
+  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
   /// - `outputDirPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. By default,
   ///   this throws an [UnimplementedError].
-  Future<String?> mergeMultiplePDF({
-    required List<String> paths,
-    required String outputDirPath,
+  Future<String?> mergeMultiplePDFs({
+    required List<String> inputPaths,
+    required String outputPath,
   }) {
     throw UnimplementedError('mergeMultiplePDF() has not been implemented.');
   }
@@ -55,8 +55,8 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// PDF from images and return the result.
   ///
   /// Parameters:
-  /// - `paths`: A list of file paths of the images to be converted into a PDF.
-  /// - `outputDirPath`: The directory path where the created PDF should be saved.
+  /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
+  /// - `outputPath`: The directory path where the created PDF should be saved.
   /// - `maxWidth`: The maximum width of each image in the PDF (default is 360).
   /// - `maxHeight`: The maximum height of each image in the PDF (default is 360).
   /// - `needImageCompressor`: Whether to compress images before converting them to PDF (default is `true`).
@@ -64,9 +64,9 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. By default,
   ///   this throws an [UnimplementedError].
-  Future<String?> createPDFFromMultipleImage({
-    required List<String> paths,
-    required String outputDirPath,
+  Future<String?> createPDFFromMultipleImages({
+    required List<String> inputPaths,
+    required String outputPath,
     int? maxWidth,
     int? maxHeight,
     bool? needImageCompressor,
@@ -81,8 +81,8 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// from the provided PDF and return the resulting image file paths.
   ///
   /// Parameters:
-  /// - `path`: The file path of the PDF from which images will be extracted.
-  /// - `outputDirPath`: The directory path where the images should be saved.
+  /// - `inputPath`: The file path of the PDF from which images will be extracted.
+  /// - `outputPath`: The directory path where the images should be saved.
   /// - `maxWidth`: The maximum width of each extracted image (default is 360).
   /// - `maxHeight`: The maximum height of each extracted image (default is 360).
   /// - `createOneImage`: Whether to create a single image from all PDF pages or separate images for each page (default is `true`).
@@ -91,8 +91,8 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// - A `Future<List<String>?>` representing a list of image file paths. By default,
   ///   this throws an [UnimplementedError].
   Future<List<String>?> createImageFromPDF({
-    required String path,
-    required String outputDirPath,
+    required String inputPath,
+    required String outputPath,
     int? maxWidth,
     int? maxHeight,
     bool? createOneImage,

@@ -11,12 +11,12 @@ A Flutter plugin for combining and manipulating PDF files. The plugin supports A
 Combine multiple PDF files into a single document.
 
 **Required Parameters:**
-- `filePaths`: A list of strings representing the paths of the PDF files to be combined.
+- `inputPaths`: A list of strings representing the paths of the PDF files to be combined.
 - `outputPath`: A string representing the directory where the combined PDF should be saved.
 
 ```dart
-MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDF(
-  filePaths: filesPath, 
+MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
+  inputPaths: filesPath, 
   outputPath: outputDirPath,
 );
 
@@ -31,8 +31,8 @@ if (response.status == "success") {
 Convert a list of image files into a single PDF document.
 
 **Required Parameters:**
-- `paths`: A list of strings representing the paths of the image files.
-- `outputDirPath`: A string representing the directory where the generated PDF should be saved.
+- `inputPaths`: A list of strings representing the paths of the image files.
+- `outputPath`: A string representing the directory where the generated PDF should be saved.
 
 **Optional Parameters:**
 - `maxWidth` (default: 360): Maximum width for image compression.
@@ -40,9 +40,9 @@ Convert a list of image files into a single PDF document.
 - `needImageCompressor` (default: true): Whether to compress the images.
 
 ```dart
-PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImage(
-  paths: imagePaths, 
-  outputDirPath: outputPath,
+PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
+  inputPaths: imagePaths,
+  outputPath: outputPath,
   maxWidth: 480, // Optional
   maxHeight: 640, // Optional
   needImageCompressor: false, // Optional
@@ -59,8 +59,8 @@ if (response.status == "success") {
 Extract images from a PDF file.
 
 **Required Parameters:**
-- `path`: A string representing the file path of the PDF to extract images from.
-- `outputDirPath`: A string representing the directory where the extracted images should be saved.
+- `inputPath`: A string representing the file path of the PDF to extract images from.
+- `outputPath`: A string representing the directory where the extracted images should be saved.
 
 **Optional Parameters:**
 - `maxWidth` (default: 360): Maximum width for the extracted images.
@@ -69,8 +69,8 @@ Extract images from a PDF file.
 
 ```dart
 ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
-  path: pdfFilePath, 
-  outputDirPath: outputPath,
+  inputPath: pdfFilePath, 
+  outputPath: outputPath,
   maxWidth: 720, // Optional
   maxHeight: 1080, // Optional
   createOneImage: false, // Optional
