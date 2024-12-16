@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_status.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
@@ -247,7 +248,7 @@ class _MyAppState extends State<MyApp> {
 
       Get.snackbar("Info", response.message!);
 
-      if (response.status == "success") {
+      if (response.status == PdfCombinerStatus.success) {
         OpenFile.open(response.response);
       }
 
@@ -267,7 +268,7 @@ class _MyAppState extends State<MyApp> {
 
       Get.snackbar("Info", response.message!);
 
-      if (response.status == "success") {
+      if (response.status == PdfCombinerStatus.success) {
         OpenFile.open(response.response);
       }
 
@@ -284,9 +285,9 @@ class _MyAppState extends State<MyApp> {
       ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
           inputPath: singleFile, outputPath: outputDirPath, createOneImage: true);
 
-      Get.snackbar("Info", response.status!);
+      Get.snackbar("Info", response.status.name);
 
-      if (response.status == "success") {
+      if (response.status == PdfCombinerStatus.success) {
         OpenFile.open(response.response![0]);
       }
 

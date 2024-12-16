@@ -1,10 +1,12 @@
+import 'package:pdf_combiner/communication/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/document_utils.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
-import 'communication/status.dart';
+import 'communication/pdf_combiner_status.dart';
+
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
 ///
@@ -31,8 +33,8 @@ class PdfCombiner {
     MergeMultiplePDFResponse mergeMultiplePDFResponse =
         MergeMultiplePDFResponse();
     if (inputPaths.isEmpty) {
-      mergeMultiplePDFResponse.status = Status.error;
-      mergeMultiplePDFResponse.message = Status.errorMessage;
+      mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
+      mergeMultiplePDFResponse.message = PdfCombinerMessages.errorMessage;
     } else {
       try {
         bool isPDF = true;
@@ -44,26 +46,26 @@ class PdfCombiner {
         }
 
         if (!isPDF) {
-          mergeMultiplePDFResponse.status = Status.error;
-          mergeMultiplePDFResponse.message = Status.errorMessagePDF;
+          mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
+          mergeMultiplePDFResponse.message = PdfCombinerMessages.errorMessagePDF;
         } else {
           final String? response = await PdfCombinerPlatform.instance
               .mergeMultiplePDFs(inputPaths: inputPaths, outputPath: outputPath);
 
           if (response != "error") {
-            mergeMultiplePDFResponse.status = Status.success;
-            mergeMultiplePDFResponse.message = Status.successMessage;
+            mergeMultiplePDFResponse.status = PdfCombinerStatus.success;
+            mergeMultiplePDFResponse.message = PdfCombinerMessages.successMessage;
             mergeMultiplePDFResponse.response = response;
           } else {
-            mergeMultiplePDFResponse.status = Status.error;
-            mergeMultiplePDFResponse.message = Status.errorMessage;
+            mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
+            mergeMultiplePDFResponse.message = PdfCombinerMessages.errorMessage;
           }
         }
       } on Exception catch (exception) {
-        mergeMultiplePDFResponse.status = Status.error;
+        mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
         mergeMultiplePDFResponse.message = exception.toString();
       } catch (e) {
-        mergeMultiplePDFResponse.status = Status.error;
+        mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
         mergeMultiplePDFResponse.message = e.toString();
       }
     }
@@ -84,8 +86,8 @@ class PdfCombiner {
     PdfFromMultipleImageResponse createPDFFromMultipleImageResponse =
         PdfFromMultipleImageResponse();
     if (inputPaths.isEmpty) {
-      createPDFFromMultipleImageResponse.status = Status.error;
-      createPDFFromMultipleImageResponse.message = Status.errorMessage;
+      createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
+      createPDFFromMultipleImageResponse.message = PdfCombinerMessages.errorMessage;
     } else {
       try {
         bool isImage = true;
@@ -97,8 +99,8 @@ class PdfCombiner {
         }
 
         if (!isImage) {
-          createPDFFromMultipleImageResponse.status = Status.error;
-          createPDFFromMultipleImageResponse.message = Status.errorMessageImage;
+          createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
+          createPDFFromMultipleImageResponse.message = PdfCombinerMessages.errorMessageImage;
         } else {
           final String? response = await PdfCombinerPlatform.instance
               .createPDFFromMultipleImages(
@@ -109,19 +111,19 @@ class PdfCombiner {
                   needImageCompressor: needImageCompressor);
 
           if (response != "error") {
-            createPDFFromMultipleImageResponse.status = Status.success;
-            createPDFFromMultipleImageResponse.message = Status.successMessage;
+            createPDFFromMultipleImageResponse.status = PdfCombinerStatus.success;
+            createPDFFromMultipleImageResponse.message = PdfCombinerMessages.successMessage;
             createPDFFromMultipleImageResponse.response = response;
           } else {
-            createPDFFromMultipleImageResponse.status = Status.error;
-            createPDFFromMultipleImageResponse.message = Status.errorMessage;
+            createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
+            createPDFFromMultipleImageResponse.message = PdfCombinerMessages.errorMessage;
           }
         }
       } on Exception catch (exception) {
-        createPDFFromMultipleImageResponse.status = Status.error;
+        createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
         createPDFFromMultipleImageResponse.message = exception.toString();
       } catch (e) {
-        createPDFFromMultipleImageResponse.status = Status.error;
+        createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
         createPDFFromMultipleImageResponse.message = e.toString();
       }
     }
@@ -142,15 +144,15 @@ class PdfCombiner {
     ImageFromPDFResponse createImageFromPDFResponse = ImageFromPDFResponse();
 
     if (inputPath == "") {
-      createImageFromPDFResponse.status = Status.error;
-      createImageFromPDFResponse.message = Status.errorMessage;
+      createImageFromPDFResponse.status = PdfCombinerStatus.error;
+      createImageFromPDFResponse.message = PdfCombinerMessages.errorMessage;
     } else {
       try {
         bool isImage = DocumentUtils.isPDF(inputPath);
 
         if (!isImage) {
-          createImageFromPDFResponse.status = Status.error;
-          createImageFromPDFResponse.message = Status.errorMessageImage;
+          createImageFromPDFResponse.status = PdfCombinerStatus.error;
+          createImageFromPDFResponse.message = PdfCombinerMessages.errorMessageImage;
         } else {
           final response = await PdfCombinerPlatform.instance
               .createImageFromPDF(
@@ -166,18 +168,18 @@ class PdfCombiner {
               createImageFromPDFResponse.response!.add(response[i]);
             }
 
-            createImageFromPDFResponse.status = Status.success;
-            createImageFromPDFResponse.message = Status.successMessage;
+            createImageFromPDFResponse.status = PdfCombinerStatus.success;
+            createImageFromPDFResponse.message = PdfCombinerMessages.successMessage;
           } else {
-            createImageFromPDFResponse.status = Status.error;
-            createImageFromPDFResponse.message = Status.errorMessage;
+            createImageFromPDFResponse.status = PdfCombinerStatus.error;
+            createImageFromPDFResponse.message = PdfCombinerMessages.errorMessage;
           }
         }
       } on Exception catch (exception) {
-        createImageFromPDFResponse.status = Status.error;
+        createImageFromPDFResponse.status = PdfCombinerStatus.error;
         createImageFromPDFResponse.message = exception.toString();
       } catch (e) {
-        createImageFromPDFResponse.status = Status.error;
+        createImageFromPDFResponse.status = PdfCombinerStatus.error;
         createImageFromPDFResponse.message = e.toString();
       }
     }

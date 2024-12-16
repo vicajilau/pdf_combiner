@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_status.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
@@ -40,7 +41,7 @@ void main() {
       );
 
       // Verify the result matches the expected mock values.
-      expect(result.status, 'success');
+      expect(result.status, PdfCombinerStatus.success);
       expect(result.response, 'Merged PDF');
       expect(result.message, 'Processed successfully');
     });
@@ -62,7 +63,7 @@ void main() {
 
       // Verify the error result matches the expected values.
       expect(result.response, null);
-      expect(result.status, 'error');
+      expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'Only PDF file allowed');
     });
   });

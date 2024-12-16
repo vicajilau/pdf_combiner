@@ -1,8 +1,9 @@
-import '../communication/status.dart';
+import '../communication/pdf_combiner_status.dart';
 
 class PdfFromMultipleImageResponse {
-  String? status, response, message;
+  PdfCombinerStatus status;
+  String? response, message;
 
   PdfFromMultipleImageResponse(
-      {this.status = Status.empty, this.response, this.message});
+      {this.status = PdfCombinerStatus.empty, this.response, this.message});
 }

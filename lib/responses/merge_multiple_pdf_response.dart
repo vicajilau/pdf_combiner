@@ -1,8 +1,9 @@
-import '../communication/status.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_status.dart';
 
 class MergeMultiplePDFResponse {
-  String? status, response, message;
+  String? response, message;
+  PdfCombinerStatus status;
 
   MergeMultiplePDFResponse(
-      {this.status = Status.empty, this.response, this.message});
+      {this.status = PdfCombinerStatus.empty, this.response, this.message});
 }

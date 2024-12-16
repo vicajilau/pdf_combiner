@@ -1,9 +1,4 @@
-class Status {
-  static const empty = "empty";
-  static const success = "success";
-  static const error = "error";
-  static const processing = "processing";
-
+class PdfCombinerMessages {
   static const successMessage = "Processed successfully";
   static const errorMessage = "Error in processing";
   static const processingMessage = "Processing start";
