@@ -1,4 +1,4 @@
-# pdf_combiner
+# PDF Combiner
 [![pub package](https://img.shields.io/pub/v/http.svg)](https://pub.dev/packages/pdf_combiner)
 ![CI Status](https://github.com/vicajilau/pdf_combiner/actions/workflows/dart.yml/badge.svg)
 
