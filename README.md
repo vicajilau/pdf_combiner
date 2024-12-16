@@ -1,4 +1,6 @@
 # pdf_combiner
+[![pub package](https://img.shields.io/pub/v/http.svg)](https://pub.dev/packages/pdf_combiner)
+![CI Status](https://github.com/vicajilau/pdf_combiner/actions/workflows/dart.yml/badge.svg)
 
 A Flutter plugin for combining and manipulating PDF files. The plugin supports Android and iOS platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
 
