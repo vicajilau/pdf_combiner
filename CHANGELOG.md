@@ -1,3 +1,15 @@
+## 2.0.0
+
+* BREAKING CHANGE: mergeMultiplePDF has been renamed by mergeMultiplePDFs.
+* BREAKING CHANGE: createPDFFromMultipleImage has been renamed by createPDFFromMultipleImages.
+* BREAKING CHANGE: createImageFromPDF has been renamed by createImageFromPDFs.
+* BREAKING CHANGE: `paths` parameter has been renamed by `inputPaths` in mergeMultiplePDFs method.
+* BREAKING CHANGE: `outputDirPath` parameter has been renamed by `outputPath` in mergeMultiplePDFs method.
+* BREAKING CHANGE: `paths` parameter has been renamed by `inputPaths` in mergeMultiplePDFs method.
+* BREAKING CHANGE: `outputDirPath` parameter has been renamed by `outputPath` in createPDFFromMultipleImages method.
+* BREAKING CHANGE: `path` parameter has been renamed by `inputPath` in createPDFFromMultipleImages method.
+* BREAKING CHANGE: `outputDirPath` parameter has been renamed by `outputPath` in createImageFromPDF method.
+
 ## 1.0.1
 
 * Updated min SDK of Dart to 3.0
