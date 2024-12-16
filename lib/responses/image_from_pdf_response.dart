@@ -1,4 +1,4 @@
-import 'package:pdf_combiner/communication/pdf_combiner_status.dart';
+import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 class ImageFromPDFResponse {
   PdfCombinerStatus status;

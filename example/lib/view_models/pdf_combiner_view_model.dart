@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf_combiner/communication/pdf_combiner_status.dart';
+import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 
