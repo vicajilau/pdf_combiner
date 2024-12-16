@@ -20,7 +20,7 @@ MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
   outputPath: outputDirPath,
 );
 
-if (response.status == "success") {
+if (response.status == PdfCombinerStatus.success) {
   // response.response contains the output path as a String
   // response.message contains a success message as a String
 }
@@ -48,7 +48,7 @@ PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleI
   needImageCompressor: false, // Optional
 );
 
-if (response.status == "success") {
+if (response.status == PdfCombinerStatus.success) {
   // response.response contains the output path as a String
   // response.message contains a success message as a String
 }
@@ -76,7 +76,7 @@ ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
   createOneImage: false, // Optional
 );
 
-if (response.status == "success") {
+if (response.status == PdfCombinerStatus.success) {
   // response.response contains a list of output paths as List<String>
   // response.message contains a success message as a String
 }
