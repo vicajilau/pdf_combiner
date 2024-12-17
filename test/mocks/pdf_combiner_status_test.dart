@@ -16,11 +16,13 @@ void main() {
     });
 
     test('should return PdfCombinerStatus.processing for "processing"', () {
-      expect(PdfCombinerStatus.from("processing"), PdfCombinerStatus.processing);
+      expect(
+          PdfCombinerStatus.from("processing"), PdfCombinerStatus.processing);
     });
 
     test('should return PdfCombinerStatus.unknown for unrecognized string', () {
-      expect(PdfCombinerStatus.from("invalid_status"), PdfCombinerStatus.unknown);
+      expect(
+          PdfCombinerStatus.from("invalid_status"), PdfCombinerStatus.unknown);
       expect(PdfCombinerStatus.from(""), PdfCombinerStatus.unknown);
     });
   });

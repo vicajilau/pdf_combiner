@@ -283,7 +283,9 @@ class _MyAppState extends State<MyApp> {
     try {
       /// Get response either success or error
       ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
-          inputPath: singleFile, outputPath: outputDirPath, createOneImage: true);
+          inputPath: singleFile,
+          outputPath: outputDirPath,
+          createOneImage: true);
 
       Get.snackbar("Info", response.status.name);
 
