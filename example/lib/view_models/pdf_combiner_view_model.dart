@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
@@ -14,10 +15,7 @@ class PdfCombinerViewModel {
 
   // Function to pick PDF files from the device (old method)
   Future<void> pickFiles() async {
-    bool isGranted =
-        await _checkStoragePermission(); // Check storage permission
 
-    if (isGranted) {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
@@ -30,7 +28,7 @@ class PdfCombinerViewModel {
         }
         selectedFiles = result.files.map((file) => file.path!).toList();
       }
-    }
+
   }
 
   // Function to pick PDF files with debug log (new method)
@@ -51,6 +49,8 @@ class PdfCombinerViewModel {
           debugPrint("Picked file: $file");
         }
       }
+    }else{
+      openAppSettings();
     }
   }
 
@@ -60,7 +60,7 @@ class PdfCombinerViewModel {
 
     try {
       final directory = await _getOutputDirectory(); // Get the output directory
-      final outputFilePath = '${directory.path}/combined_output.pdf';
+      final outputFilePath = '${directory?.path}/combined_output.pdf';
       MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
           inputPaths: selectedFiles,
           outputPath: outputFilePath); // Combine the PDFs
@@ -78,12 +78,11 @@ class PdfCombinerViewModel {
   }
 
   // Function to get the appropriate directory for saving the output file
-  Future<Directory> _getOutputDirectory() async {
+  Future<Directory?> _getOutputDirectory() async {
     if (Platform.isIOS) {
       return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
     } else if (Platform.isAndroid) {
-      return Directory(
-          '/storage/emulated/0/Download'); // For Android, return the Downloads directory
+      return await getDownloadsDirectory(); // For Android, return the Downloads directory
     } else {
       throw UnsupportedError(
           'Unsupported platform'); // Throw an error if the platform is unsupported
@@ -92,6 +91,7 @@ class PdfCombinerViewModel {
 
   // Function to check if storage permission is granted (Android-specific)
   Future<bool> _checkStoragePermission() async {
+    var status = await Permission.manageExternalStorage;
     return true; // For Android API 33+ and iOS, no permission is needed
   }
 

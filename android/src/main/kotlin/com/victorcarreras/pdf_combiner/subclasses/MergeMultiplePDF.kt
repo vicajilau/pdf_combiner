@@ -36,6 +36,8 @@ class MergeMultiplePDF(getContext : Context, getResult : MethodChannel.Result) {
 
             val ut = PDFMergerUtility()
 
+            ut.setDocumentMergeMode(PDFMergerUtility.DocumentMergeMode.OPTIMIZE_RESOURCES_MODE);
+
             for (item in paths!!){
                 ut.addSource(item)
             }
