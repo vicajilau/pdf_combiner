@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
-import 'package:permission_handler/permission_handler.dart';
+//import 'package:permission_handler/permission_handler.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
@@ -33,10 +33,10 @@ class PdfCombinerViewModel {
 
   // Function to pick PDF files with debug log (new method)
   Future<void> pickFilesWithLogs() async {
-    bool isGranted =
-        await _checkStoragePermission(); // Check storage permission
+    /*bool isGranted =
+        await _checkStoragePermission(); // Check storage permission*/
 
-    if (isGranted) {
+    //if (isGranted) {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
@@ -49,9 +49,9 @@ class PdfCombinerViewModel {
           debugPrint("Picked file: $file");
         }
       }
-    }else{
+    /*}else{
       openAppSettings();
-    }
+    }*/
   }
 
   // Function to combine selected PDF files into a single output file
@@ -90,10 +90,10 @@ class PdfCombinerViewModel {
   }
 
   // Function to check if storage permission is granted (Android-specific)
-  Future<bool> _checkStoragePermission() async {
+  /*Future<bool> _checkStoragePermission() async {
     var status = await Permission.manageExternalStorage;
     return true; // For Android API 33+ and iOS, no permission is needed
-  }
+  }*/
 
   // Function to copy the output file path to the clipboard
   Future<void> copyOutputToClipboard() async {
