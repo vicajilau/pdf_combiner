@@ -15,18 +15,18 @@ import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 import 'package:pdf_combiner_example/utils/custom_logs.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() {
-  runApp(const MyApp());
+void oldMain() {
+  runApp(const OldApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class OldApp extends StatefulWidget {
+  const OldApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<OldApp> createState() => _OldAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _OldAppState extends State<OldApp> {
   List<PlatformFile> files = [];
   List<String> filesPath = [];
   String singleFile = "";
