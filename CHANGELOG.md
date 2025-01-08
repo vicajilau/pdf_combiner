@@ -3,6 +3,7 @@
 * Added support for empty images.
 * Errors are more explicits adding the path.
 * Bugfix when file does not exist. See [#3](https://github.com/vicajilau/pdf_combiner/issues/3) for details.
+* Added more unit testing.
 
 ## 2.0.0
 

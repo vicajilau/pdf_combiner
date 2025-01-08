@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
 
@@ -36,7 +36,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: ['path1.pdf', 'path2.pdf'],
+        inputPaths: ['test/samples/dummy.pdf', 'test/samples/sample.pdf'],
         outputPath: 'output/path',
       );
 
@@ -47,7 +47,7 @@ void main() {
     });
 
     // Test for error handling when the platform simulates a failure in the mergeMultiplePDF method.
-    test('combine - Error handling (PdfCombiner)', () async {
+    test('combine - Error handling (Only PDF file allowed)', () async {
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
           MockPdfCombinerPlatformWithError();
@@ -64,7 +64,26 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'Only PDF file allowed');
+      expect(result.message, 'Only PDF file allowed. File is not a pdf: path2');
+    });
+
+    // Test for error handling when the platform simulates a failure in the mergeMultiplePDF method.
+    test('combine - Error handling (File does not exist)', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: ['path1.pdf', 'path2.pdf'],
+        outputPath: 'output/path',
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, 'File does not exist: path2.pdf');
     });
   });
 }
