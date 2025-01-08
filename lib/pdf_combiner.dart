@@ -37,17 +37,29 @@ class PdfCombiner {
     } else {
       try {
         bool isPDF = true;
+        bool existFile = true;
+        String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
           if (!DocumentUtils.isPDF(inputPaths[i])) {
             isPDF = false;
+            path = inputPaths[i];
+          }
+
+          if (!DocumentUtils.fileExist(inputPaths[i])) {
+            existFile = false;
+            path = inputPaths[i];
           }
         }
 
         if (!isPDF) {
           mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
           mergeMultiplePDFResponse.message =
-              PdfCombinerMessages.errorMessagePDF;
+              PdfCombinerMessages.errorMessagePDF(path);
+        } else if (!existFile) {
+          mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
+          mergeMultiplePDFResponse.message =
+              PdfCombinerMessages.errorMessageFile(path);
         } else {
           final String? response = await PdfCombinerPlatform.instance
               .mergeMultiplePDFs(
@@ -94,17 +106,28 @@ class PdfCombiner {
     } else {
       try {
         bool isImage = true;
+        bool existFile = true;
+        String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
           if (!DocumentUtils.isImage(inputPaths[i])) {
             isImage = false;
+            path = inputPaths[i];
+          }
+          if (!DocumentUtils.fileExist(inputPaths[i])) {
+            existFile = false;
+            path = inputPaths[i];
           }
         }
 
         if (!isImage) {
           createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
           createPDFFromMultipleImageResponse.message =
-              PdfCombinerMessages.errorMessageImage;
+              PdfCombinerMessages.errorMessageImage(path);
+        } else if (!existFile) {
+          createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
+          createPDFFromMultipleImageResponse.message =
+              PdfCombinerMessages.errorMessageFile(path);
         } else {
           final String? response = await PdfCombinerPlatform.instance
               .createPDFFromMultipleImages(
@@ -156,11 +179,16 @@ class PdfCombiner {
     } else {
       try {
         bool isImage = DocumentUtils.isPDF(inputPath);
+        bool existFile = DocumentUtils.fileExist(inputPath);
 
         if (!isImage) {
           createImageFromPDFResponse.status = PdfCombinerStatus.error;
           createImageFromPDFResponse.message =
-              PdfCombinerMessages.errorMessageImage;
+              PdfCombinerMessages.errorMessageImage(inputPath);
+        } else if (!existFile) {
+          createImageFromPDFResponse.status = PdfCombinerStatus.error;
+          createImageFromPDFResponse.message =
+              PdfCombinerMessages.errorMessageFile(inputPath);
         } else {
           final response = await PdfCombinerPlatform.instance
               .createImageFromPDF(

@@ -1,3 +1,9 @@
+## 2.1.0
+
+* Added support for empty images.
+* Errors are more explicits adding the path.
+* Bugfix when file does not exist. See [#3](https://github.com/vicajilau/pdf_combiner/issues/3) for details.
+
 ## 2.0.0
 
 * BREAKING CHANGE: mergeMultiplePDF has been renamed by mergeMultiplePDFs.

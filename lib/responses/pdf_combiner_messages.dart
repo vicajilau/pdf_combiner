@@ -3,6 +3,9 @@ class PdfCombinerMessages {
   static const errorMessage = "Error in processing";
   static const processingMessage = "Processing start";
 
-  static const errorMessagePDF = "Only PDF file allowed";
-  static const errorMessageImage = "Only Image file allowed";
+  static String errorMessagePDF(String path) =>
+      "Only PDF file allowed. File is not a pdf: $path";
+  static String errorMessageImage(String path) =>
+      "Only Image file allowed. File is not an image: $path";
+  static String errorMessageFile(String path) => "File does not exist: $path";
 }

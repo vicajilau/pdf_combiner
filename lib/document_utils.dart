@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class DocumentUtils {
   /// Checks if string is an pdf file.
   static bool isPDF(String filePath) {
@@ -12,6 +14,10 @@ class DocumentUtils {
         ext.endsWith(".jpeg") ||
         ext.endsWith(".png") ||
         ext.endsWith(".gif") ||
-        ext.endsWith(".bmp");
+        ext.endsWith(".bmp") ||
+        !ext.endsWith(".*");
   }
+
+  /// Checks if string is an existing file.
+  static bool fileExist(String filePath) => File(filePath).existsSync();
 }
