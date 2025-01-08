@@ -20,8 +20,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       appBar: AppBar(
         title: const Text('PDF Combiner Example'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SafeArea(
         child: Column(
           children: [
             // Output File Section
@@ -113,6 +112,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
