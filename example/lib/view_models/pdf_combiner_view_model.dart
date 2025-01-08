@@ -85,7 +85,8 @@ class PdfCombinerViewModel {
       PdfFromMultipleImageResponse response =
           await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: selectedFiles,
-              outputPath: outputFilePath); // Create PDF image
+              outputPath: outputFilePath,
+              needImageCompressor: false); // Create PDF image
 
       outputFile =
           outputFilePath; // Update the output file path after successful combination
