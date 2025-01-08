@@ -97,20 +97,30 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
             ),
             const SizedBox(height: 20),
             // Buttons Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: _pickFiles,
-                  child: const Text('Select PDF Files'),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed:
-                      _viewModel.selectedFiles.isNotEmpty ? _combinePdfs : null,
-                  child: const Text('Combine PDFs'),
-                ),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 10,
+                children: [
+                  ElevatedButton(
+                    onPressed: _pickFiles,
+                    child: const Text('Select Files'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _viewModel.selectedFiles.isNotEmpty
+                        ? _combinePdfs
+                        : null,
+                    child: const Text('Combine PDFs'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _viewModel.selectedFiles.isNotEmpty
+                        ? _createPdfFromImages
+                        : null,
+                    child: const Text('PDF from images'),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
           ],
@@ -132,6 +142,18 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       setState(() {}); // Refresh the UI after PDFs are combined
       _showSnackbarSafely(
           'PDFs combined successfully: ${_viewModel.outputFile}');
+    } catch (e) {
+      _showSnackbarSafely('Error: ${e.toString()}');
+    }
+  }
+
+  // Function to combine selected PDF files into a single output file
+  Future<void> _createPdfFromImages() async {
+    try {
+      await _viewModel
+          .createPDFFromImages(); // Call the ViewModel to combine PDFs
+      setState(() {}); // Refresh the UI after PDFs are combined
+      _showSnackbarSafely('PDF created successfully: ${_viewModel.outputFile}');
     } catch (e) {
       _showSnackbarSafely('Error: ${e.toString()}');
     }
