@@ -10,12 +10,16 @@ class DocumentUtils {
   static bool isImage(String filePath) {
     final ext = filePath.toLowerCase();
 
+    // If the file has no extension, it is assumed to be a possible image.
+    if (!ext.contains(".")) {
+      return true;
+    }
+
     return ext.endsWith(".jpg") ||
         ext.endsWith(".jpeg") ||
         ext.endsWith(".png") ||
         ext.endsWith(".gif") ||
-        ext.endsWith(".bmp") ||
-        !ext.endsWith(".*");
+        ext.endsWith(".bmp");
   }
 
   /// Checks if string is an existing file.

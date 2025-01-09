@@ -6,10 +6,10 @@ import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('mergeMultiplePDFs Integration Tests', () {
-    testWidgets('Test merging two PDFs', (tester) async {
-      final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: ['test/samples/dummy.pdf', 'test/samples/sample.pdf'],
+  group('createPDFFromMultipleImages Integration Tests', () {
+    testWidgets('Test creating pdf from two images', (tester) async {
+      final result = await PdfCombiner.createPDFFromMultipleImages(
+        inputPaths: ['test/samples/image.jpg', 'test/samples/image_2.png'],
         outputPath: 'test/samples/merged_output.pdf',
       );
 
@@ -18,8 +18,8 @@ void main() {
       expect(result.message, 'Processed successfully');
     });
 
-    testWidgets('Test merging with empty list', (tester) async {
-      final result = await PdfCombiner.mergeMultiplePDFs(
+    testWidgets('Test creating pdf with empty list', (tester) async {
+      final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: [],
         outputPath: 'test/samples/merged_output.pdf',
       );
@@ -29,27 +29,32 @@ void main() {
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
     });
 
-    testWidgets('Test merging with non-existing file', (tester) async {
-      final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: ['test/samples/non_existing.pdf', 'test/samples/sample.pdf'],
+    testWidgets('Test creating pdf with non-existing file', (tester) async {
+      const failedFile= "test/samples/non_existing.jpg";
+      final result = await PdfCombiner.createPDFFromMultipleImages(
+        inputPaths: [
+          failedFile,
+          'test/samples/image_2.png'
+        ],
         outputPath: 'test/samples/merged_output.pdf',
       );
 
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
-      expect(result.message, 'File does not exist: test/samples/non_existing.pdf');
+      expect(
+          result.message, 'File does not exist: $failedFile');
     });
 
-    testWidgets('Test merging with non supported file', (tester) async {
-      final result = await PdfCombiner.mergeMultiplePDFs(
+    testWidgets('Test creating pdf with non supported file', (tester) async {
+      final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: ['test/samples/dummy.pdf', 'test/samples/image.jpg'],
         outputPath: 'test/samples/merged_output.pdf',
       );
 
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
-      expect(result.message, 'Only PDF file allowed. File is not a pdf: test/samples/image.jpg');
+      expect(result.message,
+          'Only Image file allowed. File is not an image: test/samples/dummy.pdf');
     });
-
   });
 }

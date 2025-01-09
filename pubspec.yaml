@@ -48,6 +48,7 @@ flutter:
     - test/samples/dummy.pdf
     - test/samples/sample.pdf
     - test/samples/image.jpg
+    - test/samples/image_2.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   #

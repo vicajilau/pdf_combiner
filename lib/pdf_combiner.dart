@@ -33,7 +33,8 @@ class PdfCombiner {
         MergeMultiplePDFResponse();
     if (inputPaths.isEmpty) {
       mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
-      mergeMultiplePDFResponse.message = PdfCombinerMessages.errorMessage;
+      mergeMultiplePDFResponse.message =
+          PdfCombinerMessages.emptyParameterMessage("inputPaths");
     } else {
       try {
         bool isPDF = true;
@@ -102,7 +103,7 @@ class PdfCombiner {
     if (inputPaths.isEmpty) {
       createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
       createPDFFromMultipleImageResponse.message =
-          PdfCombinerMessages.errorMessage;
+          PdfCombinerMessages.emptyParameterMessage("inputPaths");
     } else {
       try {
         bool isImage = true;
@@ -173,9 +174,10 @@ class PdfCombiner {
       bool createOneImage = true}) async {
     ImageFromPDFResponse createImageFromPDFResponse = ImageFromPDFResponse();
 
-    if (inputPath == "") {
+    if (inputPath.trim().isEmpty) {
       createImageFromPDFResponse.status = PdfCombinerStatus.error;
-      createImageFromPDFResponse.message = PdfCombinerMessages.errorMessage;
+      createImageFromPDFResponse.message =
+          PdfCombinerMessages.emptyParameterMessage("inputPaths");
     } else {
       try {
         bool isImage = DocumentUtils.isPDF(inputPath);

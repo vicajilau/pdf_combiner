@@ -6,4 +6,8 @@ class PdfFromMultipleImageResponse {
 
   PdfFromMultipleImageResponse(
       {this.status = PdfCombinerStatus.empty, this.response, this.message});
+
+  @override
+  String toString() =>
+      "PdfFromMultipleImageResponse{response: $response, message: $message, status: $status }";
 }

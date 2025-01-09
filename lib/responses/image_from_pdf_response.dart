@@ -7,4 +7,8 @@ class ImageFromPDFResponse {
 
   ImageFromPDFResponse(
       {this.status = PdfCombinerStatus.empty, this.response, this.message});
+
+  @override
+  String toString() =>
+      "ImageFromPDFResponse{response: $response, message: $message, status: $status }";
 }
