@@ -4,7 +4,7 @@ import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart'
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
-import 'mocks/mock_pdf_combiner_platform.dart';
+import '../mocks/mock_pdf_combiner_platform.dart';
 
 // Mock platform that simulates an error in the mergeMultiplePDF method.
 class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
@@ -18,7 +18,7 @@ class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
 }
 
 void main() {
-  group('PdfCombiner', () {
+  group('PdfCombiner Unit Tests', () {
     // Preserve the initial platform to reset it later if necessary.
     final PdfCombinerPlatform initialPlatform = PdfCombinerPlatform.instance;
 
