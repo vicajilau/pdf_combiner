@@ -1,4 +1,4 @@
-package com.ril.pdf_merger
+package com.victorcarreras.pdf_combiner.subclasses
 
 import android.content.Context
 import io.flutter.plugin.common.MethodChannel
@@ -6,13 +6,13 @@ import io.flutter.plugin.common.MethodChannel
 import com.tom_roush.pdfbox.io.MemoryUsageSetting
 import com.tom_roush.pdfbox.multipdf.PDFMergerUtility
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import kotlinx.coroutines.DelicateCoroutinesApi
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 
 
 // Class for Merging Mutiple PDF
@@ -25,18 +25,18 @@ class MergeMultiplePDF(getContext : Context, getResult : MethodChannel.Result) {
     // Method Merge multiple PDF file into one File
     // [paths] List of paths
     // [outputDirPath] Output directory path with file name added with it Ex . usr/android/download/ABC.pdf
-    @Throws(IOException::class)
+    @OptIn(DelicateCoroutinesApi::class)
     fun merge(paths: List<String>?, outputDirPath: String?){
         var status = ""
 
-        PDFBoxResourceLoader.init(context.getApplicationContext())
+        PDFBoxResourceLoader.init(context.applicationContext)
 
         //Perform Operation in background thread
         val singlePDFFromMultiplePDF =  GlobalScope.launch(Dispatchers.IO) {
 
             val ut = PDFMergerUtility()
 
-            ut.setDocumentMergeMode(PDFMergerUtility.DocumentMergeMode.OPTIMIZE_RESOURCES_MODE);
+            ut.documentMergeMode = PDFMergerUtility.DocumentMergeMode.OPTIMIZE_RESOURCES_MODE
 
             for (item in paths!!){
                 ut.addSource(item)
@@ -49,7 +49,7 @@ class MergeMultiplePDF(getContext : Context, getResult : MethodChannel.Result) {
                 ut.mergeDocuments(MemoryUsageSetting.setupTempFileOnly())
 //                ut.mergeDocuments(true)
                 status = "success"
-            } catch (e: Exception){
+            } catch (_: Exception){
                 status = "error"
             }finally {
                 fileOutputStream.close()

@@ -1,10 +1,9 @@
 package com.victorcarreras.pdf_combiner
 
-import androidx.annotation.NonNull
 import android.content.Context
-import com.ril.pdf_merger.CreateImageFromPDF
-import com.ril.pdf_merger.CreatePDFFromMultipleImage
-import com.ril.pdf_merger.MergeMultiplePDF
+import com.victorcarreras.pdf_combiner.subclasses.CreatePDFFromMultipleImage
+import com.victorcarreras.pdf_combiner.subclasses.MergeMultiplePDF
+import com.victorcarreras.pdf_combiner.subclasses.CreateImageFromPDF
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -28,16 +27,45 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "mergeMultiplePDF") {
-      MergeMultiplePDF(context, result).merge(call.argument("paths"), call.argument("outputDirPath"))
-    } else if (call.method == "createPDFFromMultipleImage") {
-      CreatePDFFromMultipleImage(context, result).create(call.argument("paths"), call.argument("outputDirPath"), call.argument("needImageCompressor")
-        , call.argument("maxWidth"), call.argument("maxHeight"))
-    } else if (call.method == "createImageFromPDF") {
-      CreateImageFromPDF(context, result).create(call.argument("path"), call.argument("outputDirPath")
-        , call.argument("maxWidth"), call.argument("maxHeight"), call.argument("createOneImage"))
-    } else {
-      result.notImplemented()
+    when (call.method) {
+      "mergeMultiplePDF" -> {
+        val paths = call.argument<List<String>>("paths")
+        val outputDirPath = call.argument<String>("outputDirPath")
+        if (paths != null && outputDirPath != null) {
+          MergeMultiplePDF(context, result).merge(paths, outputDirPath)
+        } else {
+          result.error("INVALID_ARGUMENTS", "paths or outputDirPath cannot be null", null)
+        }
+      }
+      "createPDFFromMultipleImage" -> {
+        val paths = call.argument<List<String>>("paths")
+        val outputDirPath = call.argument<String>("outputDirPath")
+        val needImageCompressor = call.argument<Boolean>("needImageCompressor") ?: false
+        val maxWidth = call.argument<Int>("maxWidth") ?: 0
+        val maxHeight = call.argument<Int>("maxHeight") ?: 0
+        if (paths != null && outputDirPath != null) {
+          CreatePDFFromMultipleImage(result).create(
+            paths, outputDirPath, needImageCompressor, maxWidth, maxHeight
+          )
+        } else {
+          result.error("INVALID_ARGUMENTS", "paths or outputDirPath cannot be null", null)
+        }
+      }
+      "createImageFromPDF" -> {
+        val path = call.argument<String>("path")
+        val outputDirPath = call.argument<String>("outputDirPath")
+        val maxWidth = call.argument<Int>("maxWidth") ?: 0
+        val maxHeight = call.argument<Int>("maxHeight") ?: 0
+        val createOneImage = call.argument<Boolean>("createOneImage") ?: false
+        if (path != null && outputDirPath != null) {
+          CreateImageFromPDF(context, result).create(
+            path, outputDirPath, maxWidth, maxHeight, createOneImage
+          )
+        } else {
+          result.error("INVALID_ARGUMENTS", "path or outputDirPath cannot be null", null)
+        }
+      }
+      else -> result.notImplemented()
     }
   }
 

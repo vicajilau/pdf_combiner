@@ -1,13 +1,9 @@
-package com.ril.pdf_merger
+package com.victorcarreras.pdf_combiner.subclasses
 
-import android.content.Context
-import io.flutter.plugin.common.MethodChannel
-import android.annotation.TargetApi
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
-import android.os.Build
-import android.util.Log
 import androidx.exifinterface.media.ExifInterface
+import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -15,16 +11,14 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import kotlin.math.roundToInt
 
-class CreatePDFFromMultipleImage(getContext : Context, getResult : MethodChannel.Result) {
+class CreatePDFFromMultipleImage(getResult : MethodChannel.Result) {
 
-    private var context: Context = getContext
     private var result: MethodChannel.Result = getResult
 
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    fun create(paths: List<String>?, outputDirPath: String?, needImageCompressor : Boolean?
-                                           , maxWidth : Int?, maxHeight : Int?)  {
+    fun create(paths: List<String>?, outputDirPath: String?, needImageCompressor : Boolean?, maxWidth : Int?, maxHeight : Int?)  {
         var status = ""
 
         val pdfFromMultipleImage =  GlobalScope.launch(Dispatchers.IO) {
@@ -34,12 +28,11 @@ class CreatePDFFromMultipleImage(getContext : Context, getResult : MethodChannel
                 val pdfDocument = PdfDocument()
                 val i=0;
                 for (item in paths!!){
-                    var bitmap : Bitmap?
 
-                    if(needImageCompressor!!)
-                        bitmap =  compressImage(context, item, maxWidth!!, maxHeight!!)
+                    var bitmap = if(needImageCompressor!!)
+                        compressImage(item, maxWidth!!, maxHeight!!)
                     else
-                        bitmap = BitmapFactory.decodeFile(item)
+                        BitmapFactory.decodeFile(item)
 
 
                     val pageInfo = PdfDocument.PageInfo.Builder(bitmap!!.width, bitmap.height, i + 1).create()
@@ -73,7 +66,7 @@ class CreatePDFFromMultipleImage(getContext : Context, getResult : MethodChannel
         }
     }
 
-    private fun compressImage(context: Context, imagePath: String, maxWidthGet : Int, maxHeightGet : Int): Bitmap? {
+    private fun compressImage(imagePath: String, maxWidthGet : Int, maxHeightGet : Int): Bitmap? {
 
         val maxHeight = maxWidthGet.toFloat()
         val maxWidth = maxHeightGet.toFloat()
@@ -82,7 +75,7 @@ class CreatePDFFromMultipleImage(getContext : Context, getResult : MethodChannel
 
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
-        @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
+
         var bmp: Bitmap? = BitmapFactory.decodeFile(imagePath, options)
 
         var actualHeight = options.outHeight
@@ -108,10 +101,10 @@ class CreatePDFFromMultipleImage(getContext : Context, getResult : MethodChannel
         }
 
         calculateInSampleSize(options, actualWidth, actualHeight).also { options.inSampleSize = it }
-        false.also { options.inJustDecodeBounds = it }
-        false.also { options.inDither = it }
-        true.also { options.inPurgeable = it }
-        true.also { options.inInputShareable = it }
+        false.also { options.inJustDecodeBounds = false }
+        false.also { options.inDither = false }
+        true.also { options.inPurgeable = true }
+        true.also { options.inInputShareable = true }
         ByteArray(16 * 1024).also { options.inTempStorage = it }
 
         try {
@@ -157,7 +150,8 @@ class CreatePDFFromMultipleImage(getContext : Context, getResult : MethodChannel
                 ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
                 ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
             }
-            Bitmap.createBitmap(scaledBitmap!!,
+            Bitmap.createBitmap(
+                scaledBitmap,
                 0,
                 0,
                 scaledBitmap.width,
@@ -177,8 +171,8 @@ class CreatePDFFromMultipleImage(getContext : Context, getResult : MethodChannel
         var inSampleSize = 1
 
         if (height > reqHeight || width > reqWidth) {
-            val heightRatio = Math.round(height.toFloat() / reqHeight.toFloat())
-            val widthRatio = Math.round(width.toFloat() / reqWidth.toFloat())
+            val heightRatio = (height.toFloat() / reqHeight.toFloat()).roundToInt()
+            val widthRatio = (width.toFloat() / reqWidth.toFloat()).roundToInt()
             inSampleSize = if (heightRatio < widthRatio) heightRatio else widthRatio
         }
         val totalPixels = (width * height).toFloat()

@@ -4,6 +4,7 @@
 * Errors are more explicits adding the path.
 * Bugfix when file does not exist. See [#3](https://github.com/vicajilau/pdf_combiner/issues/3) for details.
 * Added more unit testing.
+* Updated Android dependencies.
 
 ## 2.0.0
 

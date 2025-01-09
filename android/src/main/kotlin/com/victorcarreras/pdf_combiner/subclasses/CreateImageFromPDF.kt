@@ -1,13 +1,11 @@
-package com.ril.pdf_merger
+package com.victorcarreras.pdf_combiner.subclasses
 
-import android.annotation.TargetApi
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.net.Uri
-import android.os.Build
 import android.util.Log
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +24,6 @@ class CreateImageFromPDF(getContext : Context, getResult : MethodChannel.Result)
     private var result: MethodChannel.Result = getResult
 
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     fun create(path: String?, outputDirPath: String?, maxWidth : Int?, maxHeight : Int?
                                    , createOneImage : Boolean?)  {
         var status = ""
