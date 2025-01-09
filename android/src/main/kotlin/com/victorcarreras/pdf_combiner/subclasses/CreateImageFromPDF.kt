@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.net.Uri
 import android.util.Log
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -18,19 +19,19 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class CreateImageFromPDF(getContext : Context, getResult : MethodChannel.Result) {
+class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
 
     private var context: Context = getContext
     private var result: MethodChannel.Result = getResult
 
-
-    fun create(path: String?, outputDirPath: String?, maxWidth : Int?, maxHeight : Int?
-                                   , createOneImage : Boolean?)  {
+    @OptIn(DelicateCoroutinesApi::class)
+    fun create(
+        path: String, outputDirPath: String, maxWidth: Int, maxHeight: Int, createOneImage: Boolean
+    ) {
         var status = ""
-        val pdfImagesPath :  MutableList<String> = mutableListOf<String>()
+        val pdfImagesPath: MutableList<String> = mutableListOf<String>()
 
-
-        val pdfFromMultipleImage =  GlobalScope.launch(Dispatchers.IO) {
+        val pdfFromMultipleImage = GlobalScope.launch(Dispatchers.IO) {
             try {
 
                 val decodeService = DecodeServiceBase(PdfContext())
@@ -39,20 +40,20 @@ class CreateImageFromPDF(getContext : Context, getResult : MethodChannel.Result)
                 val file = File(path)
                 decodeService.open(Uri.fromFile(file))
 
-                val pdfImages :  MutableList<Bitmap> = mutableListOf<Bitmap>()
+                val pdfImages: MutableList<Bitmap> = mutableListOf<Bitmap>()
 
                 val pageCount: Int = decodeService.pageCount
                 for (i in 0 until pageCount) {
                     val page: CodecPage = decodeService.getPage(i)
                     val rectF = RectF(0.toFloat(), 0.toFloat(), 1.toFloat(), 1.toFloat())
 
-                    val bitmap: Bitmap = page.renderBitmap(maxWidth!!, maxHeight!!, rectF)
+                    val bitmap: Bitmap = page.renderBitmap(maxWidth, maxHeight, rectF)
                     pdfImages.add(bitmap)
 
-                    if(!createOneImage!!){
+                    if (!createOneImage) {
 
-                        val splitPath = outputDirPath!!.split(".")[0]
-                        val splitPathExt = outputDirPath.split(".")[1];
+                        val splitPath = outputDirPath.split(".")[0]
+                        val splitPathExt = outputDirPath.split(".")[1]
 
                         print(splitPath)
                         print(splitPathExt)
@@ -65,10 +66,9 @@ class CreateImageFromPDF(getContext : Context, getResult : MethodChannel.Result)
                     }
                 }
 
-
-                if(createOneImage!!){
-                    pdfImagesPath.add(outputDirPath!!)
-                    val bitmap = mergeThemAll(pdfImages, maxWidth!!, maxHeight!!)
+                if (createOneImage) {
+                    pdfImagesPath.add(outputDirPath)
+                    val bitmap = mergeThemAll(pdfImages, maxWidth, maxHeight)
                     val outputStream = FileOutputStream(outputDirPath)
                     bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
                     outputStream.close()
@@ -89,29 +89,30 @@ class CreateImageFromPDF(getContext : Context, getResult : MethodChannel.Result)
         }
     }
 
-
-
-    private fun mergeThemAll(orderImagesList: List<Bitmap>?, maxWidth: Int, maxHeight: Int): Bitmap? {
+    private fun mergeThemAll(
+        orderImagesList: List<Bitmap>?, maxWidth: Int, maxHeight: Int
+    ): Bitmap? {
         var result: Bitmap? = null
         if (orderImagesList != null && orderImagesList.isNotEmpty()) {
-            val chunkWidth: Int = orderImagesList[0].width
-            val chunkHeight: Int = orderImagesList[0].height
+            orderImagesList[0].width
+            orderImagesList[0].height
 
-            result = Bitmap.createBitmap(maxWidth, maxHeight *orderImagesList.size, Bitmap.Config.RGB_565)
+            result = Bitmap.createBitmap(
+                maxWidth, maxHeight * orderImagesList.size, Bitmap.Config.RGB_565
+            )
             Log.d("myTag", "Create Bitmap")
             val canvas = Canvas(result)
             val paint = Paint()
             var chunkHeightCal: Int = 0
             for (i in orderImagesList.indices) {
-                canvas.drawBitmap(orderImagesList[i],(0).toFloat(), (chunkHeightCal).toFloat(), paint)
-                chunkHeightCal =  chunkHeightCal + maxHeight
+                canvas.drawBitmap(
+                    orderImagesList[i], (0).toFloat(), (chunkHeightCal).toFloat(), paint
+                )
+                chunkHeightCal = chunkHeightCal + maxHeight
             }
         } else {
             Log.e("MergeError", "Couldn't merge bitmaps")
         }
         return result
     }
-
-
-
 }
