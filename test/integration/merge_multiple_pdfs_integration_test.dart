@@ -6,7 +6,7 @@ import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('PDF Combiner Integration Tests', () {
+  group('mergeMultiplePDFs Integration Tests', () {
     testWidgets('Test merging two PDFs', (tester) async {
       final result = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: ['test/samples/dummy.pdf', 'test/samples/sample.pdf'],
@@ -27,6 +27,17 @@ void main() {
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
       expect(result.message, 'File does not exist: test/samples/non_existing.pdf');
+    });
+
+    testWidgets('Test merging with non supported file', (tester) async {
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: ['test/samples/dummy.pdf', 'test/samples/image.jpg'],
+        outputPath: 'test/samples/merged_output.pdf',
+      );
+
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.response, null);
+      expect(result.message, 'Only PDF file allowed. File is not a pdf: test/samples/image.jpg');
     });
 
   });

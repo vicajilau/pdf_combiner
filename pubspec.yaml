@@ -47,6 +47,7 @@ flutter:
   assets:
     - test/samples/dummy.pdf
     - test/samples/sample.pdf
+    - test/samples/image.jpg
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   #
