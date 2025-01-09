@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
-  String outputFile = ""; // Path for the combined output file
+  List<String> outputFiles = []; // Path for the combined output file
 
   // Function to pick PDF files from the device (old method)
   Future<void> pickFiles() async {
@@ -31,10 +32,6 @@ class PdfCombinerViewModel {
 
   // Function to pick PDF files with debug log (new method)
   Future<void> pickFilesWithLogs() async {
-    /*bool isGranted =
-        await _checkStoragePermission(); // Check storage permission*/
-
-    //if (isGranted) {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
@@ -47,9 +44,6 @@ class PdfCombinerViewModel {
         debugPrint("Picked file: $file");
       }
     }
-    /*}else{
-      openAppSettings();
-    }*/
   }
 
   // Function to combine selected PDF files into a single output file
@@ -63,8 +57,9 @@ class PdfCombinerViewModel {
           inputPaths: selectedFiles,
           outputPath: outputFilePath); // Combine the PDFs
 
-      outputFile =
-          outputFilePath; // Update the output file path after successful combination
+      outputFiles = [
+        outputFilePath
+      ]; // Update the output file path after successful combination
       if (response.status == PdfCombinerStatus.success) {
         debugPrint("Combining PDFs success");
       } else {
@@ -88,10 +83,36 @@ class PdfCombinerViewModel {
               outputPath: outputFilePath,
               needImageCompressor: false); // Create PDF image
 
-      outputFile =
-          outputFilePath; // Update the output file path after successful combination
+      outputFiles = [
+        outputFilePath
+      ]; // Update the output file path after successful combination
       if (response.status == PdfCombinerStatus.success) {
         debugPrint("Creation of PDF was success");
+      } else {
+        throw Exception('Error creating PDF: ${response.message}');
+      }
+    } catch (e) {
+      throw Exception('Error creating PDF: ${e.toString()}');
+    }
+  }
+
+  // Function to create a PDF file from a list of images
+  Future<void> createImagesFromPDF() async {
+    if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
+    if (selectedFiles.length > 1) {
+      throw Exception('Only you can select a single document');
+    }
+    try {
+      final directory = await _getOutputDirectory(); // Get the output directory
+      final outputFilePath = '${directory?.path}/combined_output.jpeg';
+      ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
+          inputPath: selectedFiles.first,
+          outputPath: outputFilePath); // Create PDF image
+      print("La reponse es: $response");
+      outputFiles = response
+          .response!; // Update the output file path after successful combination
+      if (response.status == PdfCombinerStatus.success) {
+        debugPrint("Creation of Images was success");
       } else {
         throw Exception('Error creating PDF: ${response.message}');
       }
@@ -112,17 +133,11 @@ class PdfCombinerViewModel {
     }
   }
 
-  // Function to check if storage permission is granted (Android-specific)
-  /*Future<bool> _checkStoragePermission() async {
-    var status = await Permission.manageExternalStorage;
-    return true; // For Android API 33+ and iOS, no permission is needed
-  }*/
-
   // Function to copy the output file path to the clipboard
-  Future<void> copyOutputToClipboard() async {
-    if (outputFile.isNotEmpty) {
-      await Clipboard.setData(
-          ClipboardData(text: outputFile)); // Copy output path to clipboard
+  Future<void> copyOutputToClipboard(int index) async {
+    if (outputFiles.isNotEmpty) {
+      await Clipboard.setData(ClipboardData(
+          text: outputFiles[index])); // Copy output path to clipboard
     }
   }
 

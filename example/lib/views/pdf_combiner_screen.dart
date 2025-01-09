@@ -23,37 +23,43 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Output File Section
-            if (_viewModel.outputFile.isNotEmpty)
+            // Output Files Section
+            if (_viewModel.outputFiles.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Output File:',
+                    'Output Files:',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
-                  ListTile(
-                    title: Text(
-                      p.basename(_viewModel.outputFile),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.copy),
-                          onPressed: _copyOutputToClipboard,
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _viewModel.outputFiles.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(
+                          p.basename(_viewModel.outputFiles[index]),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.open_in_new),
-                          onPressed: _openOutputFile,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.copy),
+                              onPressed: () => _copyOutputToClipboard(index),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.open_in_new),
+                              onPressed: () => _openOutputFile(index),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                   const Divider(),
                 ],
@@ -101,7 +107,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 10,
                 children: [
                   ElevatedButton(
                     onPressed: _pickFiles,
@@ -119,6 +124,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                         : null,
                     child: const Text('PDF from images'),
                   ),
+                  ElevatedButton(
+                    onPressed: _viewModel.selectedFiles.isNotEmpty
+                        ? _createImagesFromPDF
+                        : null,
+                    child: const Text('Images from PDF'),
+                  ),
                 ],
               ),
             ),
@@ -131,57 +142,63 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   // Function to pick PDF files from the device
   Future<void> _pickFiles() async {
-    await _viewModel.pickFiles(); // Call the ViewModel to pick files
-    setState(() {}); // Refresh the UI after files are selected
+    await _viewModel.pickFiles();
+    setState(() {});
   }
 
   // Function to combine selected PDF files into a single output file
   Future<void> _combinePdfs() async {
     try {
-      await _viewModel.combinePdfs(); // Call the ViewModel to combine PDFs
-      setState(() {}); // Refresh the UI after PDFs are combined
+      await _viewModel.combinePdfs();
+      setState(() {});
       _showSnackbarSafely(
-          'PDFs combined successfully: ${_viewModel.outputFile}');
+          'PDFs combined successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
       _showSnackbarSafely('Error: ${e.toString()}');
     }
   }
 
-  // Function to combine selected PDF files into a single output file
   Future<void> _createPdfFromImages() async {
     try {
-      await _viewModel
-          .createPDFFromImages(); // Call the ViewModel to combine PDFs
-      setState(() {}); // Refresh the UI after PDFs are combined
-      _showSnackbarSafely('PDF created successfully: ${_viewModel.outputFile}');
+      await _viewModel.createPDFFromImages();
+      setState(() {});
+      _showSnackbarSafely(
+          'PDF created successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
       _showSnackbarSafely('Error: ${e.toString()}');
     }
   }
 
-  // Function to copy the selected files' paths to the clipboard
+  Future<void> _createImagesFromPDF() async {
+    try {
+      await _viewModel.createImagesFromPDF();
+      setState(() {});
+      _showSnackbarSafely(
+          'Images created successfully: ${_viewModel.outputFiles}');
+    } catch (e) {
+      _showSnackbarSafely('Error: ${e.toString()}');
+    }
+  }
+
   Future<void> _copySelectedFilesToClipboard(int index) async {
     await _viewModel.copySelectedFilesToClipboard(index);
     _showSnackbarSafely('Selected file copied to clipboard');
   }
 
-  // Function to copy the output file path to the clipboard
-  Future<void> _copyOutputToClipboard() async {
-    await _viewModel.copyOutputToClipboard();
+  Future<void> _copyOutputToClipboard(int index) async {
+    await _viewModel.copyOutputToClipboard(index);
     _showSnackbarSafely('Output path copied to clipboard');
   }
 
-  // Function to open the output file
-  Future<void> _openOutputFile() async {
-    if (_viewModel.outputFile.isNotEmpty) {
-      final result = await OpenFile.open(_viewModel.outputFile);
+  Future<void> _openOutputFile(int index) async {
+    if (index < _viewModel.outputFiles.length) {
+      final result = await OpenFile.open(_viewModel.outputFiles[index]);
       if (result.type != ResultType.done) {
         _showSnackbarSafely('Failed to open file. Error: ${result.message}');
       }
     }
   }
 
-  // Handle reordering of files
   void _onReorderFiles(int oldIndex, int newIndex) {
     setState(() {
       if (newIndex > oldIndex) {
@@ -192,7 +209,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     });
   }
 
-  // Helper function to show SnackBar safely, checking if the widget is still mounted
   void _showSnackbarSafely(String message) {
     if (mounted) {
       ScaffoldMessenger.of(context)
