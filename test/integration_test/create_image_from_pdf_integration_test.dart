@@ -8,6 +8,19 @@ void main() {
 
   group('createImageFromPDF Integration Tests', () {
 
+    testWidgets('Test creating images from PDF file', (tester) async {
+      final result = await PdfCombiner.createImageFromPDF(
+        inputPath: 'test/samples/document_1.pdf',
+        outputPath: 'test/samples/image_final.jpeg',
+      );
+
+      print("result: $result");
+
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.response, null);
+      expect(result.message, 'Processed successfully');
+    });
+
     testWidgets('Test creating with non-existing file', (tester) async {
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: 'test/samples/non_existing.pdf',
@@ -20,7 +33,7 @@ void main() {
     });
 
     testWidgets('Test creating with non supported file', (tester) async {
-      const inputPath = 'test/samples/image.jpg';
+      const inputPath = 'test/samples/image_1.jpg';
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: inputPath,
         outputPath: 'test/samples/merged_output.pdf',

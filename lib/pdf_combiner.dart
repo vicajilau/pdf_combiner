@@ -202,18 +202,14 @@ class PdfCombiner {
 
           if (response != null && response.isNotEmpty) {
             createImageFromPDFResponse.response = [];
-            for (int i = 0; i < response.length; i++) {
-              createImageFromPDFResponse.response!.add(response[i]);
+            for (var file in response) {
+              createImageFromPDFResponse.response!.add(file);
             }
-
-            createImageFromPDFResponse.status = PdfCombinerStatus.success;
-            createImageFromPDFResponse.message =
-                PdfCombinerMessages.successMessage;
-          } else {
-            createImageFromPDFResponse.status = PdfCombinerStatus.error;
-            createImageFromPDFResponse.message =
-                PdfCombinerMessages.errorMessage;
           }
+
+          createImageFromPDFResponse.status = PdfCombinerStatus.success;
+          createImageFromPDFResponse.message =
+              PdfCombinerMessages.successMessage;
         }
       } on Exception catch (exception) {
         createImageFromPDFResponse.status = PdfCombinerStatus.error;

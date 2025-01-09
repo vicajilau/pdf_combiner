@@ -36,7 +36,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: ['test/samples/dummy.pdf', 'test/samples/sample.pdf'],
+        inputPaths: ['test/samples/document_1.pdf', 'test/samples/document_2.pdf'],
         outputPath: 'output/path',
       );
 
