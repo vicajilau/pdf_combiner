@@ -93,11 +93,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "fix-flutter-3.27-compile-error"
-      resolved-ref: "3b299bb0cf7f553a150f9074168e9a53155d2a51"
-      url: "https://github.com/abdelaziz-mahdy/flutter_file_picker"
+      ref: "feature/path-blob-on-web"
+      resolved-ref: a035517af9b65eda3d79df5c3a8b53c39bc7d2cf
+      url: "https://github.com/vicajilau/flutter_file_picker"
     source: git
-    version: "8.1.6"
+    version: "8.1.7"
   flutter:
     dependency: "direct main"
     description: flutter
