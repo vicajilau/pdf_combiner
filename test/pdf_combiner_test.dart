@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/pdf_combiner_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';

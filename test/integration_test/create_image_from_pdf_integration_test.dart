@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
@@ -14,7 +15,7 @@ void main() {
         outputPath: 'test/samples/image_final.jpeg',
       );
 
-      print("result: $result");
+      debugPrint("result: $result");
 
       expect(result.status, PdfCombinerStatus.success);
       expect(result.response, null);
