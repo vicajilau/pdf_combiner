@@ -108,7 +108,7 @@ class PdfCombinerViewModel {
       ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
           inputPath: selectedFiles.first,
           outputPath: outputFilePath); // Create PDF image
-      print("La reponse es: $response");
+      debugPrint("imageFromPDFResponse: \n $response");
       outputFiles = response
           .response!; // Update the output file path after successful combination
       if (response.status == PdfCombinerStatus.success) {

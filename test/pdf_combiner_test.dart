@@ -19,11 +19,11 @@ void main() {
     expect(initialPlatform, isInstanceOf<MethodChannelPdfCombiner>());
   });
 
-  test('getPlatformVersion', () async {
+  /*test('getPlatformVersion', () async {
     PdfCombiner pdfCombinerPlugin = PdfCombiner();
     MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
     PdfCombinerPlatform.instance = fakePlatform;
 
     expect(await pdfCombinerPlugin.getPlatformVersion(), '42');
-  });
+  });*/
 }

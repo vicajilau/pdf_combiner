@@ -89,7 +89,7 @@ class PdfCombiner {
   }
 
   /// For Creating a PDF from multiple image
-  /// paths is a list of paths, example List<String> allSelectedFilePath.
+  /// paths is a list of paths, example List&gt;String&gt; allSelectedFilePath.
   /// outputPath is output path with filename, example /user/android/download/ABC.pdf
   /// Optional params maxWidth : default set to 360, maxHeight : default set to 360, needImageCompressor : default set to true.
   static Future<PdfFromMultipleImageResponse> createPDFFromMultipleImages(
@@ -218,8 +218,10 @@ class PdfCombiner {
         createImageFromPDFResponse.status = PdfCombinerStatus.error;
         createImageFromPDFResponse.message = e.toString();
       }
+
     }
 
     return createImageFromPDFResponse;
   }
+
 }
