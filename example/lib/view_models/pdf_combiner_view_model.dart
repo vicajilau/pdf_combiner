@@ -1,7 +1,8 @@
 import 'dart:io';
 
+import 'dart:js' as js;
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
@@ -46,24 +47,43 @@ class PdfCombinerViewModel {
     }
   }
 
+  Future<void> combinePDFs(List<String> blobUrls) async {
+    // Llama a la función JavaScript con la lista de blobs
+    // Convertir el List<String> en un JsArray que JavaScript pueda recibir
+    js.JsArray jsArray = js.JsArray.from(blobUrls);
+    final path = await js.context.callMethod('combinePDFs', [jsArray]);
+    outputFiles = [
+      path
+    ];
+  }
+
+
+
   // Function to combine selected PDF files into a single output file
   Future<void> combinePdfs() async {
+    if (selectedFiles.length < 2) {
+      throw Exception('you need to select more than one document');
+    }
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
 
     try {
-      final directory = await _getOutputDirectory(); // Get the output directory
-      final outputFilePath = '${directory?.path}/combined_output.pdf';
-      MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
-          inputPaths: selectedFiles,
-          outputPath: outputFilePath); // Combine the PDFs
+      if(kIsWeb){
+        combinePDFs(selectedFiles);
+      }else{
+        final directory = await _getOutputDirectory(); // Get the output directory
+        final outputFilePath = '${directory?.path}/combined_output.pdf';
+        MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
+            inputPaths: selectedFiles,
+            outputPath: outputFilePath); // Combine the PDFs
 
-      outputFiles = [
-        outputFilePath
-      ]; // Update the output file path after successful combination
-      if (response.status == PdfCombinerStatus.success) {
-        debugPrint("Combining PDFs success");
-      } else {
-        throw Exception('Error combining PDFs: ${response.message}');
+        outputFiles = [
+          outputFilePath
+        ]; // Update the output file path after successful combination
+        if (response.status == PdfCombinerStatus.success) {
+          debugPrint("Combining PDFs success");
+        } else {
+          throw Exception('Error combining PDFs: ${response.message}');
+        }
       }
     } catch (e) {
       throw Exception('Error combining PDFs: ${e.toString()}');
@@ -123,13 +143,17 @@ class PdfCombinerViewModel {
 
   // Function to get the appropriate directory for saving the output file
   Future<Directory?> _getOutputDirectory() async {
-    if (Platform.isIOS) {
-      return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
-    } else if (Platform.isAndroid) {
-      return await getDownloadsDirectory(); // For Android, return the Downloads directory
-    } else {
-      throw UnsupportedError(
-          'Unsupported platform'); // Throw an error if the platform is unsupported
+    if(!kIsWeb){
+      if (Platform.isIOS) {
+        return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
+      } else if (Platform.isAndroid) {
+        return await getDownloadsDirectory(); // For Android, return the Downloads directory
+      } else {
+        throw UnsupportedError(
+            'Unsupported platform'); // Throw an error if the platform is unsupported
+      }
+    }else{
+      return await null;
     }
   }
 
