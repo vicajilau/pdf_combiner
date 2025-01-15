@@ -21,9 +21,15 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         title: const Text('PDF Combiner Example'),
         actions: [
           IconButton(
-              onPressed: () => _restart(), icon: const Icon(Icons.restart_alt)),
+            onPressed: () => _restart(),
+            icon: const Icon(Icons.restart_alt),
+            tooltip: "Restart app",
+          ),
           IconButton(
-              onPressed: () => _pickFiles(), icon: const Icon(Icons.add)),
+            onPressed: () => _pickFiles(),
+            icon: const Icon(Icons.add),
+            tooltip: "Add new files",
+          ),
         ],
       ),
       body: SafeArea(
