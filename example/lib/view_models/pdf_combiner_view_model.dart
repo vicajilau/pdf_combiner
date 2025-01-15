@@ -30,6 +30,12 @@ class PdfCombinerViewModel {
     }
   }
 
+  // Function to restart the selected files
+  void restart() {
+    selectedFiles = [];
+    outputFiles = [];
+  }
+
   // Function to pick PDF files with debug log (new method)
   Future<void> pickFilesWithLogs() async {
     final result = await FilePicker.platform.pickFiles(
@@ -108,7 +114,6 @@ class PdfCombinerViewModel {
       ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
           inputPath: selectedFiles.first,
           outputPath: outputFilePath); // Create PDF image
-      print("La reponse es: $response");
       outputFiles = response
           .response!; // Update the output file path after successful combination
       if (response.status == PdfCombinerStatus.success) {
