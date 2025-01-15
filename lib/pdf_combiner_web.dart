@@ -4,9 +4,9 @@
 // ignore: avoid_web_libraries_in_flutter
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:web/web.dart' as web;
+import 'dart:js_util' as js_util;
 
-import 'pdf_combiner_platform_interface.dart';
+import 'communication/pdf_combiner_platform_interface.dart';
 
 /// A web implementation of the PdfCombinerPlatform of the PdfCombiner plugin.
 class PdfCombinerWeb extends PdfCombinerPlatform {
@@ -17,10 +17,36 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     PdfCombinerPlatform.instance = PdfCombinerWeb();
   }
 
-  /// Returns a [String] containing the version of the platform.
   @override
-  Future<String?> getPlatformVersion() async {
-    final version = web.window.navigator.userAgent;
-    return version;
+  Future<String> mergeMultiplePDFs(
+      {required List<String> inputPaths, required String outputPath}) async {
+    return await js_util.promiseToFuture(
+      js_util.callMethod(
+        js_util.getProperty(js_util.globalThis, 'combinePDFs'),
+        // Obtén la función JS
+        'call',
+        [null, js_util.jsify(inputPaths)], // Pasa el array convertido
+      ),
+    );
+  }
+
+  @override
+  Future<String> createPDFFromMultipleImages(
+      {required List<String> inputPaths,
+      required String outputPath,
+      int? maxWidth,
+      int? maxHeight,
+      bool? needImageCompressor}) {
+     return Future.value("");
+  }
+
+  @override
+  Future<List<String>> createImageFromPDF(
+      {required String inputPath,
+      required String outputPath,
+      int? maxWidth,
+      int? maxHeight,
+      bool? createOneImage}) {
+    return Future.value([]);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:pdf_combiner/document_utils.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
@@ -42,12 +43,18 @@ class PdfCombiner {
         String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
-          if (!DocumentUtils.isPDF(inputPaths[i])) {
+          if(kIsWeb){
+            isPDF = true;
+            path = inputPaths[i];
+          }else if (!DocumentUtils.isPDF(inputPaths[i])) {
             isPDF = false;
             path = inputPaths[i];
           }
 
-          if (!DocumentUtils.fileExist(inputPaths[i])) {
+          if(kIsWeb){
+            existFile = true;
+            path = inputPaths[i];
+          }else if (!kIsWeb && !DocumentUtils.fileExist(inputPaths[i])) {
             existFile = false;
             path = inputPaths[i];
           }
