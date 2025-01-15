@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pdf_combiner/pdf_combiner_platform_interface.dart';
-import 'package:pdf_combiner/pdf_combiner_method_channel.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockPdfCombinerPlatform
@@ -8,7 +8,21 @@ class MockPdfCombinerPlatform
     implements PdfCombinerPlatform {
 
   @override
-  Future<String?> getPlatformVersion() => Future.value('42');
+  Future<List<String>?> createImageFromPDF({required String inputPath, required String outputPath, int? maxWidth, int? maxHeight, bool? createOneImage}) {
+    return Future.value([]);
+  }
+
+  @override
+  Future<String?> createPDFFromMultipleImages({required List<String> inputPaths, required String outputPath, int? maxWidth, int? maxHeight, bool? needImageCompressor}) {
+    // TODO: implement createPDFFromMultipleImages
+    return Future.value("");
+  }
+
+  @override
+  Future<String?> mergeMultiplePDFs({required List<String> inputPaths, required String outputPath}) {
+    // TODO: implement mergeMultiplePDFs
+    return Future.value("");
+  }
 }
 
 void main() {
