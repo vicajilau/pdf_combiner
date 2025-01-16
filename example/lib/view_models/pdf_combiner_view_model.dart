@@ -26,7 +26,7 @@ class PdfCombinerViewModel {
       for (var element in result.files) {
         debugPrint("${element.name}, ");
       }
-      selectedFiles = result.files.map((file) => file.path!).toList();
+      selectedFiles += result.files.map((file) => file.path!).toList();
     }
   }
 
