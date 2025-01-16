@@ -53,7 +53,14 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
       required String outputPath,
       int? maxWidth,
       int? maxHeight,
-      bool? createOneImage}) {
-    return Future.value([]);
+      bool? createOneImage}) async {
+    return await js_util.promiseToFuture(
+      js_util.callMethod(
+        js_util.getProperty(js_util.globalThis, 'pdfToImages'),
+        // Obtén la función JS
+        'call',
+        [null, js_util.jsify([inputPath])], // Pasa el array convertido
+      ),
+    );
   }
 }

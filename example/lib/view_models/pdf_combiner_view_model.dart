@@ -141,15 +141,29 @@ class PdfCombinerViewModel {
     if (selectedFiles.length > 1) {
       throw Exception('Only you can select a single document');
     }
+    ImageFromPDFResponse response;
+    String outputFilePath  = "combined_output.pdf";
     try {
-      final directory = await _getOutputDirectory(); // Get the output directory
-      final outputFilePath = '${directory?.path}/combined_output.jpeg';
-      ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
-          inputPath: selectedFiles.first,
-          outputPath: outputFilePath); // Create PDF image
+      if(kIsWeb){
+        response = await PdfCombiner.createImageFromPDF(
+            inputPath: selectedFiles.first,
+            outputPath: outputFilePath); // Create PDF image
 
-      outputFiles = response
-          .response!; // Update the output file path after successful combination
+        if(response.response != null) {
+          outputFiles = response.response!
+          ; // Update the output file path after successful combination
+        }
+      }else{
+        final directory = await _getOutputDirectory(); // Get the output directory
+        final outputFilePath = '${directory?.path}/combined_output.jpeg';
+        response = await PdfCombiner.createImageFromPDF(
+            inputPath: selectedFiles.first,
+            outputPath: outputFilePath); // Create PDF image
+
+        outputFiles = response
+            .response!; // Update the output file path after successful combination
+      }
+
       if (response.status == PdfCombinerStatus.success) {
         debugPrint("Creation of Images was success");
       } else {
