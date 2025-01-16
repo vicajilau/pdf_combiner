@@ -52,6 +52,7 @@ class PdfCombiner {
           }else  {
             existFile = false;
             path = inputPaths[i];
+            break;
           }
         }
 
@@ -116,10 +117,12 @@ class PdfCombiner {
           if (!DocumentUtils.isImage(inputPaths[i])) {
             isImage = false;
             path = inputPaths[i];
+            break;
           }
           if (!DocumentUtils.fileExist(inputPaths[i])) {
             existFile = false;
             path = inputPaths[i];
+            break;
           }
         }
 

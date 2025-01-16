@@ -36,8 +36,15 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
       required String outputPath,
       int? maxWidth,
       int? maxHeight,
-      bool? needImageCompressor}) {
-     return Future.value("");
+      bool? needImageCompressor})  async {
+    return await js_util.promiseToFuture(
+      js_util.callMethod(
+        js_util.getProperty(js_util.globalThis, 'createPdfFromImages'),
+        // Obtén la función JS
+        'call',
+        [null, js_util.jsify(inputPaths)], // Pasa el array convertido
+      ),
+    );
   }
 
   @override

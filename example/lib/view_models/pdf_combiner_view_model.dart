@@ -17,7 +17,7 @@ class PdfCombinerViewModel {
   Future<void> pickFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'],
+      allowedExtensions: ['pdf','jpg','png'],
       allowMultiple: true, // Allow picking multiple files
     );
 
@@ -98,19 +98,33 @@ class PdfCombinerViewModel {
   // Function to create a PDF file from a list of images
   Future<void> createPDFFromImages() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
-
+    PdfFromMultipleImageResponse response;
+    String outputFilePath  = "combined_output.pdf";
     try {
-      final directory = await _getOutputDirectory(); // Get the output directory
-      final outputFilePath = '${directory?.path}/combined_output.pdf';
-      PdfFromMultipleImageResponse response =
-          await PdfCombiner.createPDFFromMultipleImages(
-              inputPaths: selectedFiles,
-              outputPath: outputFilePath,
-              needImageCompressor: false); // Create PDF image
+      if(kIsWeb){
+        response = await PdfCombiner.createPDFFromMultipleImages(
+            inputPaths: selectedFiles,
+            outputPath: outputFilePath,
+            needImageCompressor: false); // Create PDF image
+        if(response.response != null){
+          outputFiles = [
+            response.response!
+          ]; // Update the output file path after successful combination
+        }
+      }else{
+        final directory = await _getOutputDirectory(); // Get the output directory
+        final outputFilePath = '${directory?.path}/combined_output.pdf';
+        response =
+        await PdfCombiner.createPDFFromMultipleImages(
+            inputPaths: selectedFiles,
+            outputPath: outputFilePath,
+            needImageCompressor: false); // Create PDF image
 
-      outputFiles = [
-        outputFilePath
-      ]; // Update the output file path after successful combination
+        outputFiles = [
+          outputFilePath
+        ]; // Update the output file path after successful combination
+      }
+
       if (response.status == PdfCombinerStatus.success) {
         debugPrint("Creation of PDF was success");
       } else {

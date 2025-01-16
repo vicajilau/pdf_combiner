@@ -9,6 +9,8 @@ class DocumentUtils {
 
   /// Checks if string is an image file.
   static bool isImage(String filePath) {
+    if(kIsWeb) return true;
+
     final ext = filePath.toLowerCase();
 
     // If the file has no extension, it is assumed to be a possible image.
