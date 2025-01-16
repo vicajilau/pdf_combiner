@@ -19,6 +19,18 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('PDF Combiner Example'),
+        actions: [
+          IconButton(
+            onPressed: () => _restart(),
+            icon: const Icon(Icons.restart_alt),
+            tooltip: "Restart app",
+          ),
+          IconButton(
+            onPressed: () => _pickFiles(),
+            icon: const Icon(Icons.add),
+            tooltip: "Add new files",
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -72,7 +84,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                 itemBuilder: (context, index) {
                   return Dismissible(
                     key: ValueKey(_viewModel.selectedFiles[index]),
-                    direction: DismissDirection.startToEnd,
+                    direction: DismissDirection.horizontal,
                     onDismissed: (direction) {
                       setState(() {
                         _viewModel.removeFileAt(index);
@@ -107,11 +119,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 10,
                 children: [
-                  ElevatedButton(
-                    onPressed: _pickFiles,
-                    child: const Text('Select Files'),
-                  ),
                   ElevatedButton(
                     onPressed: _viewModel.selectedFiles.isNotEmpty
                         ? _combinePdfs
@@ -143,6 +152,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   // Function to pick PDF files from the device
   Future<void> _pickFiles() async {
     await _viewModel.pickFiles();
+    setState(() {});
+  }
+
+  // Function to pick PDF files from the device
+  void _restart() {
+    _viewModel.restart();
     setState(() {});
   }
 

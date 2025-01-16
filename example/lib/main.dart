@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pdf_combiner_example/utils/theme.dart';
 import 'package:pdf_combiner_example/views/pdf_combiner_screen.dart';
 
 void main() {
@@ -10,9 +11,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'PDF Combiner Example',
-      home: PdfCombinerScreen(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      debugShowCheckedModeBanner: false,
+      home: const PdfCombinerScreen(),
     );
   }
 }

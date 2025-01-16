@@ -25,8 +25,14 @@ class PdfCombinerViewModel {
       for (var element in result.files) {
         debugPrint("${element.name}, ");
       }
-      selectedFiles = result.files.map((file) => file.path!).toList();
+      selectedFiles += result.files.map((file) => file.path!).toList();
     }
+  }
+
+  // Function to restart the selected files
+  void restart() {
+    selectedFiles = [];
+    outputFiles = [];
   }
 
   // Function to pick PDF files with debug log (new method)
@@ -127,7 +133,7 @@ class PdfCombinerViewModel {
       ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
           inputPath: selectedFiles.first,
           outputPath: outputFilePath); // Create PDF image
-      debugPrint("imageFromPDFResponse: \n $response");
+
       outputFiles = response
           .response!; // Update the output file path after successful combination
       if (response.status == PdfCombinerStatus.success) {
