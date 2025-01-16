@@ -122,10 +122,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                 spacing: 10,
                 children: [
                   ElevatedButton(
-                    onPressed: _pickFiles,
-                    child: const Text('Select Files'),
-                  ),
-                  ElevatedButton(
                     onPressed: _viewModel.selectedFiles.isNotEmpty
                         ? _combinePdfs
                         : null,
