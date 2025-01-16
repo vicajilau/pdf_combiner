@@ -1,3 +1,7 @@
+## 3.0.0
+
+* Tooltips, theme, and more improvements on example project.
+
 ## 2.1.0
 
 * Added support for empty images.
