@@ -43,18 +43,14 @@ class PdfCombiner {
         String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
-          if(kIsWeb){
-            isPDF = true;
-            path = inputPaths[i];
-          }else if (!DocumentUtils.isPDF(inputPaths[i])) {
-            isPDF = false;
-            path = inputPaths[i];
-          }
 
-          if(kIsWeb){
+            isPDF = DocumentUtils.isPDF(inputPaths[i]);
+            path = inputPaths[i];
+
+          if(DocumentUtils.fileExist(inputPaths[i])){
             existFile = true;
             path = inputPaths[i];
-          }else if (!kIsWeb && !DocumentUtils.fileExist(inputPaths[i])) {
+          }else  {
             existFile = false;
             path = inputPaths[i];
           }
