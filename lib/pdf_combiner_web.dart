@@ -23,9 +23,9 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     return await js_util.promiseToFuture(
       js_util.callMethod(
         js_util.getProperty(js_util.globalThis, 'combinePDFs'),
-        // Obtén la función JS
+        // Get JS function
         'call',
-        [null, js_util.jsify(inputPaths)], // Pasa el array convertido
+        [null, js_util.jsify(inputPaths)], // Send converted array
       ),
     );
   }
@@ -40,9 +40,9 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     return await js_util.promiseToFuture(
       js_util.callMethod(
         js_util.getProperty(js_util.globalThis, 'createPdfFromImages'),
-        // Obtén la función JS
+        // Get JS function
         'call',
-        [null, js_util.jsify(inputPaths)], // Pasa el array convertido
+        [null, js_util.jsify(inputPaths)], // Send converted array
       ),
     );
   }
