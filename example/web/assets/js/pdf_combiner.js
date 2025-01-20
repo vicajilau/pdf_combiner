@@ -76,27 +76,39 @@ async function createPdfFromImages(imageBlobs) {
 }
 
 async function convertPdfToImages(pdfData) {
+  const pdfjsLib = window['pdfjs-dist/build/pdf'];
 
-  const { PDFDocument } = PDFLib;
-  const response = await fetch(pdfData);
-  const arrayBuffer = await response.arrayBuffer();
-  const pdf = await PDFDocument.load(arrayBuffer);
-  const pageCount = pdf.getPageCount();;
-  const imageBlobs = [];
+  // Configura la URL de tu archivo PDF.js Worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-  // Configuración para renderizar la imagen de cada página
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
+  const pdf = await pdfjsLib.getDocument(pdfData).promise;
+  const pageCount = pdf.numPages;
+  const imageUrls = [];
 
-  // Convertir cada página a imagen y agregarla a la lista
-  for (let pageNum = 0; pageNum < pageCount; pageNum++) {
+  // Convertir cada página a imagen
+  for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
     const page = await pdf.getPage(pageNum);
 
-    // Convertir el contenido del canvas a Blob
-    const imgBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-    const url = URL.createObjectURL(imgBlob, { type: 'image/png' });
-    imageBlobs.push(url);
+    // Configuración del canvas
+    const viewport = page.getViewport({ scale: 2 }); // Ajusta el escalado si es necesario
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    // Renderizar página en el canvas
+    await page.render({
+      canvasContext: context,
+      viewport: viewport
+    }).promise;
+
+    // Convertir canvas a Blob y luego a URL
+    const imgBlob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, 'image/png')
+    );
+    const imgUrl = URL.createObjectURL(imgBlob);
+    imageUrls.push(imgUrl);
   }
 
-  return imageBlobs;
+  return imageUrls;
 }

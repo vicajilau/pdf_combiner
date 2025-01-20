@@ -109,8 +109,8 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     bool? createOneImage,
   }) async {
     try {
-      final List<dynamic>? result =
-          await methodChannel.invokeMethod<List<dynamic>>(
+      final List<String>? result =
+          await methodChannel.invokeMethod<List<String>>(
         'createImageFromPDF',
         {
           'path': inputPath,
