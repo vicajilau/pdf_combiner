@@ -54,8 +54,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
       int? maxWidth,
       int? maxHeight,
       bool? createOneImage}) async {
-
-    return await js_util.promiseToFuture(
+    final result = await js_util.promiseToFuture(
       js_util.callMethod(
         js_util.getProperty(js_util.globalThis, 'convertPdfToImages'),
         // Obtén la función JS
@@ -63,5 +62,6 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
         [null,js_util.jsify(inputPath)], // Pasa el array convertido
       ),
     );
+    return result.cast<String>();
   }
 }

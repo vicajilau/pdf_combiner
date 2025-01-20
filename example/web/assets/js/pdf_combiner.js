@@ -98,5 +98,5 @@ async function convertPdfToImages(pdfData) {
     imageBlobs.push(url);
   }
 
-  return imageBlobs.map(String);
+  return imageBlobs;
 }
