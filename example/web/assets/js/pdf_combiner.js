@@ -5,14 +5,14 @@ async function combinePDFs(blobUrls) {
 
   for (const blobUrl of blobUrls) {
     try {
-      // Descarga el contenido del blob
+      // Download blob content
       const response = await fetch(blobUrl);
       if (!response.ok) {
         throw new Error(`Error al descargar el blob desde la URL: ${blobUrl}`);
       }
       const pdfBytes = await response.arrayBuffer();
 
-      // Carga el PDF y copia las páginas
+      // load pdf and copy pages
       const pdf = await PDFDocument.load(pdfBytes);
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
       copiedPages.forEach((page) => mergedPdf.addPage(page));
@@ -21,31 +21,31 @@ async function combinePDFs(blobUrls) {
     }
   }
 
-  // Genera el PDF combinado
+  // Generate combinated pdfs
   const mergedPdfBytes = await mergedPdf.save();
 
 
-  // Crea un Blob y una URL para el PDF combinado
+  // build a blob to combinated pdf
   const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
 
-  return url // Retorna la URL del objeto combinado
+  return url // Returl url from combinated object
 }
 
 async function createPdfFromImages(imageBlobs) {
 
   const { PDFDocument } = PDFLib;
-  // Crear un nuevo documento PDF
+  // Create a new pdf document
   const pdfDoc = await PDFDocument.create();
 
-  // Iterar sobre los blobs de imagen
+  // iterate into image blobs
   for (const blob of imageBlobs) {
         const response = await fetch(blob);
-    // Leer el blob como un ArrayBuffer
+    // read blob like an arraybuffer
         const mimeType = response.headers.get('Content-Type') || 'application/octet-stream';
         const arrayBuffer = await response.arrayBuffer();
 
-        // Determinar el tipo de la imagen (PNG o JPG)
+        // get type img
         let image;
         if (mimeType === 'image/png') {
           image = await pdfDoc.embedPng(arrayBuffer);
@@ -55,13 +55,13 @@ async function createPdfFromImages(imageBlobs) {
           throw new Error(`Formato de imagen no compatible: ${mimeType}`);
         }
 
-        // Obtener las dimensiones de la imagen
+        // Get image dimensions
         const { width, height } = image.scale(1);
 
-        // Crear una nueva página con las dimensiones de la imagen
+        // Build a new page with pdf dimensions
         const page = pdfDoc.addPage([width, height]);
 
-        // Dibujar la imagen en la página
+        // draw image into page
         page.drawImage(image, {
           x: 0,
           y: 0,
@@ -78,31 +78,31 @@ async function createPdfFromImages(imageBlobs) {
 async function convertPdfToImages(pdfData) {
   const pdfjsLib = window['pdfjs-dist/build/pdf'];
 
-  // Configura la URL de tu archivo PDF.js Worker
+  // Configure url from the pdf library
   pdfjsLib.GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
   const pdf = await pdfjsLib.getDocument(pdfData).promise;
   const pageCount = pdf.numPages;
   const imageUrls = [];
 
-  // Convertir cada página a imagen
+  // Convert each image into image
   for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
     const page = await pdf.getPage(pageNum);
 
-    // Configuración del canvas
+    // Cavnas configuration
     const viewport = page.getViewport({ scale: 2 }); // Ajusta el escalado si es necesario
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
-    // Renderizar página en el canvas
+    // render page into canvas
     await page.render({
       canvasContext: context,
       viewport: viewport
     }).promise;
 
-    // Convertir canvas a Blob y luego a URL
+    // Convert canvas to blob and later to url
     const imgBlob = await new Promise((resolve) =>
       canvas.toBlob(resolve, 'image/png')
     );
