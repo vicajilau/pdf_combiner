@@ -135,6 +135,7 @@ class PdfCombinerViewModel {
     }
   }
 
+
   // Function to create a PDF file from a list of images
   Future<void> createImagesFromPDF() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing

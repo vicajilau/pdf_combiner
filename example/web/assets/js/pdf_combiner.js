@@ -74,3 +74,29 @@ async function createPdfFromImages(imageBlobs) {
   const url = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
   return url;
 }
+
+async function convertPdfToImages(pdfData) {
+
+  const { PDFDocument } = PDFLib;
+  const response = await fetch(pdfData);
+  const arrayBuffer = await response.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const pageCount = pdf.getPageCount();;
+  const imageBlobs = [];
+
+  // Configuración para renderizar la imagen de cada página
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  // Convertir cada página a imagen y agregarla a la lista
+  for (let pageNum = 0; pageNum < pageCount; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+
+    // Convertir el contenido del canvas a Blob
+    const imgBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    const url = URL.createObjectURL(imgBlob, { type: 'image/png' });
+    imageBlobs.push(url);
+  }
+
+  return imageBlobs.map(String);
+}
