@@ -169,7 +169,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       _showSnackbarSafely(
           'PDFs combined successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
-      _showSnackbarSafely('Error: ${e.toString()}');
+      _showSnackbarSafely(e.toString());
     }
   }
 
@@ -180,7 +180,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       _showSnackbarSafely(
           'PDF created successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
-      _showSnackbarSafely('Error: ${e.toString()}');
+      _showSnackbarSafely(e.toString());
     }
   }
 
@@ -191,7 +191,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       _showSnackbarSafely(
           'Images created successfully: ${_viewModel.outputFiles}');
     } catch (e) {
-      _showSnackbarSafely('Error: ${e.toString()}');
+      _showSnackbarSafely(e.toString());
     }
   }
 
