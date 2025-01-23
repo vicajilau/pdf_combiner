@@ -26,7 +26,7 @@ class PdfCombiner {
   /// - `outputPath`: A string representing the directory where the combined PDF should be saved.
   ///
   /// Returns:
-  /// - A `Future<String?>` representing the result of the operation (either the success message or an error message).
+  /// - A `Future<MergeMultiplePDFResponse?>` representing the result of the operation (either the success message or an error message).
   static Future<MergeMultiplePDFResponse> mergeMultiplePDFs(
       {required List<String> inputPaths, required String outputPath}) async {
     MergeMultiplePDFResponse mergeMultiplePDFResponse =
@@ -88,10 +88,24 @@ class PdfCombiner {
     return mergeMultiplePDFResponse;
   }
 
-  /// For Creating a PDF from multiple image
-  /// paths is a list of paths, example List<String> allSelectedFilePath.
-  /// outputPath is output path with filename, example /user/android/download/ABC.pdf
-  /// Optional params maxWidth : default set to 360, maxHeight : default set to 360, needImageCompressor : default set to true.
+  /// Create a PDF from multiple images.
+  ///
+  /// This method takes a list of image file paths (`inputPaths`) representing the images to be combined,
+  /// and an `outputPath` where the resulting combined PDF should be saved.
+  ///
+  /// If the operation is successful, it returns the result from the platform-specific implementation.
+  /// If an error occurs, it returns a message describing the error.
+  ///
+  /// Parameters:
+  /// - `inputPaths`: A list of strings representing the paths of the image files to be combined.
+  /// - `outputPath`: A string representing the directory where the combined PDF should be saved.
+  ///
+  /// Optional Parameters:
+  /// - `maxWidth`: An integer value with the max width of the images. Default set to 360.
+  /// - `maxHeight`: An integer value with the max height of the images. Default set to 360.
+  /// - `needImageCompressor`: A boolean if images should be compressed or not. Default set to true.
+  /// Returns:
+  /// - A `Future<PdfFromMultipleImageResponse?>` representing the result of the operation (either the success message or an error message).
   static Future<PdfFromMultipleImageResponse> createPDFFromMultipleImages(
       {required List<String> inputPaths,
       required String outputPath,
@@ -166,6 +180,25 @@ class PdfCombiner {
   /// paths selected file path (String). Example user/android.downlaod/MYPDF.pdf
   /// outputPath is output path with filename, example /user/android/download/ABC.pdf
   /// Optional params maxWidth : default set to 360, maxHeight : default set to 360, createOneImage : default set to true.
+  ///
+  /// Create a list of images from a PDF.
+  ///
+  /// This method takes a single pdf file path (`inputPath`) representing the pdf file to be extracted,
+  /// and an `outputPath` with folder where the resulting list of images should be saved.
+  ///
+  /// If the operation is successful, it returns the result from the platform-specific implementation.
+  /// If an error occurs, it returns a message describing the error.
+  ///
+  /// Parameters:
+  /// - `inputPath`: A string representing the pdf document file path to be extracted.
+  /// - `outputPath`: A string representing the directory where the list of images should be saved.
+  ///
+  /// Optional Parameters:
+  /// - `maxWidth`: An integer value with the max width of the images. Default set to 360.
+  /// - `maxHeight`: An integer value with the max height of the images. Default set to 360.
+  /// - `createOneImage`: A boolean representing if a single image should be created or separate images for each page. Default set to true.
+  /// Returns:
+  /// - A `Future<ImageFromPDFResponse?>` representing the result of the operation (either the success message or an error message).
   static Future<ImageFromPDFResponse> createImageFromPDF(
       {required String inputPath,
       required String outputPath,

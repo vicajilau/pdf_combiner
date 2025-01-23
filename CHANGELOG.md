@@ -1,6 +1,7 @@
 ## 3.0.0
 
 * Tooltips, theme, and more improvements on example project.
+* Improved documentation inside of the code.
 
 ## 2.1.0
 
