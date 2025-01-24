@@ -31,16 +31,11 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     required List<String> inputPaths,
     required String outputPath,
   }) async {
-    try {
-      final result = await methodChannel.invokeMethod<String>(
-        'mergeMultiplePDF',
-        {'paths': inputPaths, 'outputDirPath': outputPath},
-      );
-      return result;
-    } catch (e) {
-      debugPrint('Error merging PDFs: $e');
-      return null;
-    }
+    final result = await methodChannel.invokeMethod<String>(
+      'mergeMultiplePDF',
+      {'paths': inputPaths, 'outputDirPath': outputPath},
+    );
+    return result;
   }
 
   /// Creates a PDF from multiple image files.
@@ -67,22 +62,17 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     int? maxHeight,
     bool? needImageCompressor,
   }) async {
-    try {
-      final result = await methodChannel.invokeMethod<String>(
-        'createPDFFromMultipleImage',
-        {
-          'paths': inputPaths,
-          'outputDirPath': outputPath,
-          'maxWidth': maxWidth ?? 360,
-          'maxHeight': maxHeight ?? 360,
-          'needImageCompressor': needImageCompressor ?? true,
-        },
-      );
-      return result;
-    } catch (e) {
-      debugPrint('Error creating PDF from images: $e');
-      return null;
-    }
+    final result = await methodChannel.invokeMethod<String>(
+      'createPDFFromMultipleImage',
+      {
+        'paths': inputPaths,
+        'outputDirPath': outputPath,
+        'maxWidth': maxWidth ?? 360,
+        'maxHeight': maxHeight ?? 360,
+        'needImageCompressor': needImageCompressor ?? true,
+      },
+    );
+    return result;
   }
 
   /// Creates images from a PDF file.
@@ -108,22 +98,17 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     int? maxHeight,
     bool? createOneImage,
   }) async {
-    try {
-      final List<dynamic>? result =
-          await methodChannel.invokeMethod<List<dynamic>>(
-        'createImageFromPDF',
-        {
-          'path': inputPath,
-          'outputDirPath': outputPath,
-          'maxWidth': maxWidth ?? 360,
-          'maxHeight': maxHeight ?? 360,
-          'createOneImage': createOneImage ?? true,
-        },
-      );
-      return result?.cast<String>();
-    } catch (e) {
-      debugPrint('Error creating images from PDF: $e');
-      return null;
-    }
+    final List<dynamic>? result =
+        await methodChannel.invokeMethod<List<dynamic>>(
+      'createImageFromPDF',
+      {
+        'path': inputPath,
+        'outputDirPath': outputPath,
+        'maxWidth': maxWidth ?? 360,
+        'maxHeight': maxHeight ?? 360,
+        'createOneImage': createOneImage ?? true,
+      },
+    );
+    return result?.cast<String>();
   }
 }

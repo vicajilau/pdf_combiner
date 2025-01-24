@@ -14,8 +14,6 @@ void main() {
         outputPath: 'test/samples/image_final.jpeg',
       );
 
-      print("result: $result");
-
       expect(result.status, PdfCombinerStatus.success);
       expect(result.response, null);
       expect(result.message, 'Processed successfully');
