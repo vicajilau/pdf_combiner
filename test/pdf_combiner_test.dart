@@ -4,7 +4,7 @@ import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart'
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
-import '../mocks/mock_pdf_combiner_platform.dart';
+import 'mocks/mock_pdf_combiner_platform.dart';
 
 // Mock platform that simulates an error in the mergeMultiplePDF method.
 class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
@@ -36,7 +36,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: ['test/samples/document_1.pdf', 'test/samples/document_2.pdf'],
+        inputPaths: ['assets/document_1.pdf', 'assets/document_2.pdf'],
         outputPath: 'output/path',
       );
 
