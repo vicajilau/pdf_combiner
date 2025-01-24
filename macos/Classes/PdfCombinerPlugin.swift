@@ -10,7 +10,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
         let instance = PdfCombinerPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
-
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard
             let args = call.arguments as? Dictionary<String, Any>
@@ -18,34 +18,38 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             result("Error: Arguments can't be empty")
             return
         }
-
+        
         switch call.method {
-            case "mergeMultiplePDF":
-                DispatchQueue.global().async {
-                    let singlePDFFromMultiplePDF = PdfCombinerPlugin.mergeMultiplePDF(args : args)
-                    DispatchQueue.main.sync {
-                        result(singlePDFFromMultiplePDF)
-                    }
+        case "mergeMultiplePDF":
+            DispatchQueue.global().async {
+                let singlePDFFromMultiplePDF = PdfCombinerPlugin.mergeMultiplePDF(args : args)
+                DispatchQueue.main.sync {
+                    result(singlePDFFromMultiplePDF)
                 }
-            case "createPDFFromMultipleImage":
-                DispatchQueue.global().async {
-                    let pdfFromMultipleImage = PdfCombinerPlugin.createPDFFromMultipleImage(args : args)
-                    DispatchQueue.main.sync {
-                        result(pdfFromMultipleImage)
-                    }
+            }
+        case "createPDFFromMultipleImage":
+            DispatchQueue.global().async {
+                let pdfFromMultipleImage = PdfCombinerPlugin.createPDFFromMultipleImage(args : args)
+                DispatchQueue.main.sync {
+                    result(pdfFromMultipleImage)
                 }
-            case "createImageFromPDF":
-                DispatchQueue.global().async {
-                    let imageFromPDF = PdfCombinerPlugin.createImageFromPDF(args : args)
-                    DispatchQueue.main.sync {
-                        result(imageFromPDF)
-                    }
+            }
+        case "createImageFromPDF":
+            DispatchQueue.global().async {
+                let imageFromPDF = PdfCombinerPlugin.createImageFromPDF(args : args)
+                DispatchQueue.main.sync {
+                    result(imageFromPDF)
                 }
-            default:
-                result("Not Implemented")
+            }
+        default:
+            result("Not Implemented")
         }
     }
+}
 
+// MARK: - Logic
+extension PdfCombinerPlugin {
+    // MARK: Merge multiple pdf.
     class func mergeMultiplePDF(args: Dictionary<String, Any>) -> String {
         guard
             let paths = args["paths"] as? [String],
@@ -85,6 +89,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
         return outputDirPath
     }
 
+    // MARK: Create pdf from multiple images
     class func createPDFFromMultipleImage(args: Dictionary<String, Any>) -> String {
         guard
             let paths = args["paths"] as? [String],
@@ -105,7 +110,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
             }
 
             if needImageCompressor {
-                let resizedImage = resizeImage(img : img, maxWidthGet : maxWidth, maxHeightGet : maxHeight)
+                let resizedImage = resizeImage(img: img, maxWidthGet: maxWidth, maxHeightGet: maxHeight)
                 images.append(resizedImage)
             } else {
                 images.append(img)
@@ -134,7 +139,8 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
 
         return outputDirPath
     }
-
+    
+    // MARK: Merge one or multiple images from pdf
     class func createImageFromPDF(args: Dictionary<String, Any>) -> [String]? {
         guard
             let path = args["path"] as? String,
@@ -157,10 +163,10 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
 
         var images = [NSImage]()
 
-        DispatchQueue.concurrentPerform(iterations: pdfDocument.numberOfPages) { i in
+        DispatchQueue.concurrentPerform(iterations: pdfDocument.numberOfPages) { index in
             // Page number starts at 1, not 0
             guard
-                let pdfPage = pdfDocument.page(at: i + 1)
+                let pdfPage = pdfDocument.page(at: index + 1)
             else {
                 return
             }
@@ -192,17 +198,11 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
 
             if let image = context.makeImage() {
                 let convertNSImage = NSImage(cgImage: image, size: .zero)
-                let  resizedImage = resizeImage(img : convertNSImage, maxWidthGet : maxWidth, maxHeightGet : maxHeight)
+                let  resizedImage = resizeImage(img: convertNSImage, maxWidthGet: maxWidth, maxHeightGet: maxHeight)
                 images.append(resizedImage)
 
                 if !createOneImage {
-                    var pathComponents = outputDirPath.components(separatedBy: "/")
-                    let fileNameComponents = pathComponents.last?.components(separatedBy: ".")
-                    let newFileName = "\(fileNameComponents?.first ?? "")_\(String(i)).\(fileNameComponents?.last ?? "jpeg")"
-                    pathComponents.removeLast()
-                    pathComponents.append(newFileName)
-                    let finalPath = pathComponents.joined(separator: "/")
-
+                    let finalPath = generateName(for: outputDirPath, for: index)
                     pdfImagesPath.append(finalPath)
                     save(image: resizedImage, path: finalPath)
                 }
@@ -222,7 +222,18 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
         return pdfImagesPath
     }
 
-    public static func mergeVertically(images: [NSImage]) -> NSImage? {
+    // MARK: Generate new image name with index
+    class func generateName(for path: String, for index: Int) -> String {
+        var pathComponents = path.components(separatedBy: "/")
+        let fileNameComponents = pathComponents.last?.components(separatedBy: ".")
+        let newFileName = "\(fileNameComponents?.first ?? "")_\(String(index)).\(fileNameComponents?.last ?? "jpeg")"
+        pathComponents.removeLast()
+        pathComponents.append(newFileName)
+        return pathComponents.joined(separator: "/")
+    }
+    
+    // MARK: Merge images vertically
+    class func mergeVertically(images: [NSImage]) -> NSImage? {
         var maxWidth: CGFloat = 0.0
         var maxHeight: CGFloat = 0.0
 
@@ -275,7 +286,8 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
         return NSImage(cgImage: outputCGImage, size: .zero)
     }
 
-    public static func resizeImage(img: NSImage, maxWidthGet : Int, maxHeightGet : Int) -> NSImage {
+    // MARK: Resize images
+    class func resizeImage(img: NSImage, maxWidthGet : Int, maxHeightGet : Int) -> NSImage {
         var actualHeight: Float = Float(img.size.height)
         var actualWidth: Float = Float(img.size.width)
         let maxHeight: Float = Float(maxHeightGet)
@@ -311,8 +323,9 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
 
         return NSImage(data: newImage.tiffRepresentation!)!
     }
-
-    public static func save(image: NSImage, path: String) {
+    
+    // MARK: Sava image to disk
+    class func save(image: NSImage, path: String) {
         guard
             let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil)
         else {
