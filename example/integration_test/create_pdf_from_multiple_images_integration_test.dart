@@ -8,9 +8,6 @@ import 'test_file_helper.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  const basePath =
-      "/data/user/0/com.victorcarreras.pdf_combiner_example/app_flutter/";
-
   group('createPDFFromMultipleImages Integration Tests', () {
     testWidgets('Test creating pdf from two images', (tester) async {
       final helper =
@@ -24,14 +21,14 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, '${basePath}merged_output.pdf');
+      expect(result.response, '${TestFileHelper.basePath}merged_output.pdf');
       expect(result.message, 'Processed successfully');
     });
 
     testWidgets('Test creating pdf with empty list', (tester) async {
       final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: [],
-        outputPath: '${basePath}assets/merged_output.pdf',
+        outputPath: '${TestFileHelper.basePath}assets/merged_output.pdf',
       );
 
       expect(result.status, PdfCombinerStatus.error);
@@ -44,7 +41,7 @@ void main() {
       final inputPaths = await helper.prepareInputFiles();
 
       // Add a non-existing file path manually
-      inputPaths.add('${basePath}assets/non_existing.jpg');
+      inputPaths.add('${TestFileHelper.basePath}assets/non_existing.jpg');
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.createPDFFromMultipleImages(
@@ -58,10 +55,8 @@ void main() {
     });
 
     testWidgets('Test creating pdf with non-supported file', (tester) async {
-      final helper = TestFileHelper([
-        'assets/document_1.pdf',
-        'assets/image_1.jpg'
-      ]);
+      final helper =
+          TestFileHelper(['assets/document_1.pdf', 'assets/image_1.jpg']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
@@ -73,7 +68,7 @@ void main() {
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
       expect(result.message,
-          'Only Image file allowed. File is not an image: ${basePath}document_1.pdf');
+          'Only Image file allowed. File is not an image: ${TestFileHelper.basePath}document_1.pdf');
     });
   });
 }

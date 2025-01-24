@@ -8,11 +8,7 @@ import 'test_file_helper.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  const basePath =
-      "/data/user/0/com.victorcarreras.pdf_combiner_example/app_flutter/";
-
   group('createImageFromPDF Integration Tests', () {
-
     testWidgets('Test creating images from PDF file', (tester) async {
       final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();
@@ -24,14 +20,14 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, ['${basePath}image_final.jpeg']);
+      expect(result.response, ['${TestFileHelper.basePath}image_final.jpeg']);
       expect(result.message, 'Processed successfully');
     });
 
     testWidgets('Test creating with non-existing file', (tester) async {
       final helper = TestFileHelper([]);
       final inputPaths = await helper.prepareInputFiles();
-      inputPaths.add('${basePath}assets/non_existing.pdf');
+      inputPaths.add('${TestFileHelper.basePath}assets/non_existing.pdf');
       final outputPath = await helper.getOutputFilePath("");
 
       final result = await PdfCombiner.createImageFromPDF(
@@ -59,6 +55,5 @@ void main() {
       expect(result.message,
           'Only Image file allowed. File is not an image: ${inputPaths[0]}');
     });
-
   });
 }
