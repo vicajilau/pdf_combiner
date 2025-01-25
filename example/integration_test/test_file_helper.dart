@@ -7,8 +7,12 @@ import 'package:path_provider/path_provider.dart';
 /// This class is used to handle the loading of assets, writing files to disk,
 /// and generating output file paths for integration tests.
 class TestFileHelper {
-  static const basePath =
-      "/data/user/0/com.victorcarreras.pdf_combiner_example/app_flutter/";
+  static late String basePath;
+
+  static Future<void> init() async {
+    final directory = await getApplicationDocumentsDirectory();
+    basePath = directory.path;
+  }
 
   final List<String> assetPaths;
 
@@ -22,15 +26,13 @@ class TestFileHelper {
   ///
   /// Returns a list of file paths for the assets that were loaded and saved.
   Future<List<String>> prepareInputFiles() async {
-    final directory =
-        await getApplicationDocumentsDirectory(); // Get the app document directory.
     List<String> filePaths = [];
 
     for (String assetPath in assetPaths) {
       // Load the asset data from the root bundle.
       final byteData = await rootBundle.load(assetPath);
       // Define the full file path to save the asset in the documents directory.
-      final filePath = '${directory.path}/${assetPath.split('/').last}';
+      final filePath = '$basePath/${assetPath.split('/').last}';
       final file = File(filePath);
       // Write the asset bytes to a file.
       await file.writeAsBytes(byteData.buffer.asUint8List());
@@ -47,8 +49,6 @@ class TestFileHelper {
   ///
   /// Returns the full path where the output file will be saved.
   Future<String> getOutputFilePath(String outputFileName) async {
-    final directory =
-        await getApplicationDocumentsDirectory(); // Get the app document directory.
-    return '${directory.path}/$outputFileName'; // Return the full output file path.
+    return '$basePath/$outputFileName'; // Return the full output file path.
   }
 }

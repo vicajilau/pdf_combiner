@@ -8,6 +8,10 @@ import 'test_file_helper.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  setUpAll(() async {
+    await TestFileHelper.init();
+  });
+
   group('mergeMultiplePDFs Integration Tests', () {
     testWidgets('Test merging two PDFs', (tester) async {
       final helper =
@@ -21,7 +25,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, '${TestFileHelper.basePath}merged_output.pdf');
+      expect(result.response, '${TestFileHelper.basePath}/merged_output.pdf');
       expect(result.message, 'Processed successfully');
     });
 
@@ -37,7 +41,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, '${TestFileHelper.basePath}merged_output.pdf');
+      expect(result.response, '${TestFileHelper.basePath}/merged_output.pdf');
       expect(result.message, 'Processed successfully');
     });
 
@@ -59,7 +63,7 @@ void main() {
       final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();
 
-      inputPaths.add('${TestFileHelper.basePath}non_existing.pdf');
+      inputPaths.add('${TestFileHelper.basePath}/non_existing.pdf');
 
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
