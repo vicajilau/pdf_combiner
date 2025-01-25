@@ -25,6 +25,22 @@ void main() {
       expect(result.message, 'Processed successfully');
     });
 
+    testWidgets('Test merging single PDF file', (tester) async {
+      final helper =
+      TestFileHelper(['assets/document_1.pdf']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath('merged_output.pdf');
+
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: inputPaths,
+        outputPath: outputPath,
+      );
+
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.response, '${TestFileHelper.basePath}merged_output.pdf');
+      expect(result.message, 'Processed successfully');
+    });
+
     testWidgets('Test merging with empty list', (tester) async {
       final helper = TestFileHelper([]);
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
