@@ -42,6 +42,8 @@ flutter:
         pluginClass: PdfCombinerPlugin
       ios:
         pluginClass: PdfCombinerPlugin
+      macos:
+        pluginClass: PdfCombinerPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

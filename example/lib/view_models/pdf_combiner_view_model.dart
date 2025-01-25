@@ -18,7 +18,7 @@ class PdfCombinerViewModel {
   Future<void> pickFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'],
+      allowedExtensions: ['pdf', 'png'],
       allowMultiple: true, // Allow picking multiple files
     );
 
@@ -130,6 +130,9 @@ class PdfCombinerViewModel {
   Future<Directory?> _getOutputDirectory() async {
     if (Platform.isIOS) {
       return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
+    } else if (Platform.isMacOS) {
+      //TODO: find the right place to save the new document
+      return await getApplicationDocumentsDirectory(); // For macos, return the documents directory
     } else if (Platform.isAndroid) {
       return await getDownloadsDirectory(); // For Android, return the Downloads directory
     } else {
