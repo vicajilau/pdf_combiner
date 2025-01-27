@@ -98,17 +98,16 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     int? maxHeight,
     bool? createOneImage,
   }) async {
-      final List<dynamic>? result =
-          await methodChannel.invokeMethod<List<dynamic>>(
-        'createImageFromPDF',
-        {
-          'path': inputPath,
-          'outputDirPath': outputPath,
-          'maxWidth': maxWidth ?? 360,
-          'maxHeight': maxHeight ?? 360,
-          'createOneImage': createOneImage ?? true,
-        },
-      );
-      return result?.cast<String>();
-    }
+    final result = await methodChannel.invokeMethod<List<dynamic>>(
+      'createImageFromPDF',
+      {
+        'path': inputPath,
+        'outputDirPath': outputPath,
+        'maxWidth': maxWidth ?? 360,
+        'maxHeight': maxHeight ?? 360,
+        'createOneImage': createOneImage ?? true,
+      },
+    );
+    return result?.cast<String>();
   }
+}
