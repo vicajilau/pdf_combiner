@@ -1,42 +1,89 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
-class MockPdfCombinerPlatform
-    with MockPlatformInterfaceMixin
-    implements PdfCombinerPlatform {
+import 'mocks/mock_pdf_combiner_platform.dart';
 
+// Mock platform that simulates an error in the mergeMultiplePDF method.
+class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
   @override
-  Future<List<String>?> createImageFromPDF({required String inputPath, required String outputPath, int? maxWidth, int? maxHeight, bool? createOneImage}) {
-    return Future.value([]);
-  }
-
-  @override
-  Future<String?> createPDFFromMultipleImages({required List<String> inputPaths, required String outputPath, int? maxWidth, int? maxHeight, bool? needImageCompressor}) {
-    // TODO: implement createPDFFromMultipleImages
-    return Future.value("");
-  }
-
-  @override
-  Future<String?> mergeMultiplePDFs({required List<String> inputPaths, required String outputPath}) {
-    // TODO: implement mergeMultiplePDFs
-    return Future.value("");
+  Future<String?> mergeMultiplePDFs({
+    required List<String> inputPaths,
+    required String outputPath,
+  }) {
+    return Future.error('Simulated Error');
   }
 }
 
 void main() {
-  final PdfCombinerPlatform initialPlatform = PdfCombinerPlatform.instance;
+  group('PdfCombiner Unit Tests', () {
+    // Preserve the initial platform to reset it later if necessary.
+    final PdfCombinerPlatform initialPlatform = PdfCombinerPlatform.instance;
 
-  test('$MethodChannelPdfCombiner is the default instance', () {
-    expect(initialPlatform, isInstanceOf<MethodChannelPdfCombiner>());
+    // Test to verify the default instance of PdfCombinerPlatform.
+    test('$MethodChannelPdfCombiner is the default instance', () {
+      expect(initialPlatform, isInstanceOf<MethodChannelPdfCombiner>());
+    });
+
+    // Test for successfully combining multiple PDFs using PdfCombiner.
+    test('combine (PdfCombiner)', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: ['assets/document_1.pdf', 'assets/document_2.pdf'],
+        outputPath: 'output/path',
+      );
+
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.response, 'Merged PDF');
+      expect(result.message, 'Processed successfully');
+    });
+
+    // Test for error handling when the platform simulates a failure in the mergeMultiplePDF method.
+    test('combine - Error handling (Only PDF file allowed)', () async {
+      // Create a mock platform that simulates an error during PDF merging.
+      MockPdfCombinerPlatformWithError fakePlatformWithError =
+          MockPdfCombinerPlatformWithError();
+
+      // Replace the platform instance with the error mock implementation.
+      PdfCombinerPlatform.instance = fakePlatformWithError;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: ['path1', 'path2'],
+        outputPath: 'output/path',
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, 'Only PDF file allowed. File is not a pdf: path1');
+    });
+
+    // Test for error handling when the platform simulates a failure in the mergeMultiplePDF method.
+    test('combine - Error handling (File does not exist)', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: ['path1.pdf', 'path2.pdf'],
+        outputPath: 'output/path',
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, 'File does not exist: path1.pdf');
+    });
   });
-
-  /*test('getPlatformVersion', () async {
-    PdfCombiner pdfCombinerPlugin = PdfCombiner();
-    MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
-    PdfCombinerPlatform.instance = fakePlatform;
-
-    expect(await pdfCombinerPlugin.getPlatformVersion(), '42');
-  });*/
 }

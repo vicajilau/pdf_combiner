@@ -131,7 +131,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
     }
     
     class func createImageFromPDF(args: Dictionary<String, Any>) -> [String]? {
-        
+
         var pdfImagesPath = [String]()
         
         if let path = args["path"] as? String, let outputDirPath = args["outputDirPath"] as? String
@@ -175,7 +175,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
                 images.append(resizeUIImage)
                 
                 if !createOneImage {
-                    
+
                     let pathName = outputDirPath.components(separatedBy: ".")
                     let finalPath = pathName[0] + String(i) + "." + pathName[1]
 

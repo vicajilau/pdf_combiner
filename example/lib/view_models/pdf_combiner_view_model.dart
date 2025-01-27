@@ -180,6 +180,9 @@ class PdfCombinerViewModel {
     if (!kIsWeb) {
       if (Platform.isIOS) {
         return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
+      }else if (Platform.isMacOS) {
+        //TODO: find the right place to save the new document
+        return await getApplicationDocumentsDirectory(); // For macos, return the documents directory
       } else if (Platform.isAndroid) {
         return await getDownloadsDirectory(); // For Android, return the Downloads directory
       } else {

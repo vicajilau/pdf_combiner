@@ -48,13 +48,11 @@ flutter:
       web:
         pluginClass: PdfCombinerWeb
         fileName: pdf_combiner_web.dart
+      macos:
+        pluginClass: PdfCombinerPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
-  assets:
-    - test/samples/document_1.pdf
-    - test/samples/document_2.pdf
-    - test/samples/image_1.jpg
-    - test/samples/image_2.png
+  # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   #

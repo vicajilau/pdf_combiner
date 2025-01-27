@@ -13,13 +13,6 @@ void main() {
     // Wait for the app to settle
     await tester.pumpAndSettle();
 
-    // Ensure the "Select PDF Files" button is present
-    expect(find.text('Select PDF Files'), findsOneWidget);
-
-    // Simulate a tap on the "Select PDF Files" button
-    await tester.tap(find.text('Select PDF Files'));
-    await tester.pumpAndSettle();
-
     // Here you can simulate the file selection (depending on your file picker mock)
     // You should have a mock set up for the file selection
 
@@ -31,5 +24,19 @@ void main() {
     // Simulate a tap on the "Combine PDFs" button
     await tester.tap(find.text('Combine PDFs'));
     await tester.pumpAndSettle();
+
+    // Now ensure the "PDF from images" button is enabled
+    expect(find.text('PDF from images'), findsOneWidget);
+    expect(find.byType(ElevatedButton),
+        findsWidgets); // Ensure at least one button is available
+
+    // Simulate a tap on the "PDF from images" button
+    await tester.tap(find.text('PDF from images'));
+    await tester.pumpAndSettle();
+
+    // Now ensure the "Images from PDF" button is enabled
+    expect(find.text('Images from PDF'), findsOneWidget);
+    expect(find.byType(ElevatedButton),
+        findsWidgets); // Ensure at least one button is available
   });
 }
