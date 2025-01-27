@@ -1,11 +1,11 @@
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
-import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 
@@ -17,7 +17,7 @@ class PdfCombinerViewModel {
   Future<void> pickFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf','jpg','png'],
+      allowedExtensions: ['pdf', 'jpg', 'png'],
       allowMultiple: true, // Allow picking multiple files
     );
 
@@ -26,6 +26,7 @@ class PdfCombinerViewModel {
         debugPrint("${element.name}, ");
       }
       selectedFiles += result.files.map((file) => file.path!).toList();
+      outputFiles = [];
     }
   }
 
@@ -59,37 +60,23 @@ class PdfCombinerViewModel {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
 
     try {
-      MergeMultiplePDFResponse response;
-      String outputFilePath  = "combined_output.pdf";
-      if(kIsWeb){
-        response = await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: selectedFiles,
-            outputPath: outputFilePath); // Combine the PDFs
-        if(response.response != null){
-          outputFiles = [
-            response.response!
-          ]; // Update the output file path after successful combination
-        }
-      }else{
-        final directory = await _getOutputDirectory(); // Get the output directory
+      String outputFilePath;
+      if (kIsWeb) {
+        outputFilePath = "combined_output.pdf";
+      } else {
+        final directory = await _getOutputDirectory();
         outputFilePath = '${directory?.path}/combined_output.pdf';
-        response = await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: selectedFiles,
-            outputPath: outputFilePath); // Combine the PDFs
-        outputFiles = [
-          outputFilePath
-        ]; // Update the output file path after successful combination
       }
 
+      final response = await PdfCombiner.mergeMultiplePDFs(
+          inputPaths: selectedFiles,
+          outputPath: outputFilePath); // Combine the PDFs
 
-
-
-        if (response.status == PdfCombinerStatus.success) {
-          debugPrint("Combining PDFs success");
-        } else {
-          throw Exception('Error combining PDFs: ${response.message}.');
-        }
-
+      if (response.status == PdfCombinerStatus.success) {
+        outputFiles = [response.response!];
+      } else {
+        throw Exception('Error combining PDFs: ${response.message}.');
+      }
     } catch (e) {
       throw Exception('Error combining PDFs: ${e.toString()}.');
     }
@@ -99,23 +86,23 @@ class PdfCombinerViewModel {
   Future<void> createPDFFromImages() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     PdfFromMultipleImageResponse response;
-    String outputFilePath  = "combined_output.pdf";
+    String outputFilePath = "combined_output.pdf";
     try {
-      if(kIsWeb){
+      if (kIsWeb) {
         response = await PdfCombiner.createPDFFromMultipleImages(
             inputPaths: selectedFiles,
             outputPath: outputFilePath,
             needImageCompressor: false); // Create PDF image
-        if(response.response != null){
+        if (response.response != null) {
           outputFiles = [
             response.response!
           ]; // Update the output file path after successful combination
         }
-      }else{
-        final directory = await _getOutputDirectory(); // Get the output directory
+      } else {
+        final directory =
+            await _getOutputDirectory(); // Get the output directory
         final outputFilePath = '${directory?.path}/combined_output.pdf';
-        response =
-        await PdfCombiner.createPDFFromMultipleImages(
+        response = await PdfCombiner.createPDFFromMultipleImages(
             inputPaths: selectedFiles,
             outputPath: outputFilePath,
             needImageCompressor: false); // Create PDF image
@@ -135,7 +122,6 @@ class PdfCombinerViewModel {
     }
   }
 
-
   // Function to create a PDF file from a list of images
   Future<void> createImagesFromPDF() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
@@ -143,19 +129,20 @@ class PdfCombinerViewModel {
       throw Exception('Only you can select a single document.');
     }
     ImageFromPDFResponse response;
-    String outputFilePath  = "combined_output.pdf";
+    String outputFilePath = "combined_output.pdf";
     try {
-      if(kIsWeb){
+      if (kIsWeb) {
         response = await PdfCombiner.createImageFromPDF(
             inputPath: selectedFiles.first,
             outputPath: outputFilePath); // Create PDF image
 
-        if(response.response != null) {
-          outputFiles = response.response!
-          ; // Update the output file path after successful combination
+        if (response.response != null) {
+          outputFiles = response
+              .response!; // Update the output file path after successful combination
         }
-      }else{
-        final directory = await _getOutputDirectory(); // Get the output directory
+      } else {
+        final directory =
+            await _getOutputDirectory(); // Get the output directory
         final outputFilePath = '${directory?.path}/combined_output.jpeg';
         response = await PdfCombiner.createImageFromPDF(
             inputPath: selectedFiles.first,
@@ -180,7 +167,7 @@ class PdfCombinerViewModel {
     if (!kIsWeb) {
       if (Platform.isIOS) {
         return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
-      }else if (Platform.isMacOS) {
+      } else if (Platform.isMacOS) {
         //TODO: find the right place to save the new document
         return await getApplicationDocumentsDirectory(); // For macos, return the documents directory
       } else if (Platform.isAndroid) {
