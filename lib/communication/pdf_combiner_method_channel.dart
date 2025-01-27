@@ -98,7 +98,6 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     int? maxHeight,
     bool? createOneImage,
   }) async {
-    try {
       final List<String>? result =
           await methodChannel.invokeMethod<List<String>>(
         'createImageFromPDF',
@@ -111,9 +110,5 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
         },
       );
       return result?.cast<String>();
-    } catch (e) {
-      debugPrint('Error creating images from PDF: $e');
-      return null;
     }
   }
-}

@@ -45,15 +45,9 @@ class PdfCombiner {
 
             isPDF = DocumentUtils.isPDF(inputPaths[i]);
             path = inputPaths[i];
+            existFile = DocumentUtils.fileExist(inputPaths[i]);
+            path = inputPaths[i];
 
-          if(DocumentUtils.fileExist(inputPaths[i])){
-            existFile = true;
-            path = inputPaths[i];
-          }else  {
-            existFile = false;
-            path = inputPaths[i];
-            break;
-          }
         }
 
         if (!isPDF) {
@@ -134,11 +128,8 @@ class PdfCombiner {
             path = inputPaths[i];
             break;
           }
-          if (!DocumentUtils.fileExist(inputPaths[i])) {
-            existFile = false;
-            path = inputPaths[i];
-            break;
-          }
+          existFile = DocumentUtils.fileExist(inputPaths[i]);
+          path = inputPaths[i];
         }
 
         if (!isImage) {
