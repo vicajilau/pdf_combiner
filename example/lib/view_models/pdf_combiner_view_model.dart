@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 class PdfCombinerViewModel {
@@ -108,37 +107,22 @@ class PdfCombinerViewModel {
     if (selectedFiles.length > 1) {
       throw Exception('Only you can select a single document.');
     }
-    ImageFromPDFResponse response;
     String outputFilePath = "combined_output.pdf";
     try {
-      if (kIsWeb) {
-        response = await PdfCombiner.createImageFromPDF(
-            inputPath: selectedFiles.first,
-            outputPath: outputFilePath); // Create PDF image
-
-        if (response.response != null) {
-          outputFiles = response
-              .response!; // Update the output file path after successful combination
-        }
-      } else {
-        final directory =
-            await _getOutputDirectory(); // Get the output directory
-        final outputFilePath = '${directory?.path}/combined_output.jpeg';
-        response = await PdfCombiner.createImageFromPDF(
-            inputPath: selectedFiles.first,
-            outputPath: outputFilePath); // Create PDF image
-
-        outputFiles = response
-            .response!; // Update the output file path after successful combination
+      if (!kIsWeb) {
+        final directory = await _getOutputDirectory();
+        outputFilePath = '${directory?.path}/combined_output.jpeg';
       }
+      final response = await PdfCombiner.createImageFromPDF(
+          inputPath: selectedFiles.first, outputPath: outputFilePath);
 
       if (response.status == PdfCombinerStatus.success) {
-        debugPrint("Creation of Images was success");
+        outputFiles = response.response!;
       } else {
-        throw Exception('Error creating PDF: ${response.message}.');
+        throw Exception('${response.message}.');
       }
     } catch (e) {
-      throw Exception('Error creating PDF: ${e.toString()}.');
+      rethrow;
     }
   }
 
