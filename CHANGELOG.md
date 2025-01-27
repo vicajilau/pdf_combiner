@@ -3,6 +3,7 @@
 * Tooltips, theme, and more improvements on example project.
 * Improved documentation inside of the code.
 * MacOS support added.
+* Web support added.
 
 ## 2.1.0
 

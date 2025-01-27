@@ -2,7 +2,7 @@
 [![pub package](https://img.shields.io/pub/v/http.svg)](https://pub.dev/packages/pdf_combiner)
 ![CI Status](https://github.com/vicajilau/pdf_combiner/actions/workflows/dart.yml/badge.svg)
 
-A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS and MacOS platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
+A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS, MacOS and Web platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
 
 ## Features
 
@@ -87,14 +87,31 @@ if (response.status == PdfCombinerStatus.success) {
 This plugin works with `file_picker` or `image_picker` for selecting files. Ensure you handle permissions using `permission_handler` before invoking the plugin.
 
 ### Dependencies
+
+The `pdf_combiner` plugin does not directly use the following dependencies. They are mentioned only to guide the development of solutions that might require additional steps for file selection or permissions:
+
 - [file_picker](https://pub.dev/packages/file_picker)
 - [image_picker](https://pub.dev/packages/image_picker)
 - [permission_handler](https://pub.dev/packages/permission_handler)
 
-## Support
+## Supported Platforms
 
-The plugin supports MacOS, Android and iOS platforms.
+This plugin supports **macOS**, **Android**, and **iOS** directly. For web support, follow these additional steps:
+
+### Web Integration
+
+1. **Add the required JavaScript file**  
+   Download [pdf_combiner.js](https://github.com/vicajilau/pdf_combiner/blob/main/example/web/assets/js/pdf_combiner.js) and place it in the `web/assets/js` folder of your Flutter project.
+
+2. **Include the script in your HTML file**  
+   Add the following line to the `<head>` section of your `web/index.html` file:
+
+   ```html
+   <script src="assets/js/pdf_combiner.js"></script>
+    ```
+
+    For a full example, refer to the  [index.html](https://github.com/vicajilau/pdf_combiner/blob/main/example/web/index.html) file in the repository.
 
 ## Notes
-
-No additional configuration is required for Android or iOS. Ensure the necessary dependencies for file selection and permissions are added to your project.
+- No additional configuration is required for Android, iOS, or MacOS. Ensure the necessary dependencies for file selection and permissions are added to your project.
+- For web, ensure the `assets/js/pdf_combiner.js` file path matches your project's folder structure. This script enables the plugin to handle PDF operations on the web platform.
