@@ -1,7 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
-
 import 'mocks/mock_pdf_combiner_platform.dart';
 
 void main() {
