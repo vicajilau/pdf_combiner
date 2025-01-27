@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
-import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
@@ -60,10 +59,8 @@ class PdfCombinerViewModel {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
 
     try {
-      String outputFilePath;
-      if (kIsWeb) {
-        outputFilePath = "combined_output.pdf";
-      } else {
+      String outputFilePath = "combined_output.pdf";
+      if (!kIsWeb) {
         final directory = await _getOutputDirectory();
         outputFilePath = '${directory?.path}/combined_output.pdf';
       }
@@ -85,35 +82,18 @@ class PdfCombinerViewModel {
   // Function to create a PDF file from a list of images
   Future<void> createPDFFromImages() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
-    PdfFromMultipleImageResponse response;
     String outputFilePath = "combined_output.pdf";
     try {
-      if (kIsWeb) {
-        response = await PdfCombiner.createPDFFromMultipleImages(
-            inputPaths: selectedFiles,
-            outputPath: outputFilePath,
-            needImageCompressor: false); // Create PDF image
-        if (response.response != null) {
-          outputFiles = [
-            response.response!
-          ]; // Update the output file path after successful combination
-        }
-      } else {
-        final directory =
-            await _getOutputDirectory(); // Get the output directory
-        final outputFilePath = '${directory?.path}/combined_output.pdf';
-        response = await PdfCombiner.createPDFFromMultipleImages(
-            inputPaths: selectedFiles,
-            outputPath: outputFilePath,
-            needImageCompressor: false); // Create PDF image
-
-        outputFiles = [
-          outputFilePath
-        ]; // Update the output file path after successful combination
+      if (!kIsWeb) {
+        final directory = await _getOutputDirectory();
+        outputFilePath = '${directory?.path}/combined_output.pdf';
       }
-
+      final response = await PdfCombiner.createPDFFromMultipleImages(
+          inputPaths: selectedFiles,
+          outputPath: outputFilePath,
+          needImageCompressor: false);
       if (response.status == PdfCombinerStatus.success) {
-        debugPrint("Creation of PDF was success");
+        outputFiles = [response.response!];
       } else {
         throw Exception('Error creating PDF: ${response.message}.');
       }
