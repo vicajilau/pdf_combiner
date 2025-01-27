@@ -11,8 +11,8 @@ void main() {
 
     testWidgets('Test creating images from PDF file', (tester) async {
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: 'test/samples/document_1.pdf',
-        outputPath: 'test/samples/image_final.jpeg',
+        inputPath: 'assets/document_1.pdf',
+        outputPath: 'assets/image_final.jpeg',
       );
 
       debugPrint("result: $result");
