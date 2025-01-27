@@ -48,6 +48,10 @@ class PdfCombiner {
             existFile = DocumentUtils.fileExist(inputPaths[i]);
             path = inputPaths[i];
 
+            if(!DocumentUtils.fileExist(inputPaths[i])){
+              break;
+            }
+
         }
 
         if (!isPDF) {
