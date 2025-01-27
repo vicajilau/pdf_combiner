@@ -10,14 +10,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   plugin_platform_interface: ^2.1.8
+  web: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   integration_test:
     sdk: flutter
-  flutter_lints: ">=4.0.0 <6.0.0"
+  flutter_lints: ^5.0.0
   test: ^1.25.8
 
 # For information on the generic Dart part of this file, see the
@@ -42,6 +45,9 @@ flutter:
         pluginClass: PdfCombinerPlugin
       ios:
         pluginClass: PdfCombinerPlugin
+      web:
+        pluginClass: PdfCombinerWeb
+        fileName: pdf_combiner_web.dart
       macos:
         pluginClass: PdfCombinerPlugin
 

@@ -1,13 +1,16 @@
-import 'dart:io';
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 
 class DocumentUtils {
   /// Checks if string is an pdf file.
   static bool isPDF(String filePath) {
-    return filePath.toLowerCase().endsWith(".pdf");
+    return kIsWeb || filePath.toLowerCase().endsWith(".pdf");
   }
 
   /// Checks if string is an image file.
   static bool isImage(String filePath) {
+    if(kIsWeb) return true;
+
     final ext = filePath.toLowerCase();
 
     // If the file has no extension, it is assumed to be a possible image.
@@ -23,5 +26,5 @@ class DocumentUtils {
   }
 
   /// Checks if string is an existing file.
-  static bool fileExist(String filePath) => File(filePath).existsSync();
+  static bool fileExist(String filePath) => kIsWeb || io.File(filePath).existsSync();
 }

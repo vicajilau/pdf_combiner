@@ -1,14 +1,11 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
-import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
-import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
@@ -18,7 +15,7 @@ class PdfCombinerViewModel {
   Future<void> pickFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'png'],
+      allowedExtensions: ['pdf', 'jpg', 'png'],
       allowMultiple: true, // Allow picking multiple files
     );
 
@@ -27,6 +24,7 @@ class PdfCombinerViewModel {
         debugPrint("${element.name}, ");
       }
       selectedFiles += result.files.map((file) => file.path!).toList();
+      outputFiles = [];
     }
   }
 
@@ -54,51 +52,52 @@ class PdfCombinerViewModel {
 
   // Function to combine selected PDF files into a single output file
   Future<void> combinePdfs() async {
+    if (selectedFiles.length < 2) {
+      throw Exception('You need to select more than one document.');
+    }
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
 
     try {
-      final directory = await _getOutputDirectory(); // Get the output directory
-      final outputFilePath = '${directory?.path}/combined_output.pdf';
-      MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
+      String outputFilePath = "combined_output.pdf";
+      if (!kIsWeb) {
+        final directory = await _getOutputDirectory();
+        outputFilePath = '${directory?.path}/combined_output.pdf';
+      }
+
+      final response = await PdfCombiner.mergeMultiplePDFs(
           inputPaths: selectedFiles,
           outputPath: outputFilePath); // Combine the PDFs
 
-      outputFiles = [
-        outputFilePath
-      ]; // Update the output file path after successful combination
       if (response.status == PdfCombinerStatus.success) {
-        debugPrint("Combining PDFs success");
+        outputFiles = [response.response!];
       } else {
-        throw Exception('Error combining PDFs: ${response.message}');
+        throw Exception('Error combining PDFs: ${response.message}.');
       }
     } catch (e) {
-      throw Exception('Error combining PDFs: ${e.toString()}');
+      throw Exception('Error combining PDFs: ${e.toString()}.');
     }
   }
 
   // Function to create a PDF file from a list of images
   Future<void> createPDFFromImages() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
-
+    String outputFilePath = "combined_output.pdf";
     try {
-      final directory = await _getOutputDirectory(); // Get the output directory
-      final outputFilePath = '${directory?.path}/combined_output.pdf';
-      PdfFromMultipleImageResponse response =
-          await PdfCombiner.createPDFFromMultipleImages(
-              inputPaths: selectedFiles,
-              outputPath: outputFilePath,
-              needImageCompressor: false); // Create PDF image
-
-      outputFiles = [
-        outputFilePath
-      ]; // Update the output file path after successful combination
+      if (!kIsWeb) {
+        final directory = await _getOutputDirectory();
+        outputFilePath = '${directory?.path}/combined_output.pdf';
+      }
+      final response = await PdfCombiner.createPDFFromMultipleImages(
+          inputPaths: selectedFiles,
+          outputPath: outputFilePath,
+          needImageCompressor: false);
       if (response.status == PdfCombinerStatus.success) {
-        debugPrint("Creation of PDF was success");
+        outputFiles = [response.response!];
       } else {
-        throw Exception('Error creating PDF: ${response.message}');
+        throw Exception('Error creating PDF: ${response.message}.');
       }
     } catch (e) {
-      throw Exception('Error creating PDF: ${e.toString()}');
+      throw Exception('Error creating PDF: ${e.toString()}.');
     }
   }
 
@@ -106,38 +105,43 @@ class PdfCombinerViewModel {
   Future<void> createImagesFromPDF() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     if (selectedFiles.length > 1) {
-      throw Exception('Only you can select a single document');
+      throw Exception('Only you can select a single document.');
     }
+    String outputFilePath = "combined_output.pdf";
     try {
-      final directory = await _getOutputDirectory(); // Get the output directory
-      final outputFilePath = '${directory?.path}/combined_output.jpeg';
-      ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
-          inputPath: selectedFiles.first,
-          outputPath: outputFilePath); // Create PDF image
-      outputFiles = response
-          .response!; // Update the output file path after successful combination
+      if (!kIsWeb) {
+        final directory = await _getOutputDirectory();
+        outputFilePath = '${directory?.path}/combined_output.jpeg';
+      }
+      final response = await PdfCombiner.createImageFromPDF(
+          inputPath: selectedFiles.first, outputPath: outputFilePath);
+
       if (response.status == PdfCombinerStatus.success) {
-        debugPrint("Creation of Images was success");
+        outputFiles = response.response!;
       } else {
-        throw Exception('Error creating PDF: ${response.message}');
+        throw Exception('${response.message}.');
       }
     } catch (e) {
-      throw Exception('Error creating PDF: ${e.toString()}');
+      rethrow;
     }
   }
 
   // Function to get the appropriate directory for saving the output file
   Future<Directory?> _getOutputDirectory() async {
-    if (Platform.isIOS) {
-      return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
-    } else if (Platform.isMacOS) {
-      //TODO: find the right place to save the new document
-      return await getApplicationDocumentsDirectory(); // For macos, return the documents directory
-    } else if (Platform.isAndroid) {
-      return await getDownloadsDirectory(); // For Android, return the Downloads directory
+    if (!kIsWeb) {
+      if (Platform.isIOS) {
+        return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
+      } else if (Platform.isMacOS) {
+        //TODO: find the right place to save the new document
+        return await getApplicationDocumentsDirectory(); // For macos, return the documents directory
+      } else if (Platform.isAndroid) {
+        return await getDownloadsDirectory(); // For Android, return the Downloads directory
+      } else {
+        throw UnsupportedError(
+            'Unsupported platform.'); // Throw an error if the platform is unsupported
+      }
     } else {
-      throw UnsupportedError(
-          'Unsupported platform'); // Throw an error if the platform is unsupported
+      return await null;
     }
   }
 

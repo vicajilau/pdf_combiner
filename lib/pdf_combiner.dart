@@ -42,15 +42,16 @@ class PdfCombiner {
         String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
-          if (!DocumentUtils.isPDF(inputPaths[i])) {
-            isPDF = false;
-            path = inputPaths[i];
-          }
 
-          if (!DocumentUtils.fileExist(inputPaths[i])) {
-            existFile = false;
+            isPDF = DocumentUtils.isPDF(inputPaths[i]);
             path = inputPaths[i];
-          }
+            existFile = DocumentUtils.fileExist(inputPaths[i]);
+            path = inputPaths[i];
+
+            if(!DocumentUtils.fileExist(inputPaths[i])){
+              break;
+            }
+
         }
 
         if (!isPDF) {
@@ -87,6 +88,7 @@ class PdfCombiner {
 
     return mergeMultiplePDFResponse;
   }
+
 
   /// Create a PDF from multiple images.
   ///
@@ -128,11 +130,10 @@ class PdfCombiner {
           if (!DocumentUtils.isImage(inputPaths[i])) {
             isImage = false;
             path = inputPaths[i];
+            break;
           }
-          if (!DocumentUtils.fileExist(inputPaths[i])) {
-            existFile = false;
-            path = inputPaths[i];
-          }
+          existFile = DocumentUtils.fileExist(inputPaths[i]);
+          path = inputPaths[i];
         }
 
         if (!isImage) {
@@ -251,8 +252,10 @@ class PdfCombiner {
         createImageFromPDFResponse.status = PdfCombinerStatus.error;
         createImageFromPDFResponse.message = e.toString();
       }
+
     }
 
     return createImageFromPDFResponse;
   }
+
 }
