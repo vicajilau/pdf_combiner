@@ -54,7 +54,7 @@ class PdfCombinerViewModel {
   // Function to combine selected PDF files into a single output file
   Future<void> combinePdfs() async {
     if (selectedFiles.length < 2) {
-      throw Exception('you need to select more than one document');
+      throw Exception('You need to select more than one document.');
     }
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
 
@@ -87,11 +87,11 @@ class PdfCombinerViewModel {
         if (response.status == PdfCombinerStatus.success) {
           debugPrint("Combining PDFs success");
         } else {
-          throw Exception('Error combining PDFs: ${response.message}');
+          throw Exception('Error combining PDFs: ${response.message}.');
         }
 
     } catch (e) {
-      throw Exception('Error combining PDFs: ${e.toString()}');
+      throw Exception('Error combining PDFs: ${e.toString()}.');
     }
   }
 
@@ -128,10 +128,10 @@ class PdfCombinerViewModel {
       if (response.status == PdfCombinerStatus.success) {
         debugPrint("Creation of PDF was success");
       } else {
-        throw Exception('Error creating PDF: ${response.message}');
+        throw Exception('Error creating PDF: ${response.message}.');
       }
     } catch (e) {
-      throw Exception('Error creating PDF: ${e.toString()}');
+      throw Exception('Error creating PDF: ${e.toString()}.');
     }
   }
 
@@ -140,7 +140,7 @@ class PdfCombinerViewModel {
   Future<void> createImagesFromPDF() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     if (selectedFiles.length > 1) {
-      throw Exception('Only you can select a single document');
+      throw Exception('Only you can select a single document.');
     }
     ImageFromPDFResponse response;
     String outputFilePath  = "combined_output.pdf";
@@ -168,10 +168,10 @@ class PdfCombinerViewModel {
       if (response.status == PdfCombinerStatus.success) {
         debugPrint("Creation of Images was success");
       } else {
-        throw Exception('Error creating PDF: ${response.message}');
+        throw Exception('Error creating PDF: ${response.message}.');
       }
     } catch (e) {
-      throw Exception('Error creating PDF: ${e.toString()}');
+      throw Exception('Error creating PDF: ${e.toString()}.');
     }
   }
 
@@ -187,7 +187,7 @@ class PdfCombinerViewModel {
         return await getDownloadsDirectory(); // For Android, return the Downloads directory
       } else {
         throw UnsupportedError(
-            'Unsupported platform'); // Throw an error if the platform is unsupported
+            'Unsupported platform.'); // Throw an error if the platform is unsupported
       }
     } else {
       return await null;
