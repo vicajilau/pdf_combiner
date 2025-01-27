@@ -53,8 +53,8 @@ void main() {
 
     test('createImageFromPDF returns success message', () async {
       // Arrange
-      String path = 'assets/document_3.pdf';
-      String outputDirPath = 'assets/';
+      String path = 'file1.pdf';
+      String outputDirPath = '/path/to/output/';
 
       // Act
       final result = await platform.createImageFromPDF(
