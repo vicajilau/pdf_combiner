@@ -46,7 +46,7 @@ void main() {
       expect(result, ['image1.png', 'image2.png']);
     });
 
-    test('createImageFromPDF returns success message only in one images', () async {
+    test('createImageFromPDF returns success message only in one image', () async {
       // Arrange
       String path = 'file1.pdf';
       String outputDirPath = '/path/to/output/';
