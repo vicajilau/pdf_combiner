@@ -57,7 +57,7 @@ void main() {
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
       expect(result.message,
-          'Only Image file allowed. File is not an image: ${inputPaths[0]}');
+          'Only PDF file allowed. File is not a pdf: ${inputPaths[0]}');
     });
   });
 }
