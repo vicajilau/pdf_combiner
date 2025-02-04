@@ -54,10 +54,8 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
       int? maxWidth,
       int? maxHeight,
       bool? createOneImage}) async {
-    String nameFunc = "";
-    if(createOneImage == false){
-      nameFunc = "convertPdfToImages";
-    }else{
+    String nameFunc = "convertPdfToImages";
+    if(createOneImage == true){
       nameFunc = "pdfToImage";
     }
     final result = await js_util.promiseToFuture(
