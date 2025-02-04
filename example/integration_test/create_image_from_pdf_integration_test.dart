@@ -59,5 +59,37 @@ void main() {
       expect(result.message,
           'Only PDF file allowed. File is not a pdf: ${inputPaths[0]}');
     });
+
+    testWidgets('Test creating only one image', (tester) async {
+      final helper = TestFileHelper(['assets/document_1.pdf']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath('image_final.jpeg');
+
+      final result = await PdfCombiner.createImageFromPDF(
+        inputPath: inputPaths[0],
+        outputPath: outputPath,
+        createOneImage: true
+      );
+
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.response, ['${TestFileHelper.basePath}/image_final.jpeg']);
+      expect(result.message, 'Processed successfully');
+    });
+
+    testWidgets('Test creating a lot of image', (tester) async {
+      final helper = TestFileHelper(['assets/document_1.pdf']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath('image_final.jpeg');
+
+      final result = await PdfCombiner.createImageFromPDF(
+          inputPath: inputPaths[0],
+          outputPath: outputPath,
+          createOneImage: false
+      );
+
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.response, ['${TestFileHelper.basePath}/image_final.jpeg']);
+      expect(result.message, 'Processed successfully');
+    });
   });
 }
