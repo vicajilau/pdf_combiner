@@ -77,7 +77,7 @@ void main() {
     });
 
     testWidgets('Test creating a lot of image', (tester) async {
-      final helper = TestFileHelper(['assets/document_1.pdf']);
+      final helper = TestFileHelper(['assets/document_3.pdf']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('image_final.jpeg');
 
