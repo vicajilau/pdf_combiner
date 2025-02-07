@@ -4,10 +4,8 @@
 // ignore: avoid_web_libraries_in_flutter
 
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:web/helpers.dart';
 import 'dart:js_util' as js_util;
 
 import 'communication/pdf_combiner_platform_interface.dart';
