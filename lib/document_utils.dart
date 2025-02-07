@@ -6,8 +6,8 @@ import 'package:web/helpers.dart';
 
 class DocumentUtils {
   /// Checks if string is an pdf file.
-  static bool isPDF(String filePath) {
-    return kIsWeb || filePath.toLowerCase().endsWith(".pdf");
+  Future<bool> isPDF(String filePath) async {
+    return await detectIfBlobUrlIsImage(filePath,true) || filePath.toLowerCase().endsWith(".pdf");
   }
 
   /// get a blob object from url
@@ -58,8 +58,27 @@ class DocumentUtils {
     return false;
   }
 
+  /// Detect if a blob its an image for the "magic numbers" method
+  bool isPDFBlob(Uint8List bytes) {
+    if (bytes.length < 4) return false;
+
+    final List<List<int>> imageSignatures = [
+      [0x25, 0x50, 0x44, 0x46] //PDF
+    ];
+
+    for (var signature in imageSignatures) {
+      if (bytes.length >= signature.length &&
+          List.generate(signature.length, (i) => bytes[i])
+              .every((b) => signature.contains(b))) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /// Detect if a blob its an image
-  Future<bool> detectIfBlobUrlIsImage(String blobUrl) async {
+  Future<bool> detectIfBlobUrlIsImage(String blobUrl,bool checkImage) async {
     Blob? blob = await fetchBlobFromUrl(blobUrl);
     if (blob == null) {
       return false;
@@ -75,7 +94,7 @@ class DocumentUtils {
   }
   /// Checks if string is an image file.
   Future<bool> isImage(String filePath) async {
-    if(kIsWeb) return await detectIfBlobUrlIsImage(filePath);
+    if(kIsWeb) return await detectIfBlobUrlIsImage(filePath,true);
 
     final ext = filePath.toLowerCase();
 

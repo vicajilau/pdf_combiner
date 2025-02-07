@@ -45,7 +45,7 @@ class PdfCombiner {
 
         for (int i = 0; i < inputPaths.length; i++) {
 
-            isPDF = DocumentUtils.isPDF(inputPaths[i]);
+            isPDF = await DocumentUtils().isPDF(inputPaths[i]);
             path = inputPaths[i];
             existFile = DocumentUtils.fileExist(inputPaths[i]);
             path = inputPaths[i];
@@ -220,7 +220,7 @@ class PdfCombiner {
           PdfCombinerMessages.emptyParameterMessage("inputPaths");
     } else {
       try {
-        bool isPDF = DocumentUtils.isPDF(inputPath);
+        bool isPDF = await DocumentUtils().isPDF(inputPath);
         bool existFile = DocumentUtils.fileExist(inputPath);
 
         if (!isPDF) {
