@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:pdf_combiner/document_utils.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
+import 'package:web/helpers.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
 
@@ -127,7 +131,7 @@ class PdfCombiner {
         String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
-          if (!DocumentUtils.isImage(inputPaths[i])) {
+          if (await DocumentUtils().isImage(inputPaths[i]) == false) {
             isImage = false;
             path = inputPaths[i];
             break;

@@ -3,7 +3,11 @@
 // package as the core of your plugin.
 // ignore: avoid_web_libraries_in_flutter
 
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:web/helpers.dart';
 import 'dart:js_util' as js_util;
 
 import 'communication/pdf_combiner_platform_interface.dart';
@@ -51,12 +55,12 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   Future<List<String>> createImageFromPDF(
       {required String inputPath,
       required String outputPath,
-      int? maxWidth,
-      int? maxHeight,
-      bool? createOneImage}) async {
-    String nameFunc = "convertPdfToImages";
-    if(createOneImage == true){
-      nameFunc = "pdfToImage";
+      int maxWidth = 360,
+      int maxHeight = 360,
+      bool createOneImage = true}) async {
+    String nameFunc = "pdfToImage";
+    if(!createOneImage){
+      nameFunc = "convertPdfToImages";
     }
     final result = await js_util.promiseToFuture(
       js_util.callMethod(

@@ -93,9 +93,9 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   Future<List<String>?> createImageFromPDF({
     required String inputPath,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? createOneImage,
+    int maxWidth = 360,
+    int maxHeight = 360,
+    bool createOneImage = true,
   }) {
     throw UnimplementedError('createImageFromPDF() has not been implemented.');
   }

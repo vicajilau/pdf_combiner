@@ -72,6 +72,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
+      expect(result.response?.length, 1);
       expect(result.response, ['${TestFileHelper.basePath}/image_final.jpeg']);
       expect(result.message, 'Processed successfully');
     });
@@ -88,7 +89,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, ['${TestFileHelper.basePath}/image_final.jpeg']);
+      expect(result.response?.length, 3);
       expect(result.message, 'Processed successfully');
     });
   });
