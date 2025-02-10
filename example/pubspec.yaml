@@ -32,6 +32,7 @@ dependencies:
     git:
       url: https://github.com/vicajilau/flutter_file_picker
       ref: feature/path-blob-on-web
+    version: 8.3.1
   path_provider: ^2.1.5
   path: ^1.9.0
   permission_handler: ^11.3.1
