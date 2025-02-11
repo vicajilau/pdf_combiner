@@ -60,7 +60,7 @@ void main() {
           'Only PDF file allowed. File is not a pdf: ${inputPaths[0]}');
     });
 
-    testWidgets('Test creating only one image', (tester) async {
+    testWidgets('Test creating only one image from a PDF', (tester) async {
       final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('image_final.jpeg');
@@ -77,7 +77,7 @@ void main() {
       expect(result.message, 'Processed successfully');
     });
 
-    testWidgets('Test creating a lot of image', (tester) async {
+    testWidgets('Test creating four images from a PDF', (tester) async {
       final helper = TestFileHelper(['assets/document_3.pdf']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('image_final.jpeg');
@@ -89,7 +89,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response?.length, 3);
+      expect(result.response?.length, 4);
       expect(result.message, 'Processed successfully');
     });
   });

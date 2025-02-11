@@ -68,6 +68,7 @@ flutter:
   assets:
     - assets/document_1.pdf
     - assets/document_2.pdf
+    - assets/document_3.pdf
     - assets/image_1.jpg
     - assets/image_2.png
   #   - images/a_dot_burr.jpeg
