@@ -4,9 +4,9 @@
 // ignore: avoid_web_libraries_in_flutter
 
 import 'dart:async';
+import 'dart:js_util' as js_util;
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'dart:js_util' as js_util;
 
 import 'communication/pdf_combiner_platform_interface.dart';
 
@@ -38,7 +38,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
       required String outputPath,
       int? maxWidth,
       int? maxHeight,
-      bool? needImageCompressor})  async {
+      bool? needImageCompressor}) async {
     return await js_util.promiseToFuture(
       js_util.callMethod(
         js_util.getProperty(js_util.globalThis, 'createPdfFromImages'),
@@ -57,7 +57,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
       int maxHeight = 360,
       bool createOneImage = true}) async {
     String nameFunc = "pdfToImage";
-    if(!createOneImage){
+    if (!createOneImage) {
       nameFunc = "convertPdfToImages";
     }
     final result = await js_util.promiseToFuture(
@@ -65,7 +65,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
         js_util.getProperty(js_util.globalThis, nameFunc),
         // Obtén la función JS
         'call',
-        [null,js_util.jsify(inputPath)], // Pasa el array convertido
+        [null, js_util.jsify(inputPath)], // Pasa el array convertido
       ),
     );
     return result.cast<String>();
