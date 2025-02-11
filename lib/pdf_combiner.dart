@@ -44,16 +44,14 @@ class PdfCombiner {
         String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
+          isPDF = DocumentUtils.isPDF(inputPaths[i]);
+          path = inputPaths[i];
+          existFile = DocumentUtils.fileExist(inputPaths[i]);
+          path = inputPaths[i];
 
-            isPDF = await DocumentUtils().isPDF(inputPaths[i]);
-            path = inputPaths[i];
-            existFile = DocumentUtils.fileExist(inputPaths[i]);
-            path = inputPaths[i];
-
-            if(!DocumentUtils.fileExist(inputPaths[i])){
-              break;
-            }
-
+          if (!DocumentUtils.fileExist(inputPaths[i])) {
+            break;
+          }
         }
 
         if (!isPDF) {
@@ -90,7 +88,6 @@ class PdfCombiner {
 
     return mergeMultiplePDFResponse;
   }
-
 
   /// Create a PDF from multiple images.
   ///
@@ -129,14 +126,14 @@ class PdfCombiner {
         String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
-          if (await DocumentUtils().isImage(inputPaths[i]) == false) {
+          if (!DocumentUtils.isImage(inputPaths[i])) {
             isImage = false;
             path = inputPaths[i];
             break;
           }
           existFile = DocumentUtils.fileExist(inputPaths[i]);
           path = inputPaths[i];
-          if(!existFile){
+          if (!existFile) {
             createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
             createPDFFromMultipleImageResponse.message =
                 PdfCombinerMessages.errorMessageFile(path);
@@ -220,7 +217,7 @@ class PdfCombiner {
           PdfCombinerMessages.emptyParameterMessage("inputPaths");
     } else {
       try {
-        bool isPDF = await DocumentUtils().isPDF(inputPath);
+        bool isPDF = DocumentUtils.isPDF(inputPath);
         bool existFile = DocumentUtils.fileExist(inputPath);
 
         if (!isPDF) {
@@ -258,10 +255,8 @@ class PdfCombiner {
         createImageFromPDFResponse.status = PdfCombinerStatus.error;
         createImageFromPDFResponse.message = e.toString();
       }
-
     }
 
     return createImageFromPDFResponse;
   }
-
 }
