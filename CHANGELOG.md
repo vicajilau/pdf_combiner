@@ -10,6 +10,7 @@
 * Some improvements on the readme.
 * Updated dependencies.
 * Added more integration tests.
+* Minimized code size.
 ### iOS
 * Fixed wrong order exporting a pdf to one image [#9](https://github.com/vicajilau/pdf_combiner/issues/9).
 * Refactor creating extensions.
