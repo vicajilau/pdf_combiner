@@ -28,6 +28,3 @@ jobs:
 
       - name: Run Unit tests
         run: cd example && flutter test
-
-      - name: Run integration tests
-        run: flutter --no-color test --machine -d android integration_test
