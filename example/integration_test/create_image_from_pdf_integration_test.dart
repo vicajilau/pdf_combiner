@@ -45,7 +45,7 @@ void main() {
     });
 
     testWidgets('Test creating with non-supported file', (tester) async {
-      final helper = TestFileHelper(['assets/image_1.jpg']);
+      final helper = TestFileHelper(['assets/image_1.jpeg']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 

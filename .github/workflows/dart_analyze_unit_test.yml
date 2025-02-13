@@ -1,4 +1,4 @@
-name: Flutter CI
+name: Dart Analyze + Unit Test
 
 on: push
 
@@ -26,5 +26,8 @@ jobs:
       - name: Analyze code
         run: dart analyze
 
-      - name: Run tests
-        run: flutter test
+      - name: Run Unit tests
+        run: cd example && flutter test
+
+      - name: Run integration tests
+        run: flutter --no-color test --machine -d android integration_test

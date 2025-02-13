@@ -163,7 +163,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: ['assets/test_image1.png', 'assets/test_image2.jpeg'],
+        inputPaths: ['assets/image_1.jpeg', 'assets/image_2.png'],
         outputPath: 'output/path',
       );
 

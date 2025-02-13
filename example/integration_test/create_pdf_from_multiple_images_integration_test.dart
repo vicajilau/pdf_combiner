@@ -15,7 +15,7 @@ void main() {
   group('createPDFFromMultipleImages Integration Tests', () {
     testWidgets('Test creating pdf from two images', (tester) async {
       final helper =
-          TestFileHelper(['assets/image_1.jpg', 'assets/image_2.png']);
+          TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
@@ -60,7 +60,7 @@ void main() {
 
     testWidgets('Test creating pdf with non-supported file', (tester) async {
       final helper =
-          TestFileHelper(['assets/document_1.pdf', 'assets/image_1.jpg']);
+          TestFileHelper(['assets/document_1.pdf', 'assets/image_1.jpeg']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
