@@ -18,7 +18,7 @@ inputs:
     description: 'hardware profile used for creating the AVD - e.g. `Nexus 6`'
   cores:
     description: 'the number of cores to use for the emulator'
-    default: 2
+    default: '2'
   ram-size:
     description: 'size of RAM to use for this AVD, in KB or MB, denoted with K or M. - e.g. `2048M`'
   heap-size:
