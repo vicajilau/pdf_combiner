@@ -1,11 +1,18 @@
 ## 3.0.0
-
+### General
 * Tooltips, theme, and more improvements on example project.
 * Improved documentation inside of the code.
-* MacOS support added.
-* Web support added.
-* Updated and upgraded readme.
+* Some improvements on the readme.
 * Updated dependencies.
+* Added more integration tests.
+### iOS
+* Fixed wrong order exporting a pdf to one image [#9](https://github.com/vicajilau/pdf_combiner/issues/9).
+* Refactor creating extensions.
+### MacOS
+* MacOS support added.
+* Refactor creating extensions.
+### Web
+* Web support added.
 
 ## 2.1.0
 

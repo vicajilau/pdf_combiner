@@ -64,6 +64,10 @@ class MockPdfCombinerPlatform
     int? maxHeight,
     bool? createOneImage,
   }) {
-    return Future.value(['image1.png', 'image2.png']);
+    if(createOneImage == true) {
+      return Future.value(['image1.png']);
+    } else {
+      return Future.value(['image1.png', 'image2.png']);
+    }
   }
 }

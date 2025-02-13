@@ -114,7 +114,7 @@ class PdfCombinerViewModel {
         outputFilePath = '${directory?.path}/combined_output.jpeg';
       }
       final response = await PdfCombiner.createImageFromPDF(
-          inputPath: selectedFiles.first, outputPath: outputFilePath);
+          inputPath: selectedFiles.first, outputPath: outputFilePath,createOneImage: false);
 
       if (response.status == PdfCombinerStatus.success) {
         outputFiles = response.response!;

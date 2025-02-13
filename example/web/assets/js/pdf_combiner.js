@@ -112,3 +112,50 @@ async function convertPdfToImages(pdfData) {
 
   return imageUrls;
 }
+async function pdfToImage(pdfFile) {
+    const { PDFDocument } = PDFLib;
+    const pdf = await pdfjsLib.getDocument(pdfFile).promise;
+    const numPages = pdf.numPages;
+
+    const pageImages = [];
+    let totalWidth = 0;
+    let totalHeight = 0;
+
+    // Renderizar cada página en un canvas temporal
+    for (let i = 1; i <= numPages; i++) {
+        const page = await pdf.getPage(i);
+        const scale = 2; // Ajusta la calidad
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        pageImages.push(canvas);
+        totalWidth = Math.max(totalWidth, viewport.width); // Usamos el ancho más grande
+        totalHeight += viewport.height; // Suma las alturas
+    }
+
+    // Crear un nuevo canvas para unir todas las páginas
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = totalWidth;
+    finalCanvas.height = totalHeight;
+    const finalContext = finalCanvas.getContext('2d');
+
+    // Dibujar cada imagen en la posición correcta
+    let yOffset = 0;
+    for (const img of pageImages) {
+        finalContext.drawImage(img, 0, yOffset);
+        yOffset += img.height;
+    }
+
+    // Convertir el canvas final en Blob
+   const imgBlob = await new Promise((resolve) => {
+        finalCanvas.toBlob((blob) => resolve(blob), 'image/png');
+    });
+    const imgUrl = URL.createObjectURL(imgBlob);
+    return [imgUrl];
+}

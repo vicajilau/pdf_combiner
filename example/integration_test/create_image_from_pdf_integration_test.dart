@@ -57,7 +57,40 @@ void main() {
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
       expect(result.message,
-          'Only Image file allowed. File is not an image: ${inputPaths[0]}');
+          'Only PDF file allowed. File is not a pdf: ${inputPaths[0]}');
+    });
+
+    testWidgets('Test creating only one image from a PDF', (tester) async {
+      final helper = TestFileHelper(['assets/document_1.pdf']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath('image_final.jpeg');
+
+      final result = await PdfCombiner.createImageFromPDF(
+        inputPath: inputPaths[0],
+        outputPath: outputPath,
+        createOneImage: true
+      );
+
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.response?.length, 1);
+      expect(result.response, ['${TestFileHelper.basePath}/image_final.jpeg']);
+      expect(result.message, 'Processed successfully');
+    });
+
+    testWidgets('Test creating four images from a PDF', (tester) async {
+      final helper = TestFileHelper(['assets/document_3.pdf']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath('image_final.jpeg');
+
+      final result = await PdfCombiner.createImageFromPDF(
+          inputPath: inputPaths[0],
+          outputPath: outputPath,
+          createOneImage: false
+      );
+
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.response?.length, 4);
+      expect(result.message, 'Processed successfully');
     });
   });
 }

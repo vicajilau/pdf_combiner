@@ -3,8 +3,10 @@
 // package as the core of your plugin.
 // ignore: avoid_web_libraries_in_flutter
 
-import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'dart:async';
 import 'dart:js_util' as js_util;
+
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
 
@@ -36,7 +38,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
       required String outputPath,
       int? maxWidth,
       int? maxHeight,
-      bool? needImageCompressor})  async {
+      bool? needImageCompressor}) async {
     return await js_util.promiseToFuture(
       js_util.callMethod(
         js_util.getProperty(js_util.globalThis, 'createPdfFromImages'),
@@ -51,15 +53,19 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   Future<List<String>> createImageFromPDF(
       {required String inputPath,
       required String outputPath,
-      int? maxWidth,
-      int? maxHeight,
-      bool? createOneImage}) async {
+      int maxWidth = 360,
+      int maxHeight = 360,
+      bool createOneImage = true}) async {
+    String nameFunc = "pdfToImage";
+    if (!createOneImage) {
+      nameFunc = "convertPdfToImages";
+    }
     final result = await js_util.promiseToFuture(
       js_util.callMethod(
-        js_util.getProperty(js_util.globalThis, 'convertPdfToImages'),
+        js_util.getProperty(js_util.globalThis, nameFunc),
         // Obtén la función JS
         'call',
-        [null,js_util.jsify(inputPath)], // Pasa el array convertido
+        [null, js_util.jsify(inputPath)], // Pasa el array convertido
       ),
     );
     return result.cast<String>();

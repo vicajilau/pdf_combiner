@@ -30,7 +30,7 @@ void main() {
       expect(result, 'Merged PDF');
     });
 
-    test('createImageFromPDF returns success message', () async {
+    test('createImageFromPDF returns success message with some images', () async {
       // Arrange
       String path = 'file1.pdf';
       String outputDirPath = '/path/to/output/';
@@ -39,10 +39,27 @@ void main() {
       final List<String>? result = await platform.createImageFromPDF(
         inputPath: path,
         outputPath: outputDirPath,
+          createOneImage: false
       );
 
       // Assert
       expect(result, ['image1.png', 'image2.png']);
+    });
+
+    test('createImageFromPDF returns success message only in one image', () async {
+      // Arrange
+      String path = 'file1.pdf';
+      String outputDirPath = '/path/to/output/';
+
+      // Act
+      final List<String>? result = await platform.createImageFromPDF(
+        inputPath: path,
+        outputPath: outputDirPath,
+        createOneImage: true
+      );
+
+      // Assert
+      expect(result, ['image1.png']);
     });
 
     test('createPDFFromMultipleImages returns success message', () async {
