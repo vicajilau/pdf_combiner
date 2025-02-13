@@ -3,7 +3,7 @@ name: Integration Test - Android
 on: push
 
 jobs:
-  test:
+  android-integration-test:
     runs-on: ubuntu-latest
 
     steps:

@@ -3,7 +3,7 @@ name: Dart Analyze + Unit Test
 on: push
 
 jobs:
-  test:
+  analyze-unit-test:
     runs-on: ${{ matrix.os }}
 
     strategy:
