@@ -1,6 +1,9 @@
 name: Integration Test - Android
 
-on: push
+on:
+  push:
+    paths-ignore:
+      - '**.md'
 
 jobs:
   android-integration-test:
@@ -18,15 +21,8 @@ jobs:
       - name: Moves to the example project
         run: cd example
 
-      - name: Setup AVD
+      - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_3a
-          disable-animations: true
-          script: echo "Emulator ready!"
-
-      - name: Run integration tests
-        run: flutter --no-color test --machine -d android integration_test
+          script: flutter --no-color test --machine -d android integration_test
