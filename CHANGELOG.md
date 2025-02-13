@@ -5,6 +5,7 @@
 * MacOS support added.
 * Web support added.
 * Updated and upgraded readme.
+* Updated dependencies.
 
 ## 2.1.0
 
