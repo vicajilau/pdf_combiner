@@ -36,6 +36,13 @@ jobs:
       - name: Moves to the example project
         run: cd example
 
+      - name: Install Android SDK
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager --install 'build-tools;35.0.0' platform-tools 'platforms;android-35' --channel=3 || true
+          sdkmanager --install emulator --channel=3 || true
+          sdkmanager --install 'system-images;android-35;default;x86_64' --channel=3 || true
+
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
