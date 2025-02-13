@@ -1,9 +1,9 @@
-name: Flutter CI
+name: Dart Analyze + Unit Test
 
 on: push
 
 jobs:
-  test:
+  analyze-unit-test:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -26,5 +26,5 @@ jobs:
       - name: Analyze code
         run: dart analyze
 
-      - name: Run tests
-        run: flutter test
+      - name: Run Unit tests
+        run: cd example && flutter test

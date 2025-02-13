@@ -1,3 +1,8 @@
+## 3.0.1
+### General
+* Minimized code size.
+* Optimized CI/CD process.
+
 ## 3.0.0
 ### General
 * Tooltips, theme, and more improvements on example project.
