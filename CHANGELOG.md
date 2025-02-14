@@ -1,4 +1,6 @@
 ## 3.0.1
+### General
+* Fixed CI badge.
 ### Web
 * js_utils migrated to js_interop.
 
