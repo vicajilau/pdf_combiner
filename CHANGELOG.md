@@ -1,7 +1,4 @@
 ## 3.0.1
-### General
-* Minimized code size.
-* Optimized CI/CD process.
 ### Web
 * js_utils migrated to js_interop.
 
@@ -13,6 +10,8 @@
 * Updated dependencies.
 * Added more integration tests.
 * Minimized code size.
+* Minimized code size.
+* Optimized CI/CD process.
 ### iOS
 * Fixed wrong order exporting a pdf to one image [#9](https://github.com/vicajilau/pdf_combiner/issues/9).
 * Refactor creating extensions.
