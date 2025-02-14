@@ -1,3 +1,8 @@
+## 3.0.4
+### Web
+* Fixed linting issues.
+* WASP improvements.
+
 ## 3.0.3
 ### Web
 * Some internal improvements.
