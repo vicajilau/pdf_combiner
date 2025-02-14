@@ -1,3 +1,7 @@
+## 3.0.1
+### General
+* Fixed CI badge.
+
 ## 3.0.0
 ### General
 * Tooltips, theme, and more improvements on example project.
