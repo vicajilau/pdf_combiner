@@ -1,3 +1,7 @@
+## 3.0.3
+### Web
+* Some internal improvements.
+
 ## 3.0.2
 ### Web
 * Added WASM support.
