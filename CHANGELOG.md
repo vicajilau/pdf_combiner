@@ -2,6 +2,8 @@
 ### General
 * Minimized code size.
 * Optimized CI/CD process.
+### Web
+* js_utils migrated to js_interop.
 
 ## 3.0.0
 ### General
