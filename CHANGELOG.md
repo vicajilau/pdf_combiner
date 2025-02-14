@@ -1,3 +1,7 @@
+## 3.0.2
+### Web
+* Added WASM support.
+
 ## 3.0.1
 ### General
 * Fixed CI badge.

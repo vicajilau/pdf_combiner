@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:pdf_combiner/document_utils.dart';
+import 'package:pdf_combiner/document_utils.dart'
+    if (dart.library.html) 'package:pdf_combiner/web/document_utils_web.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';

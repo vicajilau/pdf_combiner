@@ -1,29 +1,35 @@
-import 'dart:io' as io;
+import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-
+/// Utility class for handling document-related checks in a file system environment.
+///
+/// This implementation is designed for platforms with direct file system access,
+/// such as Windows, macOS, and Linux. The `filePath` parameter should be a valid
+/// local file path.
 class DocumentUtils {
-  /// Checks if string is an pdf file.
-  static bool isPDF(String filePath) =>
-      kIsWeb || filePath.toLowerCase().endsWith(".pdf");
+  /// Determines whether the given file path corresponds to a PDF file.
+  ///
+  /// This method checks if the file path ends with the `.pdf` extension
+  /// (case insensitive).
+  static bool isPDF(String filePath) => filePath.toLowerCase().endsWith(".pdf");
 
-  /// Checks if string is an image file.
+  /// Determines whether the given file path corresponds to an image file.
+  ///
+  /// The method checks for common image file extensions (`.jpg`, `.jpeg`, `.png`,
+  /// `.gif`, `.bmp`). If the file has no extension, it is assumed to be an image.
   static bool isImage(String filePath) {
-    if (kIsWeb) return true;
-
     final ext = filePath.toLowerCase();
 
-    // If the file has no extension, it is assumed to be a possible image.
-    if (!ext.contains(".")) return true;
-
-    return ext.endsWith(".jpg") ||
+    return ext.endsWith(".") || // the file has no extension
+        ext.endsWith(".jpg") ||
         ext.endsWith(".jpeg") ||
         ext.endsWith(".png") ||
         ext.endsWith(".gif") ||
         ext.endsWith(".bmp");
   }
 
-  /// Checks if string is an existing file.
-  static bool fileExist(String filePath) =>
-      kIsWeb || io.File(filePath).existsSync();
+  /// Checks whether the specified file exists in the file system.
+  ///
+  /// Uses `File.existsSync()` to determine if the file is present at the given
+  /// path. This method is not available on web platforms.
+  static bool fileExist(String filePath) => File(filePath).existsSync();
 }
