@@ -49,6 +49,11 @@ flutter:
         fileName: pdf_combiner_web.dart
       macos:
         pluginClass: PdfCombinerPlugin
+      linux:
+        pluginClass: PdfCombinerPlugin
+      fuchsia:
+        pluginClass: PdfCombinerPlugin
+    ffiPlugin: true
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
