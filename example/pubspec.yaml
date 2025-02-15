@@ -29,7 +29,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   file_picker:
-    path: ../../flutter_file_picker
+    git:
+      url: https://github.com/vicajilau/flutter_file_picker
+      ref: feature/path-blob-on-web
   path_provider: ^2.1.5
   path: ^1.9.0
   permission_handler: ^11.3.1

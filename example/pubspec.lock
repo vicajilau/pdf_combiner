@@ -140,10 +140,12 @@ packages:
   file_picker:
     dependency: "direct main"
     description:
-      path: "../../flutter_file_picker"
-      relative: true
-    source: path
-    version: "8.3.5"
+      path: "."
+      ref: "feature/path-blob-on-web"
+      resolved-ref: "053c64755bd700e74c620ed9408319471c20bdc9"
+      url: "https://github.com/vicajilau/flutter_file_picker"
+    source: git
+    version: "8.3.7"
   flutter:
     dependency: "direct main"
     description: flutter
