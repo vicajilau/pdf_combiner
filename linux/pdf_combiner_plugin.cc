@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "pdf_combiner_plugin_private.h"
+#include "include/pdfium/fpdfview.h"
 
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \
@@ -63,13 +64,16 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
 
 static void pdf_combiner_plugin_dispose(GObject* object) {
   G_OBJECT_CLASS(pdf_combiner_plugin_parent_class)->dispose(object);
+  FPDF_DestroyLibrary(); // Destroy the FPDF library
 }
 
 static void pdf_combiner_plugin_class_init(PdfCombinerPluginClass* klass) {
   G_OBJECT_CLASS(klass)->dispose = pdf_combiner_plugin_dispose;
 }
 
-static void pdf_combiner_plugin_init(PdfCombinerPlugin* self) {}
+static void pdf_combiner_plugin_init(PdfCombinerPlugin* self) {
+  FPDF_InitLibrary(); // Initialize the FPDF library
+}
 
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
                            gpointer user_data) {
