@@ -26,11 +26,17 @@ static void pdf_combiner_plugin_handle_method_call(
 
   const gchar* method = fl_method_call_get_name(method_call);
 
-  if (strcmp(method, "getPlatformVersion") == 0) {
-    response = get_platform_version();
-  } else {
-    response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
-  }
+    if (strcmp(method, "getPlatformVersion") == 0) {
+        response = get_platform_version();
+    } else if (strcmp(method, "mergeMultiplePDF") == 0) {
+        response = merge_multiple_pdfs(fl_method_call_get_args(method_call));
+    } else if (strcmp(method, "createPDFFromMultipleImage") == 0) {
+        response = create_pdf_from_multiple_images(fl_method_call_get_args(method_call));
+    } else if (strcmp(method, "createImageFromPDF") == 0) {
+        response = create_image_from_pdf(fl_method_call_get_args(method_call));
+    } else {
+        response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
+    }
 
   fl_method_call_respond(method_call, response, nullptr);
 }
@@ -41,6 +47,18 @@ FlMethodResponse* get_platform_version() {
   g_autofree gchar *version = g_strdup_printf("Linux %s", uname_data.version);
   g_autoptr(FlValue) result = fl_value_new_string(version);
   return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+}
+
+FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("UNIMPLEMENTED", "mergeMultiplePDF not implemented", nullptr));
+}
+
+FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("UNIMPLEMENTED", "createPDFFromMultipleImage not implemented", nullptr));
+}
+
+FlMethodResponse* create_image_from_pdf(FlValue* args) {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("UNIMPLEMENTED", "createImageFromPDF not implemented", nullptr));
 }
 
 static void pdf_combiner_plugin_dispose(GObject* object) {
