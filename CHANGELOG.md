@@ -1,3 +1,8 @@
+## 3.1.1
+### General
+* Added Codecov tool.
+* Added coverage on CI.
+
 ## 3.1.0
 ### General
 * Integrated CD.
