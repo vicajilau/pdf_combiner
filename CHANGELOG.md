@@ -1,6 +1,10 @@
-## 3.0.5
+## 3.1.0
 ### General
-* Added support for swift package manager.
+* Integrated CD.
+### iOS
+* iOS migration to SPM.
+### MacOS
+* MacOS migration to SPM.
 
 ## 3.0.4
 ### Web
