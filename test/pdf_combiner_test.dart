@@ -36,7 +36,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: ['assets/document_1.pdf', 'assets/document_2.pdf'],
+        inputPaths: ['example/assets/document_1.pdf', 'example/assets/document_2.pdf'],
         outputPath: 'output/path',
       );
 
@@ -163,7 +163,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: ['assets/image_1.jpeg', 'assets/image_2.png'],
+        inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
         outputPath: 'output/path',
       );
 
@@ -205,7 +205,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: 'assets/document_1.pdf',
+        inputPath: 'example/assets/document_1.pdf',
         outputPath: 'output/path',
       );
 

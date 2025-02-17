@@ -2,6 +2,7 @@
 [![pub package](https://img.shields.io/pub/v/http.svg)](https://pub.dev/packages/pdf_combiner)
 ![CI Status](https://github.com/vicajilau/pdf_combiner/actions/workflows/dart_analyze_unit_test.yml/badge.svg)
 ![CD Status](https://github.com/vicajilau/pdf_combiner/actions/workflows/publish_pub_dev.yml/badge.svg)
+[![codecov](https://codecov.io/github/vicajilau/pdf_combiner/graph/badge.svg?token=HRVY3LKKSC)](https://codecov.io/github/vicajilau/pdf_combiner)
 
 A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS, MacOS and Web platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
 
