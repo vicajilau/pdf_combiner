@@ -1,3 +1,7 @@
+## 3.0.2
+### General
+* Added support for swift package manager.
+
 ## 3.0.1
 ### General
 * Fixed CI badge.
