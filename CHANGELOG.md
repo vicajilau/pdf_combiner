@@ -1,3 +1,11 @@
+## 3.1.0
+### General
+* Integrated CD.
+### iOS
+* iOS migration to SPM.
+### MacOS
+* MacOS migration to SPM.
+
 ## 3.0.4
 ### Web
 * Fixed linting issues.

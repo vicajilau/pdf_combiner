@@ -13,7 +13,7 @@ is a lightweight and efficient Flutter plugin designed to merge multiple PDF doc
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'pdf_combiner/Sources/pdf_combiner/**/*.swift'
   s.dependency 'Flutter'
   s.platform = :ios, '12.0'
 
@@ -25,5 +25,5 @@ is a lightweight and efficient Flutter plugin designed to merge multiple PDF doc
   # required reason APIs, update the PrivacyInfo.xcprivacy file to describe your
   # plugin's privacy impact, and then uncomment this line. For more information,
   # see https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
-  # s.resource_bundles = {'pdf_combiner_privacy' => ['Resources/PrivacyInfo.xcprivacy']}
+  s.resource_bundles = {'pdf_combiner_privacy' => ['pdf_combiner/Sources/pdf_combiner/PrivacyInfo.xcprivacy']}
 end
