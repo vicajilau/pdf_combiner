@@ -1,10 +1,25 @@
-## 3.0.2
+## 3.0.5
 ### General
 * Added support for swift package manager.
+
+## 3.0.4
+### Web
+* Fixed linting issues.
+* WASP improvements.
+
+## 3.0.3
+### Web
+* Some internal improvements.
+
+## 3.0.2
+### Web
+* Added WASM support.
 
 ## 3.0.1
 ### General
 * Fixed CI badge.
+### Web
+* js_utils migrated to js_interop.
 
 ## 3.0.0
 ### General

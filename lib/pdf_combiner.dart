@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:pdf_combiner/document_utils.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
+import 'package:pdf_combiner/utils/document_utils_selector.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
 
