@@ -1,80 +1,93 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'mocks/mock_pdf_combiner_platform.dart';
+import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  late MethodChannelPdfCombiner platform;
+  const MethodChannel testChannel = MethodChannel('pdf_combiner');
 
-  MockPdfCombinerPlatform platform = MockPdfCombinerPlatform();
-  const MethodChannel channel = MethodChannel('pdf_combiner');
-
-  tearDown(() {
-    // Clean up the mock after each test.
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, null);
+  setUp(() {
+    platform = MethodChannelPdfCombiner();
   });
 
-  group('MethodChannelPdfCombiner Unit Tests', () {
-    test('mergeMultiplePDF returns success message', () async {
-      // Arrange
-      List<String> paths = ['file1.pdf', 'file2.pdf'];
-      String outputDirPath = '/path/to/output/';
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(testChannel, null);
+  });
 
-      // Act
-      final result = await platform.mergeMultiplePDFs(
-        inputPaths: paths,
-        outputPath: outputDirPath,
-      );
-
-      // Assert
-      expect(result, 'Merged PDF');
+  test('mergeMultiplePDFs calls method channel correctly', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
+      if (methodCall.method == 'mergeMultiplePDF') {
+        expect(methodCall.arguments, {
+          'paths': ['file1.pdf', 'file2.pdf'],
+          'outputDirPath': '/output/path',
+        });
+        return 'merged.pdf';
+      }
+      return null;
     });
 
-    test('createImageFromPDF returns success message with some images', () async {
-      // Arrange
-      String path = 'file1.pdf';
-      String outputDirPath = '/path/to/output/';
+    final result = await platform.mergeMultiplePDFs(
+      inputPaths: ['file1.pdf', 'file2.pdf'],
+      outputPath: '/output/path',
+    );
 
-      // Act
-      final List<String>? result = await platform.createImageFromPDF(
-        inputPath: path,
-        outputPath: outputDirPath,
-          createOneImage: false
-      );
+    expect(result, 'merged.pdf');
+  });
 
-      // Assert
-      expect(result, ['image1.png', 'image2.png']);
+  test('createPDFFromMultipleImages calls method channel correctly', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
+      if (methodCall.method == 'createPDFFromMultipleImage') {
+        expect(methodCall.arguments, {
+          'paths': ['image1.jpg', 'image2.png'],
+          'outputDirPath': '/output/path',
+          'maxWidth': 500,
+          'maxHeight': 500,
+          'needImageCompressor': false,
+        });
+        return 'created.pdf';
+      }
+      return null;
     });
 
-    test('createImageFromPDF returns success message only in one image', () async {
-      // Arrange
-      String path = 'file1.pdf';
-      String outputDirPath = '/path/to/output/';
+    final result = await platform.createPDFFromMultipleImages(
+      inputPaths: ['image1.jpg', 'image2.png'],
+      outputPath: '/output/path',
+      maxWidth: 500,
+      maxHeight: 500,
+      needImageCompressor: false,
+    );
 
-      // Act
-      final List<String>? result = await platform.createImageFromPDF(
-        inputPath: path,
-        outputPath: outputDirPath,
-        createOneImage: true
-      );
+    expect(result, 'created.pdf');
+  });
 
-      // Assert
-      expect(result, ['image1.png']);
+  test('createImageFromPDF calls method channel correctly', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
+      if (methodCall.method == 'createImageFromPDF') {
+        expect(methodCall.arguments, {
+          'path': 'file.pdf',
+          'outputDirPath': '/output/path',
+          'maxWidth': 400,
+          'maxHeight': 400,
+          'createOneImage': false,
+        });
+        return ['image1.png', 'image2.png'];
+      }
+      return null;
     });
 
-    test('createPDFFromMultipleImages returns success message', () async {
-      // Arrange
-      List<String> paths = ['file1.jpg', 'file2.png'];
-      String outputDirPath = '/path/to/output/';
+    final result = await platform.createImageFromPDF(
+      inputPath: 'file.pdf',
+      outputPath: '/output/path',
+      maxWidth: 400,
+      maxHeight: 400,
+      createOneImage: false,
+    );
 
-      // Act
-      final result = await platform.createPDFFromMultipleImages(
-        inputPaths: paths,
-        outputPath: outputDirPath,
-      );
-
-      // Assert
-      expect(result, 'Created PDF from Images');
-    });
+    expect(result, ['image1.png', 'image2.png']);
   });
 }
