@@ -6,6 +6,7 @@ import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
 import 'mocks/mock_pdf_combiner_platform_with_error.dart';
+import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
 
 void main() {
   group('PdfCombiner Combine Unit Tests', () {
@@ -118,6 +119,56 @@ void main() {
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'File does not exist: path1.pdf');
+    });
+
+    // Test for error processing when combining multiple PDFs using PdfCombiner.
+    test('combine - Error in processing', () async {
+      MockPdfCombinerPlatformWithError fakePlatform =
+          MockPdfCombinerPlatformWithError();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/document_2.pdf'
+        ],
+        outputPath: 'output/path',
+      );
+
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.response, null);
+      expect(result.message, 'Error in processing');
+      expect(result.toString(),
+          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
+    });
+
+    // Test for error processing when combining multiple PDFs using PdfCombiner.
+    test('combine - Mocked Exception', () async {
+      MockPdfCombinerPlatformWithException fakePlatform =
+          MockPdfCombinerPlatformWithException();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/document_2.pdf'
+        ],
+        outputPath: 'output/path',
+      );
+
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.response, null);
+      expect(result.message, 'Exception: Mocked Exception');
+      expect(result.toString(),
+          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
     });
   });
 }
