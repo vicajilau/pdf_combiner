@@ -77,9 +77,6 @@ class PdfCombiner {
             mergeMultiplePDFResponse.message = PdfCombinerMessages.errorMessage;
           }
         }
-      } on Exception catch (exception) {
-        mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
-        mergeMultiplePDFResponse.message = exception.toString();
       } catch (e) {
         mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
         mergeMultiplePDFResponse.message = e.toString();
@@ -168,9 +165,6 @@ class PdfCombiner {
                 PdfCombinerMessages.errorMessage;
           }
         }
-      } on Exception catch (exception) {
-        createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
-        createPDFFromMultipleImageResponse.message = exception.toString();
       } catch (e) {
         createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
         createPDFFromMultipleImageResponse.message = e.toString();
@@ -214,7 +208,7 @@ class PdfCombiner {
     if (inputPath.trim().isEmpty) {
       createImageFromPDFResponse.status = PdfCombinerStatus.error;
       createImageFromPDFResponse.message =
-          PdfCombinerMessages.emptyParameterMessage("inputPaths");
+          PdfCombinerMessages.emptyParameterMessage("inputPath");
     } else {
       try {
         bool isPDF = DocumentUtils.isPDF(inputPath);
@@ -248,9 +242,6 @@ class PdfCombiner {
           createImageFromPDFResponse.message =
               PdfCombinerMessages.successMessage;
         }
-      } on Exception catch (exception) {
-        createImageFromPDFResponse.status = PdfCombinerStatus.error;
-        createImageFromPDFResponse.message = exception.toString();
       } catch (e) {
         createImageFromPDFResponse.status = PdfCombinerStatus.error;
         createImageFromPDFResponse.message = e.toString();

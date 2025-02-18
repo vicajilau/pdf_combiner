@@ -1,3 +1,23 @@
+## 3.1.2
+### General
+* Simplified catching errors.
+* Added 100% coverage tests.
+
+## 3.1.1
+### General
+* Added Codecov tool.
+* Added coverage on CI and PRs.
+### Android
+* Fix issue with special characters in the `outputPath` param on `imageFromPDF` method.
+
+## 3.1.0
+### General
+* Integrated CD.
+### iOS
+* iOS migration to SPM.
+### MacOS
+* MacOS migration to SPM.
+
 ## 3.0.4
 ### Web
 * Fixed linting issues.
