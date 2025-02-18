@@ -214,7 +214,7 @@ class PdfCombiner {
     if (inputPath.trim().isEmpty) {
       createImageFromPDFResponse.status = PdfCombinerStatus.error;
       createImageFromPDFResponse.message =
-          PdfCombinerMessages.emptyParameterMessage("inputPaths");
+          PdfCombinerMessages.emptyParameterMessage("inputPath");
     } else {
       try {
         bool isPDF = DocumentUtils.isPDF(inputPath);

@@ -52,6 +52,27 @@ void main() {
     });
 
     // Test for error setting a different type of file in the mergeMultiplePDF method.
+    test('combine - Error empty inputPaths', () async {
+      // Create a mock platform that simulates an error during PDF merging.
+      MockPdfCombinerPlatformWithError fakePlatformWithError =
+          MockPdfCombinerPlatformWithError();
+
+      // Replace the platform instance with the error mock implementation.
+      PdfCombinerPlatform.instance = fakePlatformWithError;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: [],
+        outputPath: 'output/path',
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, 'The parameter (inputPaths) cannot be empty');
+    });
+
+    // Test for error setting a different type of file in the mergeMultiplePDF method.
     test('combine - Error handling (Only PDF file allowed)', () async {
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
@@ -73,7 +94,7 @@ void main() {
     });
 
     // Test for an incorrect platform in the mergeMultiplePDF method.
-    test('combine - Error handling (Only PDF file allowed)', () async {
+    test('combine - Error handling (Simulated Error)', () async {
       String error = "";
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
@@ -116,6 +137,26 @@ void main() {
     });
 
     ///CREATE_PDF_FROM_MULTIPLE_IMAGES
+
+    // Test for error handling when file not exist in the createPDFFromMultipleImages method.
+    test('createPDFFromMultipleImages - Error handling (empty inputPaths)',
+        () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.createPDFFromMultipleImages(
+        inputPaths: [],
+        outputPath: 'output/path',
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, 'The parameter (inputPaths) cannot be empty');
+    });
 
     // Test for error handling when file not exist in the createPDFFromMultipleImages method.
     test('createPDFFromMultipleImages - Error handling (File does not exist)',
@@ -202,6 +243,25 @@ void main() {
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message,
           'Only PDF file allowed. File is not a pdf: assets/test_image1.png');
+    });
+
+    // Test for error handling when you try to send a file that its not a pdf in createImageFromPDF
+    test('createImageFromPDF - Error handling (empty inputPath)', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.createImageFromPDF(
+        inputPath: '',
+        outputPath: 'output/path',
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, 'The parameter (inputPath) cannot be empty');
     });
 
     // Test succesfully for createImageFromPDF
