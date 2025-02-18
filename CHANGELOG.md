@@ -1,6 +1,7 @@
 ## 3.1.2
 ### General
 * Simplified catching errors.
+* Added 100% coverage tests.
 
 ## 3.1.1
 ### General
