@@ -1,7 +1,9 @@
 ## 3.1.1
 ### General
 * Added Codecov tool.
-* Added coverage on CI.
+* Added coverage on CI and PRs.
+### Android
+* Fix issue with special characters in the `outputPath` param on `imageFromPDF` method.
 
 ## 3.1.0
 ### General
