@@ -1,3 +1,7 @@
+## 3.1.2
+### General
+* Simplified catching errors.
+
 ## 3.1.1
 ### General
 * Added Codecov tool.

@@ -6,7 +6,7 @@ import 'mock_pdf_combiner_platform.dart';
 /// A mock platform that simulates an error when calling the [mergeMultiplePDF] method.
 /// It extends [MockPdfCombinerPlatform] and overrides the [mergeMultiplePDF] method
 /// to return an error instead of a successful result.
-class MockPdfCombinerPlatformWithError
+class MockPdfCombinerPlatformWithException
     with MockPlatformInterfaceMixin
     implements PdfCombinerPlatform {
   /// Mocks the `mergeMultiplePDF` method.
@@ -21,7 +21,7 @@ class MockPdfCombinerPlatformWithError
     required List<String> inputPaths,
     required String outputPath,
   }) {
-    return Future.value('error');
+    throw Exception("Mocked Exception");
   }
 
   /// Mocks the `createPDFFromMultipleImage` method.
@@ -42,7 +42,7 @@ class MockPdfCombinerPlatformWithError
     int? maxHeight,
     bool? needImageCompressor,
   }) {
-    return Future.value('error');
+    throw Exception("Mocked Exception");
   }
 
   /// Mocks the `createImageFromPDF` method.
