@@ -36,7 +36,10 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: ['example/assets/document_1.pdf', 'example/assets/document_2.pdf'],
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/document_2.pdf'
+        ],
         outputPath: 'output/path',
       );
 
@@ -44,6 +47,8 @@ void main() {
       expect(result.status, PdfCombinerStatus.success);
       expect(result.response, 'Merged PDF');
       expect(result.message, 'Processed successfully');
+      expect(result.toString(),
+          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
     });
 
     // Test for error setting a different type of file in the mergeMultiplePDF method.
@@ -67,9 +72,9 @@ void main() {
       expect(result.message, 'Only PDF file allowed. File is not a pdf: path1');
     });
 
-     // Test for an incorrect platform in the mergeMultiplePDF method.
+    // Test for an incorrect platform in the mergeMultiplePDF method.
     test('combine - Error handling (Only PDF file allowed)', () async {
-      String error  = "";
+      String error = "";
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
           MockPdfCombinerPlatformWithError();
@@ -110,12 +115,11 @@ void main() {
       expect(result.message, 'File does not exist: path1.pdf');
     });
 
-
-    //CREATE_PDF_FROM_MULTIPLE_IMAGES
-
+    ///CREATE_PDF_FROM_MULTIPLE_IMAGES
 
     // Test for error handling when file not exist in the createPDFFromMultipleImages method.
-    test('createPDFFromMultipleImages - Error handling (File does not exist)', () async {
+    test('createPDFFromMultipleImages - Error handling (File does not exist)',
+        () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
       // Replace the platform instance with the mock implementation.
@@ -133,9 +137,9 @@ void main() {
       expect(result.message, 'File does not exist: path1.jpg');
     });
 
-
     // Test for error handling when you try to send a file that its not an image in createPDFFromMultipleImages
-    test('createPDFFromMultipleImages - Error handling (File is not an image)', () async {
+    test('createPDFFromMultipleImages - Error handling (File is not an image)',
+        () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
       // Replace the platform instance with the mock implementation.
@@ -150,9 +154,9 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'Only Image file allowed. File is not an image: assets/document_1.pdf');
+      expect(result.message,
+          'Only Image file allowed. File is not an image: assets/document_1.pdf');
     });
-
 
     // Test for success process in createPDFFromMultipleImages
     test('createPDFFromMultipleImages - success generate PDF', () async {
@@ -163,7 +167,10 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
+        inputPaths: [
+          'example/assets/image_1.jpeg',
+          'example/assets/image_2.png'
+        ],
         outputPath: 'output/path',
       );
 
@@ -171,11 +178,11 @@ void main() {
       expect(result.response, 'Created PDF from Images');
       expect(result.status, PdfCombinerStatus.success);
       expect(result.message, 'Processed successfully');
+      expect(result.toString(),
+          'PdfFromMultipleImageResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
     });
 
-
-    //CREATE_IMAGES_FROM_PDF
-
+    ///CREATE_IMAGES_FROM_PDF
 
     // Test for error handling when you try to send a file that its not a pdf in createImageFromPDF
     test('createImageFromPDF - Error handling (File is not a pdf)', () async {
@@ -193,7 +200,8 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'Only PDF file allowed. File is not a pdf: assets/test_image1.png');
+      expect(result.message,
+          'Only PDF file allowed. File is not a pdf: assets/test_image1.png');
     });
 
     // Test succesfully for createImageFromPDF
@@ -213,6 +221,8 @@ void main() {
       expect(result.response, ['image1.png']);
       expect(result.status, PdfCombinerStatus.success);
       expect(result.message, 'Processed successfully');
+      expect(result.toString(),
+          'ImageFromPDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
     });
   });
 }
