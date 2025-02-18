@@ -4,17 +4,7 @@ import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
-
-// Mock platform that simulates an error in the mergeMultiplePDF method.
-class MockPdfCombinerPlatformWithError extends MockPdfCombinerPlatform {
-  @override
-  Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
-    required String outputPath,
-  }) {
-    return Future.error('Simulated Error');
-  }
-}
+import 'mocks/mock_pdf_combiner_platform_with_error.dart';
 
 void main() {
   group('PdfCombiner  Create PDF From Multiple Images Unit Tests', () {
@@ -77,6 +67,30 @@ void main() {
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message,
           'Only Image file allowed. File is not an image: assets/document_1.pdf');
+    });
+
+    // Test for error handling when you try to send a file that its not an image in createPDFFromMultipleImages
+    test('createPDFFromMultipleImages - Error handling (File is not an image)',
+        () async {
+      MockPdfCombinerPlatformWithError fakePlatform =
+          MockPdfCombinerPlatformWithError();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.createPDFFromMultipleImages(
+        inputPaths: [
+          'example/assets/image_1.jpeg',
+          'example/assets/image_2.png'
+        ],
+        outputPath: 'output/path',
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, 'Error in processing');
     });
 
     // Test for success process in createPDFFromMultipleImages

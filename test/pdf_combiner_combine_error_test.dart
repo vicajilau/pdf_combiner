@@ -41,6 +41,31 @@ void main() {
           'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
     });
 
+    // Test for successfully combining multiple PDFs using PdfCombiner.
+    test('combine (PdfCombiner)', () async {
+      MockPdfCombinerPlatformWithError fakePlatform =
+          MockPdfCombinerPlatformWithError();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/document_2.pdf'
+        ],
+        outputPath: 'output/path',
+      );
+
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.response, null);
+      expect(result.message, 'Error in processing');
+      expect(result.toString(),
+          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
+    });
+
     // Test for error setting a different type of file in the mergeMultiplePDF method.
     test('combine - Error empty inputPaths', () async {
       // Create a mock platform that simulates an error during PDF merging.
@@ -85,7 +110,7 @@ void main() {
 
     // Test for an incorrect platform in the mergeMultiplePDF method.
     test('combine - Error handling (Simulated Error)', () async {
-      String error = "";
+      String error = "error";
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
           MockPdfCombinerPlatformWithError();
@@ -93,18 +118,13 @@ void main() {
       // Replace the platform instance with the error mock implementation.
       PdfCombinerPlatform.instance = fakePlatformWithError;
 
-      try {
-        // Call the method and check the response.
-        await fakePlatformWithError.mergeMultiplePDFs(
-          inputPaths: ['path1', 'path2'],
-          outputPath: 'output/path',
-        );
-      } catch (e) {
-        error = e.toString();
-      }
+      final result = await fakePlatformWithError.mergeMultiplePDFs(
+        inputPaths: ['path1', 'path2'],
+        outputPath: 'output/path',
+      );
 
       // Verify the error result matches the expected values.
-      expect(error, error);
+      expect(result, error);
     });
 
     // Test for error handling when file does not exist in the mergeMultiplePDF method.
