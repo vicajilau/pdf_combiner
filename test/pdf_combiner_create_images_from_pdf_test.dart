@@ -28,6 +28,26 @@ void main() {
           'Only PDF file allowed. File is not a pdf: assets/test_image1.png');
     });
 
+    // Test for error handling when you try to send a file that file not exist in createImageFromPDF
+    test('createImageFromPDF - Error handling (File not exist)', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.createImageFromPDF(
+        inputPath: 'assets/test_image_not_exist.pdf',
+        outputPath: 'output/path',
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.response, null);
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message,
+          'File does not exist: assets/test_image_not_exist.pdf');
+    });
+
     // Test for error handling when you try to send a file that its not a pdf in createImageFromPDF
     test('createImageFromPDF - Error handling (empty inputPath)', () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
