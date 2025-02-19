@@ -34,6 +34,7 @@ dependencies:
   permission_handler: ^11.3.1
   get: ^4.7.2
   open_file: ^3.5.10
+  platform_detail: ^4.1.0
 
 dev_dependencies:
   integration_test:

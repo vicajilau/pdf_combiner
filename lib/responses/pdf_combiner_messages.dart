@@ -6,8 +6,7 @@ class PdfCombinerMessages {
       "The parameter ($parameterName) cannot be empty";
 
   static String errorMessagePDF(String path) =>
-      "Only PDF file allowed. File is not a pdf: $path";
+      "File is not of PDF type or does not exist: $path";
   static String errorMessageImage(String path) =>
-      "Only Image file allowed. File is not an image: $path";
-  static String errorMessageFile(String path) => "File does not exist: $path";
+      "File is not an image or does not exist: $path";
 }

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
+import 'package:platform_detail/platform_detail.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
@@ -59,10 +60,8 @@ class PdfCombinerViewModel {
 
     try {
       String outputFilePath = "combined_output.pdf";
-      if (!kIsWeb) {
-        final directory = await _getOutputDirectory();
-        outputFilePath = '${directory?.path}/combined_output.pdf';
-      }
+      final directory = await _getOutputDirectory();
+      outputFilePath = '${directory?.path}/combined_output.pdf';
 
       final response = await PdfCombiner.mergeMultiplePDFs(
           inputPaths: selectedFiles,
@@ -83,10 +82,8 @@ class PdfCombinerViewModel {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     String outputFilePath = "combined_output.pdf";
     try {
-      if (!kIsWeb) {
-        final directory = await _getOutputDirectory();
-        outputFilePath = '${directory?.path}/combined_output.pdf';
-      }
+      final directory = await _getOutputDirectory();
+      outputFilePath = '${directory?.path}/combined_output.pdf';
       final response = await PdfCombiner.createPDFFromMultipleImages(
           inputPaths: selectedFiles,
           outputPath: outputFilePath,
@@ -109,12 +106,12 @@ class PdfCombinerViewModel {
     }
     String outputFilePath = "combined_output.pdf";
     try {
-      if (!kIsWeb) {
-        final directory = await _getOutputDirectory();
-        outputFilePath = '${directory?.path}/combined_output.jpeg';
-      }
+      final directory = await _getOutputDirectory();
+      outputFilePath = '${directory?.path}/combined_output.jpeg';
       final response = await PdfCombiner.createImageFromPDF(
-          inputPath: selectedFiles.first, outputPath: outputFilePath,createOneImage: false);
+          inputPath: selectedFiles.first,
+          outputPath: outputFilePath,
+          createOneImage: false);
 
       if (response.status == PdfCombinerStatus.success) {
         outputFiles = response.response!;
@@ -128,20 +125,17 @@ class PdfCombinerViewModel {
 
   // Function to get the appropriate directory for saving the output file
   Future<Directory?> _getOutputDirectory() async {
-    if (!kIsWeb) {
-      if (Platform.isIOS) {
-        return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
-      } else if (Platform.isMacOS) {
-        //TODO: find the right place to save the new document
-        return await getApplicationDocumentsDirectory(); // For macos, return the documents directory
-      } else if (Platform.isAndroid) {
-        return await getDownloadsDirectory(); // For Android, return the Downloads directory
-      } else {
-        throw UnsupportedError(
-            'Unsupported platform.'); // Throw an error if the platform is unsupported
-      }
+    if (PlatformDetail.isWeb) {
+      return null;
+    } else if (PlatformDetail.isIOS) {
+      return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
+    } else if (PlatformDetail.isMacOS) {
+      return await getApplicationDocumentsDirectory(); // For macos, return the documents directory
+    } else if (PlatformDetail.isAndroid) {
+      return await getDownloadsDirectory(); // For Android, return the Downloads directory
     } else {
-      return await null;
+      throw UnsupportedError(
+          'Unsupported platform.'); // Throw an error if the platform is unsupported
     }
   }
 
