@@ -1,3 +1,9 @@
+## 3.2.0
+### General
+* Error management improved.
+* File type detection improved with `file_magic_number` dependency. [file_magic_number](https://github.com/vicajilau/file_magic_number)
+* Universal flows improved.
+
 ## 3.1.2
 ### General
 * Simplified catching errors.
