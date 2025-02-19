@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:file_magic_number/file_magic_number.dart';
+import 'package:file_magic_number/file_magic_number_type.dart';
 
 /// Utility class for handling document-related checks in a file system environment.
 ///
@@ -10,26 +11,27 @@ class DocumentUtils {
   ///
   /// This method checks if the file path ends with the `.pdf` extension
   /// (case insensitive).
-  static bool isPDF(String filePath) => filePath.toLowerCase().endsWith(".pdf");
+  static Future<bool> isPDF(String filePath) async {
+    try {
+      return await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath) ==
+          FileMagicNumberType.pdf;
+    } catch (e) {
+      return false;
+    }
+  }
 
   /// Determines whether the given file path corresponds to an image file.
   ///
   /// The method checks for common image file extensions (`.jpg`, `.jpeg`, `.png`,
   /// `.gif`, `.bmp`). If the file has no extension, it is assumed to be an image.
-  static bool isImage(String filePath) {
-    final ext = filePath.toLowerCase();
-
-    return ext.endsWith(".") || // the file has no extension
-        ext.endsWith(".jpg") ||
-        ext.endsWith(".jpeg") ||
-        ext.endsWith(".png") ||
-        ext.endsWith(".gif") ||
-        ext.endsWith(".bmp");
+  static Future<bool> isImage(String filePath) async {
+    try {
+      final fileType =
+          await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
+      return fileType == FileMagicNumberType.png ||
+          fileType == FileMagicNumberType.jpg;
+    } catch (e) {
+      return false;
+    }
   }
-
-  /// Checks whether the specified file exists in the file system.
-  ///
-  /// Uses `File.existsSync()` to determine if the file is present at the given
-  /// path. This method is not available on web platforms.
-  static bool fileExist(String filePath) => File(filePath).existsSync();
 }
