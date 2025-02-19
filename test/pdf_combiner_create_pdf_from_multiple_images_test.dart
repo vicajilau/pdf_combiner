@@ -46,7 +46,7 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'File does not exist: path1.jpg');
+      expect(result.message, 'Only Image file allowed. File is not an image: path1.jpg');
     });
 
     // Test for error handling when you try to send a file that its not an image in createPDFFromMultipleImages

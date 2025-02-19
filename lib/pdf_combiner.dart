@@ -5,7 +5,7 @@ import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
-import 'package:pdf_combiner/utils/document_utils_selector.dart';
+import 'package:pdf_combiner/utils/document_utils.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
 
@@ -44,12 +44,12 @@ class PdfCombiner {
         String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
-          isPDF = DocumentUtils.isPDF(inputPaths[i]);
+          isPDF = await DocumentUtils.isPDF(inputPaths[i]);
           path = inputPaths[i];
-          existFile = DocumentUtils.fileExist(inputPaths[i]);
+          existFile = await DocumentUtils.fileExist(inputPaths[i]);
           path = inputPaths[i];
 
-          if (!DocumentUtils.fileExist(inputPaths[i])) {
+          if (!existFile) {
             break;
           }
         }
@@ -123,12 +123,12 @@ class PdfCombiner {
         String path = "";
 
         for (int i = 0; i < inputPaths.length; i++) {
-          if (!DocumentUtils.isImage(inputPaths[i])) {
+          if (!await DocumentUtils.isImage(inputPaths[i])) {
             isImage = false;
             path = inputPaths[i];
             break;
           }
-          existFile = DocumentUtils.fileExist(inputPaths[i]);
+          existFile = await DocumentUtils.fileExist(inputPaths[i]);
           path = inputPaths[i];
           if (!existFile) {
             createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
@@ -211,8 +211,8 @@ class PdfCombiner {
           PdfCombinerMessages.emptyParameterMessage("inputPath");
     } else {
       try {
-        bool isPDF = DocumentUtils.isPDF(inputPath);
-        bool existFile = DocumentUtils.fileExist(inputPath);
+        bool isPDF = await DocumentUtils.isPDF(inputPath);
+        bool existFile = await DocumentUtils.fileExist(inputPath);
 
         if (!isPDF) {
           createImageFromPDFResponse.status = PdfCombinerStatus.error;

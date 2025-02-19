@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
@@ -10,6 +12,26 @@ import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
 
 void main() {
   group('PdfCombiner Combine Unit Tests', () {
+    late File testFile1;
+    late File testFile2;
+    final String testFilePath1 = 'test_1.pdf';
+    final String testFilePath2 = 'test_2.pdf';
+
+    setUp(() async {
+      testFile1 = File(testFilePath1);
+      testFile2 = File(testFilePath2);
+    });
+
+    tearDown(() async {
+      if (await testFile1.exists()) {
+        await testFile1.delete();
+      }
+
+      if (await testFile2.exists()) {
+        await testFile2.delete();
+      }
+    });
+
     // Preserve the initial platform to reset it later if necessary.
     final PdfCombinerPlatform initialPlatform = PdfCombinerPlatform.instance;
 
@@ -118,7 +140,7 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'File does not exist: path1.pdf');
+      expect(result.message, 'Only PDF file allowed. File is not a pdf: path1.pdf');
     });
 
     // Test for error processing when combining multiple PDFs using PdfCombiner.

@@ -129,6 +129,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  file_magic_number:
+    dependency: transitive
+    description:
+      name: file_magic_number
+      sha256: "61a2e850c0821c1cc86b51650769d251d9851af162b24fb037303d863446a112"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   file_picker:
     dependency: "direct main"
     description:
@@ -764,5 +772,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.7.0-0 <4.0.0"
+  dart: ">=3.7.0 <4.0.0"
   flutter: ">=3.24.0"
