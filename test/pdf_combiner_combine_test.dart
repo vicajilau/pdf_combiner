@@ -103,7 +103,7 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'Only PDF file allowed. File is not a pdf: path1');
+      expect(result.message, 'File is not of PDF type or does not exist: path1');
     });
 
     // Test for an incorrect platform in the mergeMultiplePDF method.
@@ -140,7 +140,7 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'Only PDF file allowed. File is not a pdf: path1.pdf');
+      expect(result.message, 'File is not of PDF type or does not exist: path1.pdf');
     });
 
     // Test for error processing when combining multiple PDFs using PdfCombiner.

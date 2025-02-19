@@ -25,7 +25,7 @@ void main() {
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message,
-          'Only PDF file allowed. File is not a pdf: assets/test_image1.png');
+          'File is not of PDF type or does not exist: assets/test_image1.png');
     });
 
     // Test for error handling when you try to send a file that file not exist in createImageFromPDF
@@ -45,7 +45,7 @@ void main() {
       expect(result.response, null);
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message,
-          'Only PDF file allowed. File is not a pdf: assets/test_image_not_exist.pdf');
+          'File is not of PDF type or does not exist: assets/test_image_not_exist.pdf');
     });
 
     // Test for error handling when you try to send a file that its not a pdf in createImageFromPDF
