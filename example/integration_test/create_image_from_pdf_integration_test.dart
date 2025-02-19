@@ -41,7 +41,7 @@ void main() {
 
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
-      expect(result.message, 'File does not exist: ${inputPaths[0]}');
+      expect(result.message, 'File is not of PDF type or does not exist: ${inputPaths[0]}');
     });
 
     testWidgets('Test creating with non-supported file', (tester) async {
@@ -57,7 +57,7 @@ void main() {
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
       expect(result.message,
-          'Only PDF file allowed. File is not a pdf: ${inputPaths[0]}');
+          'File is not of PDF type or does not exist: ${inputPaths[0]}');
     });
 
     testWidgets('Test creating only one image from a PDF', (tester) async {
