@@ -51,58 +51,7 @@ FlMethodResponse* get_platform_version() {
 }
 
 FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
-    if (!args || fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new("INVALID_ARGUMENT", "Invalid arguments", nullptr));
-    }
-
-    FlValue* paths_value = fl_value_lookup_string(args, "paths");
-    FlValue* output_path_value = fl_value_lookup_string(args, "outputDirPath");
-
-    if (!paths_value || !output_path_value) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new("INVALID_ARGUMENT", "Missing paths or output path", nullptr));
-    }
-
-    const char* output_path = fl_value_get_string(output_path_value);
-    int file_count = fl_value_get_length(paths_value);
-
-    if (file_count == 0) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new("EMPTY_LIST", "No PDFs provided", nullptr));
-    }
-
-    // Crear documento de salida
-    FPDF_DOCUMENT output_doc = FPDF_CreateNewDocument();
-    if (!output_doc) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new("PDF_CREATION_FAILED", "Failed to create new PDF document", nullptr));
-    }
-
-    for (int i = 0; i < file_count; i++) {
-        const char* file_path = fl_value_get_string(fl_value_get_list_value(paths_value, i));
-        FPDF_DOCUMENT doc = FPDF_LoadDocument(file_path, nullptr);
-        if (!doc) {
-            continue;
-        }
-
-        int page_count = FPDF_GetPageCount(doc);
-        for (int j = 0; j < page_count; j++) {
-            FPDF_PAGE page = FPDF_LoadPage(doc, j);
-            if (!page) {
-                continue;
-            }
-            FPDFPage_New(output_doc, j, FPDF_GetPageWidth(page), FPDF_GetPageHeight(page));
-            FPDFPage_GenerateContent(output_doc);
-            FPDF_ClosePage(page);
-        }
-        FPDF_CloseDocument(doc);
-    }
-
-    // Guardar el documento final
-    if (!FPDF_SaveAsCopy(output_doc, output_path, FPDF_SAVE_NO_INCREMENTAL)) {
-        FPDF_CloseDocument(output_doc);
-        return FL_METHOD_RESPONSE(fl_method_error_response_new("SAVE_FAILED", "Failed to save merged PDF", nullptr));
-    }
-
-    FPDF_CloseDocument(output_doc);
-    return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(output_path)));
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("UNIMPLEMENTED", "mergeMultiplePDF not implemented", nullptr));
 }
 
 FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
