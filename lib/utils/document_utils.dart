@@ -34,19 +34,4 @@ class DocumentUtils {
       return false;
     }
   }
-
-  /// Checks whether the specified file exists in the file system.
-  ///
-  /// Uses `File.existsSync()` to determine if the file is present at the given
-  /// path. This method is not available on web platforms.
-  static Future<bool> fileExist(String filePath) async {
-    try {
-      final fileType =
-          await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
-      return fileType != FileMagicNumberType.emptyFile &&
-          fileType != FileMagicNumberType.unknown;
-    } catch (e) {
-      return false;
-    }
-  }
 }
