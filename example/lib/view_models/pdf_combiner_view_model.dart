@@ -35,22 +35,6 @@ class PdfCombinerViewModel {
     outputFiles = [];
   }
 
-  // Function to pick PDF files with debug log (new method)
-  Future<void> pickFilesWithLogs() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-      allowMultiple: true, // Allow picking multiple files
-    );
-
-    if (result != null && result.files.isNotEmpty) {
-      selectedFiles = result.files.map((file) => file.path!).toList();
-      for (var file in selectedFiles) {
-        debugPrint("Picked file: $file");
-      }
-    }
-  }
-
   // Function to combine selected PDF files into a single output file
   Future<void> combinePdfs() async {
     if (selectedFiles.length < 2) {
@@ -127,15 +111,13 @@ class PdfCombinerViewModel {
   Future<Directory?> _getOutputDirectory() async {
     if (PlatformDetail.isWeb) {
       return null;
-    } else if (PlatformDetail.isIOS) {
-      return await getApplicationDocumentsDirectory(); // For iOS, return the documents directory
-    } else if (PlatformDetail.isMacOS) {
-      return await getApplicationDocumentsDirectory(); // For macos, return the documents directory
+    } else if (PlatformDetail.isIOS || PlatformDetail.isMacOS) {
+      return await getApplicationDocumentsDirectory(); // For iOS & macOS, return the documents directory
     } else if (PlatformDetail.isAndroid) {
       return await getDownloadsDirectory(); // For Android, return the Downloads directory
     } else {
       throw UnsupportedError(
-          'Unsupported platform.'); // Throw an error if the platform is unsupported
+          '_getOutputDirectory() in unsupported platform.'); // Throw an error if the platform is unsupported
     }
   }
 
