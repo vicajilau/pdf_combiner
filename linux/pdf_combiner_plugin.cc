@@ -124,9 +124,11 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
                 "document_creation_failed", "Failed to create new PDF document", nullptr));
     }
 
+    int total_pages = 0;  // Variable to track total pages
+
     // Process each PDF file in input_paths
     for (const auto& input_path : input_paths) {
-        // Cargar el documento PDF
+        // Load the PDF file
         FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
         if (!doc) {
             FPDF_CloseDocument(new_doc);
@@ -148,18 +150,15 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
                         "page_loading_failed", "Failed to load page from document", nullptr));
             }
 
-            // Get the number of pages in the old document
-            unsigned long length = FPDF_GetPageCount(doc);
-
             // Import the page into the new document
-            if (!FPDF_ImportPagesByIndex(new_doc, doc, nullptr, length, 0)) {
+            if (!FPDF_ImportPages(new_doc, doc, nullptr, total_pages)) {
                 FPDF_ClosePage(page);
                 FPDF_CloseDocument(doc);
                 FPDF_CloseDocument(new_doc);
                 return FL_METHOD_RESPONSE(fl_method_error_response_new(
                         "page_import_failed", "Failed to import page into new document", nullptr));
             }
-
+            total_pages++;
             // Close the imported page
             FPDF_ClosePage(page);
         }
