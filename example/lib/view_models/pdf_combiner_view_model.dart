@@ -111,7 +111,9 @@ class PdfCombinerViewModel {
   Future<Directory?> _getOutputDirectory() async {
     if (PlatformDetail.isWeb) {
       return null;
-    } else if (PlatformDetail.isIOS || PlatformDetail.isMacOS) {
+    } else if (PlatformDetail.isIOS ||
+        PlatformDetail.isMacOS ||
+        PlatformDetail.isLinux) {
       return await getApplicationDocumentsDirectory(); // For iOS & macOS, return the documents directory
     } else if (PlatformDetail.isAndroid) {
       return await getDownloadsDirectory(); // For Android, return the Downloads directory

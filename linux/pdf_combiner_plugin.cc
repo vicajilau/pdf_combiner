@@ -5,9 +5,14 @@
 #include <sys/utsname.h>
 
 #include <cstring>
+#include <vector>
+#include <string>
 
 #include "pdf_combiner_plugin_private.h"
 #include "include/pdfium/fpdfview.h"
+#include "include/pdfium/fpdf_edit.h"
+#include "include/pdfium/fpdf_save.h"
+#include "include/pdfium/fpdf_ppo.h"
 
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \
@@ -51,7 +56,105 @@ FlMethodResponse* get_platform_version() {
 }
 
 FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
-    return FL_METHOD_RESPONSE(fl_method_error_response_new("UNIMPLEMENTED", "mergeMultiplePDF not implemented", nullptr));
+    printf("Args type: %d\n", fl_value_get_type(args));
+    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
+    }
+
+    // Get inputPaths (List<String>)
+    FlValue* input_paths_value = fl_value_lookup_string(args, "paths");
+    if (!input_paths_value || fl_value_get_type(input_paths_value) != FL_VALUE_TYPE_LIST) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "inputPaths must be a list of strings", nullptr));
+    }
+
+    // Get outputPath (String)
+    FlValue* output_path_value = fl_value_lookup_string(args, "outputDirPath");
+    if (!output_path_value || fl_value_get_type(output_path_value) != FL_VALUE_TYPE_STRING) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "outputPath must be a string", nullptr));
+    }
+
+    // Cast outputPath to C-string
+    const char* output_path = fl_value_get_string(output_path_value);
+
+    // Cast inputPaths to a strings vector
+    int num_pdfs = fl_value_get_length(input_paths_value);
+    std::vector<std::string> input_paths;
+    for (int i = 0; i < num_pdfs; i++) {
+        FlValue* path_value = fl_value_get_list_value(input_paths_value, i);
+        if (!path_value || fl_value_get_type(path_value) != FL_VALUE_TYPE_STRING) {
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "invalid_arguments", "Each item in inputPaths must be a string", nullptr));
+        }
+        input_paths.push_back(std::string(fl_value_get_string(path_value)));
+    }
+
+    // Create an empty document
+    FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
+    if (!new_doc) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "document_creation_failed", "Failed to create new PDF document", nullptr));
+    }
+
+    // Process each PDF file in input_paths
+    for (const auto& input_path : input_paths) {
+        // Cargar el documento PDF
+        FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
+        if (!doc) {
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "document_loading_failed", ("Failed to load document: " + input_path).c_str(), nullptr));
+        }
+
+        // Get the number of pages in the loaded document
+        int page_count = FPDF_GetPageCount(doc);
+
+        // Import each page into the new document
+        for (int i = 0; i < page_count; i++) {
+            // Import the page from the loaded document
+            FPDF_PAGE page = FPDF_LoadPage(doc, i);
+            if (!page) {
+                FPDF_CloseDocument(doc);
+                FPDF_CloseDocument(new_doc);
+                return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                        "page_loading_failed", "Failed to load page from document", nullptr));
+            }
+
+            // Get the number of pages in the old document
+            unsigned long length = FPDF_GetPageCount(doc);
+
+            // Import the page into the new document
+            if (!FPDF_ImportPagesByIndex(new_doc, doc, nullptr, length, 0)) {
+                FPDF_ClosePage(page);
+                FPDF_CloseDocument(doc);
+                FPDF_CloseDocument(new_doc);
+                return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                        "page_import_failed", "Failed to import page into new document", nullptr));
+            }
+
+            // Close the imported page
+            FPDF_ClosePage(page);
+        }
+
+        // Close the loaded document
+        FPDF_CloseDocument(doc);
+    }
+
+    // Save the new document
+    if (!FPDF_SaveAsCopy(new_doc, output_path, FPDF_INCREMENTAL)) {
+        FPDF_CloseDocument(new_doc);
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "document_save_failed", "Failed to save the new PDF document", nullptr));
+    }
+
+    // Close the new document
+    FPDF_CloseDocument(new_doc);
+
+    // Return success response with the output path
+    g_autoptr(FlValue) result = fl_value_new_string(output_path);
+    return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
 }
 
 FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
