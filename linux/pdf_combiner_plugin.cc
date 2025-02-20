@@ -24,6 +24,32 @@ struct _PdfCombinerPlugin {
 
 G_DEFINE_TYPE(PdfCombinerPlugin, pdf_combiner_plugin, g_object_get_type())
 
+typedef struct MyFileWrite {
+    int version;
+    int (*WriteBlock)(struct MyFileWrite* pThis, const void* pData, unsigned long size);
+    const char* filename;  // Name of the file to write
+} MyFileWrite;
+
+// MyWriteBlock declaration
+static int MyWriteBlock(MyFileWrite* pThis, const void* pData, unsigned long size);
+
+// MyWriteBlock implementation
+static int MyWriteBlock(MyFileWrite* pThis, const void* pData, unsigned long size) {
+    if (!pThis || !pData) {
+        return 0;  // if params are null, return 0
+    }
+
+    FILE* file = fopen(pThis->filename, "ab");  // Open file in append binary mode
+    if (!file) {
+        return 0;  // if file cannot be opened, return 0
+    }
+
+    size_t written = fwrite(pData, 1, size, file);  // write data to file
+    fclose(file);  // Cierra el archivo
+
+    return written == size ? 1 : 0;  // Return 1 if all data was written, 0 otherwise
+}
+
 // Called when a method call is received from Flutter.
 static void pdf_combiner_plugin_handle_method_call(
     PdfCombinerPlugin* self,
@@ -142,8 +168,13 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
         FPDF_CloseDocument(doc);
     }
 
+    MyFileWrite file_write;
+    file_write.version = 1;
+    file_write.WriteBlock = MyWriteBlock;
+    file_write.filename = output_path;
+
     // Save the new document
-    if (!FPDF_SaveAsCopy(new_doc, output_path, FPDF_INCREMENTAL)) {
+    if (!FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL)) {
         FPDF_CloseDocument(new_doc);
         return FL_METHOD_RESPONSE(fl_method_error_response_new(
                 "document_save_failed", "Failed to save the new PDF document", nullptr));
