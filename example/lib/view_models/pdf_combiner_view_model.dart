@@ -109,14 +109,14 @@ class PdfCombinerViewModel {
 
   // Function to get the appropriate directory for saving the output file
   Future<Directory?> _getOutputDirectory() async {
-    if (PlatformDetail.isWeb) {
-      return null;
-    } else if (PlatformDetail.isIOS ||
+    if (PlatformDetail.isIOS ||
         PlatformDetail.isMacOS ||
         PlatformDetail.isLinux) {
       return await getApplicationDocumentsDirectory(); // For iOS & macOS, return the documents directory
     } else if (PlatformDetail.isAndroid) {
       return await getDownloadsDirectory(); // For Android, return the Downloads directory
+    } else if (PlatformDetail.isWeb) {
+      return null;
     } else {
       throw UnsupportedError(
           '_getOutputDirectory() in unsupported platform.'); // Throw an error if the platform is unsupported
