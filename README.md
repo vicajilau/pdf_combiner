@@ -114,9 +114,11 @@ The `pdf_combiner` plugin does not directly use the following dependencies. They
 
 ## Supported Platforms
 
-This plugin supports **macOS**, **Android**, and **iOS** directly. For web support, follow these additional steps:
+This plugin supports **macOS**, **Android**, and **iOS** directly. For web support, starting from version 3.2.1, no additional setup is required. The JavaScript file `pdf_combiner.js` is now dynamically loaded, removing the need for manual inclusion.
 
-### Web Integration
+### Web Integration (Prior to Version 3.2.1)
+
+For versions older than 3.2.1, follow these steps:
 
 1. **Add the required JavaScript file**  
    Download [pdf_combiner.js](https://github.com/vicajilau/pdf_combiner/blob/main/example/web/assets/js/pdf_combiner.js) and place it in the `web/assets/js` folder of your Flutter project.
@@ -132,4 +134,4 @@ This plugin supports **macOS**, **Android**, and **iOS** directly. For web suppo
 
 ## Notes
 - No additional configuration is required for Android, iOS, or MacOS. Ensure the necessary dependencies for file selection and permissions are added to your project.
-- For web, ensure the `assets/js/pdf_combiner.js` file path matches your project's folder structure. This script enables the plugin to handle PDF operations on the web platform.
+- Since version 3.2.1, the `pdf_combiner.js` script is automatically loaded in the web platform, making manual inclusion unnecessary for newer versions.
