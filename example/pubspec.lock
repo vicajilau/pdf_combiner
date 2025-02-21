@@ -477,7 +477,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "3.2.0"
+    version: "3.3.0"
   permission_handler:
     dependency: "direct main"
     description:
