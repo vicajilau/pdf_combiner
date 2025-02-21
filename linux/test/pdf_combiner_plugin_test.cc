@@ -16,6 +16,7 @@
 namespace pdf_combiner {
 namespace test {
 
+    /*
 TEST(PdfCombinerPlugin, GetPlatformVersion) {
   g_autoptr(FlMethodResponse) response = get_platform_version();
   ASSERT_NE(response, nullptr);
@@ -26,6 +27,7 @@ TEST(PdfCombinerPlugin, GetPlatformVersion) {
   // The full string varies, so just validate that it has the right format.
   EXPECT_THAT(fl_value_get_string(result), testing::StartsWith("Linux "));
 }
+     */
 
 }  // namespace test
 }  // namespace pdf_combiner

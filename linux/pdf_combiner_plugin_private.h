@@ -7,7 +7,6 @@
 // in the unit-testable API.
 
 // Handles the getPlatformVersion method call.
-FlMethodResponse *get_platform_version();
 FlMethodResponse *merge_multiple_pdfs(FlValue *args);
 FlMethodResponse *create_pdf_from_multiple_images(FlValue *args);
 FlMethodResponse *create_image_from_pdf(FlValue *args);

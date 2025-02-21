@@ -33,9 +33,7 @@ static void pdf_combiner_plugin_handle_method_call(
 
   const gchar* method = fl_method_call_get_name(method_call);
 
-    if (strcmp(method, "getPlatformVersion") == 0) {
-        response = get_platform_version();
-    } else if (strcmp(method, "mergeMultiplePDF") == 0) {
+    if (strcmp(method, "mergeMultiplePDF") == 0) {
         response = merge_multiple_pdfs(fl_method_call_get_args(method_call));
     } else if (strcmp(method, "createPDFFromMultipleImage") == 0) {
         response = create_pdf_from_multiple_images(fl_method_call_get_args(method_call));
@@ -46,14 +44,6 @@ static void pdf_combiner_plugin_handle_method_call(
     }
 
   fl_method_call_respond(method_call, response, nullptr);
-}
-
-FlMethodResponse* get_platform_version() {
-  struct utsname uname_data = {};
-  uname(&uname_data);
-  g_autofree gchar *version = g_strdup_printf("Linux %s", uname_data.version);
-  g_autoptr(FlValue) result = fl_value_new_string(version);
-  return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
 }
 
 FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
