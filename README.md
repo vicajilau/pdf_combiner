@@ -118,6 +118,20 @@ This plugin supports **macOS**, **Android**, **iOS** and **web** directly, no ad
 
 > **As of version 3.3.0 on the web**: The `pdf_combiner.js` JavaScript file is now loaded dynamically, eliminating the need to manually include it and import it into the index.html file.
 
+### Old Web Integration (Prior to Version 3.3.0)
+
+For versions older than 3.3.0, follow these steps:
+
+1. **Add the required JavaScript file**  
+   Download [pdf_combiner.js](https://github.com/vicajilau/pdf_combiner/blob/main/example/web/assets/js/pdf_combiner.js) and place it in the `web/assets/js` folder of your Flutter project.
+
+2. **Include the script in your HTML file**  
+   Add the following line to the `<head>` section of your `web/index.html` file:
+
+   ```html
+   <script src="assets/js/pdf_combiner.js"></script>
+    ```
+
 ## Notes
 - No additional configuration is required for Android, iOS, or MacOS. Ensure the necessary dependencies for file selection and permissions are added to your project.
 - Since version 3.3.0, the `pdf_combiner.js` script is automatically loaded in the web platform, making manual inclusion unnecessary for newer versions.
