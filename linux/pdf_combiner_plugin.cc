@@ -13,6 +13,7 @@
 #include "include/pdfium/fpdf_edit.h"
 #include "include/pdfium/fpdf_save.h"
 #include "include/pdfium/fpdf_ppo.h"
+#include "include/pdf_combiner/my_file_write.h"
 
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \
@@ -23,32 +24,6 @@ struct _PdfCombinerPlugin {
 };
 
 G_DEFINE_TYPE(PdfCombinerPlugin, pdf_combiner_plugin, g_object_get_type())
-
-typedef struct MyFileWrite {
-    int version;
-    int (*WriteBlock)(struct MyFileWrite* pThis, const void* pData, unsigned long size);
-    const char* filename;  // Name of the file to write
-} MyFileWrite;
-
-// MyWriteBlock declaration
-static int MyWriteBlock(MyFileWrite* pThis, const void* pData, unsigned long size);
-
-// MyWriteBlock implementation
-static int MyWriteBlock(MyFileWrite* pThis, const void* pData, unsigned long size) {
-    if (!pThis || !pData) {
-        return 0;  // if params are null, return 0
-    }
-
-    FILE* file = fopen(pThis->filename, "ab");  // Open file in append binary mode
-    if (!file) {
-        return 0;  // if file cannot be opened, return 0
-    }
-
-    size_t written = fwrite(pData, 1, size, file);  // write data to file
-    fclose(file);  // Cierra el archivo
-
-    return written == size ? 1 : 0;  // Return 1 if all data was written, 0 otherwise
-}
 
 // Called when a method call is received from Flutter.
 static void pdf_combiner_plugin_handle_method_call(
@@ -82,7 +57,6 @@ FlMethodResponse* get_platform_version() {
 }
 
 FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
-    printf("Args type: %d\n", fl_value_get_type(args));
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new(
                 "invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
@@ -139,29 +113,14 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
         // Get the number of pages in the loaded document
         int page_count = FPDF_GetPageCount(doc);
 
-        // Import each page into the new document
-        for (int i = 0; i < page_count; i++) {
-            // Import the page from the loaded document
-            FPDF_PAGE page = FPDF_LoadPage(doc, i);
-            if (!page) {
-                FPDF_CloseDocument(doc);
-                FPDF_CloseDocument(new_doc);
-                return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                        "page_loading_failed", "Failed to load page from document", nullptr));
-            }
-
-            // Import the page into the new document
-            if (!FPDF_ImportPages(new_doc, doc, nullptr, total_pages)) {
-                FPDF_ClosePage(page);
-                FPDF_CloseDocument(doc);
-                FPDF_CloseDocument(new_doc);
-                return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                        "page_import_failed", "Failed to import page into new document", nullptr));
-            }
-            total_pages++;
-            // Close the imported page
-            FPDF_ClosePage(page);
+        // Import the page into the new document
+        if (!FPDF_ImportPages(new_doc, doc, nullptr, total_pages)) {
+            FPDF_CloseDocument(doc);
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "page_import_failed", "Failed to import page into new document", nullptr));
         }
+        total_pages += page_count;
 
         // Close the loaded document
         FPDF_CloseDocument(doc);
