@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:js_interop';
-
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:pdf_combiner/web/list_to_js_array_extension.dart';
 import 'package:pdf_combiner/web/pdf_combiner_web_bindings.dart';
+import 'package:web/web.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
 
@@ -17,7 +17,33 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   /// This method is called by the Flutter framework to link the platform interface
   /// with the web implementation.
   static void registerWith(Registrar registrar) {
+    _loadJsScripts();
     PdfCombinerPlatform.instance = PdfCombinerWeb();
+  }
+
+  static void _loadJsScripts() {
+    final pdfMinScript = document.createElement('script');
+    final pdfWorkerScript = document.createElement('script');
+    final pdfLibScript = document.createElement('script');
+    final pdfCombinerScript = document.createElement('script');
+
+    pdfMinScript.setAttribute('src',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
+    pdfMinScript.setAttribute('type', 'text/javascript');
+    pdfWorkerScript.setAttribute('src',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
+    pdfWorkerScript.setAttribute('type', 'text/javascript');
+    pdfLibScript.setAttribute('src',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
+    pdfLibScript.setAttribute('type', 'text/javascript');
+    pdfCombinerScript.setAttribute('src',
+        'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js');
+    pdfCombinerScript.setAttribute('type', 'text/javascript');
+
+    document.head?.appendChild(pdfMinScript);
+    document.head?.appendChild(pdfWorkerScript);
+    document.head?.appendChild(pdfLibScript);
+    document.head?.appendChild(pdfCombinerScript);
   }
 
   /// Merges multiple PDFs into one PDF.
