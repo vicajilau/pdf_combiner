@@ -1,4 +1,4 @@
-## 3.2.1
+## 3.3.0
 ### Web
 * Removed the need for manually importing JavaScript files and modifying `index.html`. [#21](https://github.com/vicajilau/pdf_combiner/issues/21).
 
