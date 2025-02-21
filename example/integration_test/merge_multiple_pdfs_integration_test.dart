@@ -74,7 +74,7 @@ void main() {
 
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
-      expect(result.message, startsWith('File does not exist'));
+      expect(result.message, startsWith('File is not of PDF type or does not exist:'));
     });
 
     testWidgets('Test merging with non-supported file', (tester) async {
@@ -90,7 +90,7 @@ void main() {
 
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
-      expect(result.message, startsWith('Only PDF file allowed'));
+      expect(result.message, startsWith('File is not of PDF type or does not exist:'));
     });
   });
 }

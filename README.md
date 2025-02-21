@@ -1,6 +1,24 @@
-# PDF Combiner
-[![pub package](https://img.shields.io/pub/v/http.svg)](https://pub.dev/packages/pdf_combiner)
-![CI Status](https://github.com/vicajilau/pdf_combiner/actions/workflows/dart.yml/badge.svg)
+<p align="center">
+  <a href="https://pub.dev/packages/pdf_combiner">
+    <img src="https://raw.githubusercontent.com/vicajilau/pdf_combiner/main/.github/assets/pdf_combiner.png" height="200" alt="PDF Combiner Logo">
+  </a>
+  <h1 align="center">PDF Combiner</h1>
+</p>
+
+<p align="center">
+  <a href="https://pub.dev/packages/pdf_combiner">
+    <img src="https://img.shields.io/pub/v/pdf_combiner?label=pub.dev&labelColor=333940&logo=dart" alt="Pub Version">
+  </a>
+  <a href="https://github.com/vicajilau/pdf_combiner/actions/workflows/dart_analyze_unit_test.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/vicajilau/pdf_combiner/dart_analyze_unit_test.yml?branch=main&label=CI&labelColor=333940&logo=github" alt="CI Status">
+  </a>
+  <a href="https://github.com/vicajilau/pdf_combiner/actions/workflows/publish_pub_dev.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/vicajilau/pdf_combiner/publish_pub_dev.yml?label=CD&labelColor=333940&logo=github" alt="CD Status">
+  </a>
+  <a href="https://codecov.io/gh/vicajilau/pdf_combiner">
+    <img src="https://img.shields.io/codecov/c/github/vicajilau/pdf_combiner?logo=codecov&logoColor=fff&labelColor=333940" alt="Code Coverage">
+  </a>
+</p>
 
 A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS, MacOS and Web platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
 

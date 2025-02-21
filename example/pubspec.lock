@@ -105,14 +105,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
-  external_path:
-    dependency: "direct main"
+  device_info_plus:
+    dependency: transitive
     description:
-      name: external_path
-      sha256: "272d067c719c2421ff40c202ac32ccddcb689f3b0c839ec370942666dae589db"
+      name: device_info_plus
+      sha256: "72d146c6d7098689ff5c5f66bcf593ac11efc530095385356e131070333e64da"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "11.3.0"
+  device_info_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: device_info_plus_platform_interface
+      sha256: "0b04e02b30791224b31969eb1b50d723498f402971bff3630bca2ba839bd1ed2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.2"
   fake_async:
     dependency: transitive
     description:
@@ -137,15 +145,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  file_magic_number:
+    dependency: transitive
+    description:
+      name: file_magic_number
+      sha256: "61a2e850c0821c1cc86b51650769d251d9851af162b24fb037303d863446a112"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   file_picker:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "feature/path-blob-on-web"
-      resolved-ref: d27fd7fa8d2048f876848a5e87e967bb288d06b7
-      url: "https://github.com/vicajilau/flutter_file_picker"
-    source: git
-    version: "8.3.5"
+      name: file_picker
+      sha256: "6f6bfa8797f296965bdc3e1f702574ab49a540c19b9237b401e7c2b25dfe594c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.0.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -199,10 +214,10 @@ packages:
     dependency: "direct main"
     description:
       name: get
-      sha256: c338f344fd5bdc40660682f021dfe18329de1173e4729b00ff70ba08f88db5f9
+      sha256: c79eeb4339f1f3deffd9ec912f8a923834bec55f7b49c9e882b8fef2c139d425
       url: "https://pub.dev"
     source: hosted
-    version: "4.7.1"
+    version: "4.7.2"
   glob:
     dependency: transitive
     description:
@@ -462,7 +477,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.1.0"
+    version: "3.2.0"
   permission_handler:
     dependency: "direct main"
     description:
@@ -519,6 +534,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.6"
+  platform_detail:
+    dependency: "direct main"
+    description:
+      name: platform_detail
+      sha256: a4e1ce87d348bca5b1b1bb5414eae908c7b5e8d4b1ec05056bbc05d705084e0f
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.0"
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -756,6 +779,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.10.1"
+  win32_registry:
+    dependency: transitive
+    description:
+      name: win32_registry
+      sha256: "21ec76dfc731550fd3e2ce7a33a9ea90b828fdf19a5c3bcf556fa992cfa99852"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.5"
   xdg_directories:
     dependency: transitive
     description:
@@ -773,5 +804,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.7.0-0 <4.0.0"
+  dart: ">=3.7.0 <4.0.0"
   flutter: ">=3.24.0"

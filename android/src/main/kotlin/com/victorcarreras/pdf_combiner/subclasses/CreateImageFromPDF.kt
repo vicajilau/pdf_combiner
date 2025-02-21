@@ -52,8 +52,8 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
 
                     if (!createOneImage) {
 
-                        val splitPath = outputDirPath.split(".")[0]
-                        val splitPathExt = outputDirPath.split(".")[1]
+                        val splitPath = outputDirPath.replace(outputDirPath.split(".").last(),"")
+                        val splitPathExt = outputDirPath.split(".").last()
 
                         print(splitPath)
                         print(splitPathExt)

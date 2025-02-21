@@ -1,7 +1,47 @@
+## 3.2.0
+### General
+* Error management improved.
+* File type detection improved with `file_magic_number` dependency. [file_magic_number](https://github.com/vicajilau/file_magic_number)
+* Universal flows improved.
+
+## 3.1.2
+### General
+* Simplified catching errors.
+* Added 100% coverage tests.
+
+## 3.1.1
+### General
+* Added Codecov tool.
+* Added coverage on CI and PRs.
+### Android
+* Fix issue with special characters in the `outputPath` param on `imageFromPDF` method.
+
+## 3.1.0
+### General
+* Integrated CD.
+### iOS
+* iOS migration to SPM.
+### MacOS
+* MacOS migration to SPM.
+
+## 3.0.4
+### Web
+* Fixed linting issues.
+* WASP improvements.
+
+## 3.0.3
+### Web
+* Some internal improvements.
+
+## 3.0.2
+### Web
+* Added WASM support.
+
 ## 3.0.1
 ### General
-* Minimized code size.
-* Optimized CI/CD process.
+* Fixed CI badge.
+### Web
+* js_utils migrated to js_interop.
 
 ## 3.0.0
 ### General
@@ -11,6 +51,8 @@
 * Updated dependencies.
 * Added more integration tests.
 * Minimized code size.
+* Minimized code size.
+* Optimized CI/CD process.
 ### iOS
 * Fixed wrong order exporting a pdf to one image [#9](https://github.com/vicajilau/pdf_combiner/issues/9).
 * Refactor creating extensions.
