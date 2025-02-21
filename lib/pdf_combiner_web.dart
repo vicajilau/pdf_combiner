@@ -17,72 +17,33 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   /// This method is called by the Flutter framework to link the platform interface
   /// with the web implementation.
   static void registerWith(Registrar registrar) {
-    _loadJsScript();
+    _loadJsScripts();
     PdfCombinerPlatform.instance = PdfCombinerWeb();
   }
 
-  static void _loadJsScript() {
-    final base = document.createElement('base');
-    final metacharset = document.createElement('meta');
-    final metaIEEdge = document.createElement('meta');
-    final metaDescription = document.createElement('meta');
-    final metaMobileWebAppCapable = document.createElement('meta');
-    final metaMobileAppStatusBar = document.createElement('meta');
-    final metaMobileWebAppTitle = document.createElement('meta');
-    final linkAppleTouchIcon = document.createElement('link');
-    final linkicon = document.createElement('link');
+  static void _loadJsScripts() {
     final pdfMinScript = document.createElement('script');
     final pdfWorkerScript = document.createElement('script');
     final pdfLibScript = document.createElement('script');
     final pdfCombinerScript = document.createElement('script');
-    final linkManifest = document.createElement('link');
-    final flutterBoot = document.createElement('script');
 
-    base.setAttribute('href', "FLUTTER_BASE_HREF");
-    metacharset.setAttribute('charset', 'UTF-8');
-    metaIEEdge.setAttribute('content', 'IE=Edge');
-    metaIEEdge.setAttribute('http-equiv', 'X-UA-Compatible');
-    metaDescription.setAttribute('name', 'description');
-    metaDescription.setAttribute('content', 'Demonstrates how to use the pdf_combiner plugin.');
-    metaMobileWebAppCapable.setAttribute('name', 'mobile-web-app-capable');
-    metaMobileWebAppCapable.setAttribute('content', 'yes');
-    metaMobileAppStatusBar.setAttribute('name', 'mobile-web-app-status-bar-style');
-    metaMobileAppStatusBar.setAttribute('content', 'black');
-    metaMobileWebAppTitle.setAttribute('name', 'apple-mobile-web-app-title');
-    metaMobileWebAppTitle.setAttribute('content', 'pdf_combiner_example');
-    linkAppleTouchIcon.setAttribute('rel', 'apple-touch-icon');
-    linkAppleTouchIcon.setAttribute('href', 'icons/Icon-192.png');
-    linkicon.setAttribute('rel', 'icon');
-    linkicon.setAttribute('type', 'image/png');
-    linkicon.setAttribute('href', 'favicon.png');
-    pdfMinScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
+    pdfMinScript.setAttribute('src',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
     pdfMinScript.setAttribute('type', 'text/javascript');
-    pdfWorkerScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
+    pdfWorkerScript.setAttribute('src',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
     pdfWorkerScript.setAttribute('type', 'text/javascript');
-    pdfLibScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
+    pdfLibScript.setAttribute('src',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
     pdfLibScript.setAttribute('type', 'text/javascript');
-    pdfCombinerScript.setAttribute('src', 'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js');
+    pdfCombinerScript.setAttribute('src',
+        'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js');
     pdfCombinerScript.setAttribute('type', 'text/javascript');
-    linkManifest.setAttribute('rel', 'manifest');
-    linkManifest.setAttribute('href', 'manifest.json');
-    flutterBoot.setAttribute('src', 'flutter_bootstrap.js');
 
-    document.head!.appendChild(base);
-    document.head!.appendChild(metacharset);
-    document.head!.appendChild(metaIEEdge);
-    document.head!.appendChild(metaDescription);
-    document.head!.appendChild(metaMobileWebAppCapable);
-    document.head!.appendChild(metaMobileAppStatusBar);
-    document.head!.appendChild(metaMobileWebAppTitle);
-    document.head!.appendChild(linkAppleTouchIcon);
-    document.head!.appendChild(linkicon);
-    document.head!.appendChild(pdfMinScript);
-    document.head!.appendChild(pdfWorkerScript);
-    document.head!.appendChild(pdfLibScript);
-    document.head!.appendChild(pdfCombinerScript);
-    document.head!.appendChild(linkManifest);
-    document.body!.appendChild(flutterBoot);
-
+    document.head?.appendChild(pdfMinScript);
+    document.head?.appendChild(pdfWorkerScript);
+    document.head?.appendChild(pdfLibScript);
+    document.head?.appendChild(pdfCombinerScript);
   }
 
   /// Merges multiple PDFs into one PDF.
