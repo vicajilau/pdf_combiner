@@ -123,7 +123,7 @@ This plugin supports **macOS**, **Android**, **iOS** and **web** directly, no ad
 For versions older than 3.3.0, follow these steps:
 
 1. **Add the required JavaScript file**  
-   Download [pdf_combiner.js](https://github.com/vicajilau/pdf_combiner/blob/main/example/web/assets/js/pdf_combiner.js) and place it in the `web/assets/js` folder of your Flutter project.
+   Download [pdf_combiner.js](https://github.com/vicajilau/pdf_combiner/blob/main/lib/web/assets/js/pdf_combiner.js) and place it in the `web/assets/js` folder of your Flutter project.
 
 2. **Include the script in your HTML file**  
    Add the following line to the `<head>` section of your `web/index.html` file:
