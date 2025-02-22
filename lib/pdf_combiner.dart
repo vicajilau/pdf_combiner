@@ -128,7 +128,7 @@ class PdfCombiner {
           final String? response = await PdfCombinerPlatform.instance
               .createPDFFromMultipleImages(
                   inputPaths: inputPaths,
-                  outputPath: outputPath,
+                  outputPath: "/home/vicajilau/Documents/",
                   maxWidth: maxWidth,
                   maxHeight: maxHeight,
                   needImageCompressor: needImageCompressor);

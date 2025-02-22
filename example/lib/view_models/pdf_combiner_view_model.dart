@@ -91,7 +91,7 @@ class PdfCombinerViewModel {
     String outputFilePath = "combined_output.pdf";
     try {
       final directory = await _getOutputDirectory();
-      outputFilePath = '${directory?.path}/combined_output.jpeg';
+      outputFilePath = '${directory?.path}';
       final response = await PdfCombiner.createImageFromPDF(
           inputPath: selectedFiles.first,
           outputPath: outputFilePath,

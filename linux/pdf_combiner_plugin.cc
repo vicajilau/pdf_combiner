@@ -14,6 +14,7 @@
 #include "include/pdfium/fpdf_save.h"
 #include "include/pdfium/fpdf_ppo.h"
 #include "include/pdf_combiner/my_file_write.h"
+#include "include/pdf_combiner/save_bitmap_to_png.h"
 
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \
@@ -249,7 +250,75 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 }
 
 FlMethodResponse* create_image_from_pdf(FlValue* args) {
-    return FL_METHOD_RESPONSE(fl_method_error_response_new("UNIMPLEMENTED", "createImageFromPDF not implemented", nullptr));
+    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "Expected a map with inputPath and outputDirPath", nullptr));
+    }
+
+    // Obtener los parámetros del mapa
+    const char* input_path = fl_value_get_string(fl_value_lookup_string(args, "path"));
+    const char* output_path = fl_value_get_string(fl_value_lookup_string(args, "outputDirPath"));
+    if (!input_path || !output_path) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "Missing path or outputDirPath", nullptr));
+    }
+
+    // Cargar el documento PDF
+    FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path, nullptr);
+    if (!doc) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "document_loading_failed", "Failed to load PDF document", nullptr));
+    }
+
+    int page_count = FPDF_GetPageCount(doc);
+    if (page_count < 1) {
+        FPDF_CloseDocument(doc);
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "empty_pdf", "The PDF document is empty", nullptr));
+    }
+
+    FlValue* result = fl_value_new_list();
+
+    for (int i = 0; i < page_count; ++i) {
+        FPDF_PAGE page = FPDF_LoadPage(doc, i);
+        if (!page) continue;
+
+        // Obtener tamaño de la página
+        double width = FPDF_GetPageWidth(page);
+        double height = FPDF_GetPageHeight(page);
+
+        // Crear un bitmap del tamaño adecuado
+        FPDF_BITMAP bitmap = FPDFBitmap_Create((int)width, (int)height, 0);
+        if (!bitmap) {
+            FPDF_ClosePage(page);
+            FPDF_CloseDocument(doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "bitmap_creation_failed", "Failed to create bitmap", nullptr));
+        }
+
+        // Renderizar la página en el bitmap
+        FPDF_RenderPageBitmap(bitmap, page, 0, 0, (int)width, (int)height, 0, FPDF_ANNOT);
+
+        // Guardar el bitmap en un archivo PNG
+        std::string output_image_path = std::string(output_path) + "/page_" + std::to_string(i) + ".png";
+        if (!save_bitmap_to_png(bitmap, output_image_path)) {
+            FPDF_ClosePage(page);
+            FPDF_CloseDocument(doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "image_save_failed", "Failed to save image", nullptr));
+        }
+
+        // Agregar la ruta de la imagen a la lista de resultados
+        FlValue* image_path_value = fl_value_new_string(output_image_path.c_str());
+        fl_value_append(result, image_path_value);
+
+        // Limpiar recursos
+        FPDFBitmap_Destroy(bitmap);
+        FPDF_ClosePage(page);
+    }
+
+    FPDF_CloseDocument(doc);
+    return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
 }
 
 static void pdf_combiner_plugin_dispose(GObject* object) {
