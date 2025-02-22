@@ -20,7 +20,7 @@
   </a>
 </p>
 
-A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS, MacOS and Web platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
+A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS, Linux, MacOS and Web platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
 
 ## Features
 
@@ -114,7 +114,7 @@ The `pdf_combiner` plugin does not directly use the following dependencies. They
 
 ## Supported Platforms
 
-This plugin supports **macOS**, **Android**, **iOS** and **web** directly, no additional setup is required.
+This plugin supports **Android**, **iOS**, **Linux**, **macOS** and **web** directly, no additional setup is required.
 
 > **As of version 3.3.0 on the web**: The `pdf_combiner.js` JavaScript file is now loaded dynamically, eliminating the need to manually include it and import it into the index.html file.
 
