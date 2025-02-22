@@ -196,11 +196,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     }
   }
 
-  Future<void> _copySelectedFilesToClipboard(int index) async {
-    await _viewModel.copySelectedFilesToClipboard(index);
-    _showSnackbarSafely('Selected file copied to clipboard');
-  }
-
   Future<void> _copyOutputToClipboard(int index) async {
     await _viewModel.copyOutputToClipboard(index);
     _showSnackbarSafely('Output path copied to clipboard');
