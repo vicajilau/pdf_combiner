@@ -9,7 +9,7 @@
 #include <string>
 
 #include "pdf_combiner_plugin_private.h"
-reooooooooooooooooooorder
+
 #include "include/pdfium/fpdfview.h"
 #include "include/pdfium/fpdf_edit.h"
 #include "include/pdfium/fpdf_save.h"
@@ -29,9 +29,7 @@ struct _PdfCombinerPlugin {
 G_DEFINE_TYPE(PdfCombinerPlugin, pdf_combiner_plugin, g_object_get_type())
 
 // Called when a method call is received from Flutter.
-static void pdf_combiner_plugin_handle_method_call(
-    PdfCombinerPlugin* self,
-    FlMethodCall* method_call) {
+static void pdf_combiner_plugin_handle_method_call( PdfCombinerPlugin* self, FlMethodCall* method_call) {
   g_autoptr(FlMethodResponse) response = nullptr;
 
   const gchar* method = fl_method_call_get_name(method_call);
