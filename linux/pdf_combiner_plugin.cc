@@ -348,8 +348,7 @@ static void pdf_combiner_plugin_init(PdfCombinerPlugin* self) {
   FPDF_InitLibrary(); // Initialize the FPDF library
 }
 
-static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
-                           gpointer user_data) {
+static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data) {
   PdfCombinerPlugin* plugin = PDF_COMBINER_PLUGIN(user_data);
   pdf_combiner_plugin_handle_method_call(plugin, method_call);
 }
