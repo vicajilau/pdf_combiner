@@ -105,8 +105,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                         maxLines: 1,
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.copy),
-                        onPressed: () => _copySelectedFilesToClipboard(index),
+                        icon: const Icon(Icons.open_in_new),
+                        onPressed: () => _openInputFile(index),
                       ),
                     ),
                   );
@@ -208,6 +208,15 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   Future<void> _openOutputFile(int index) async {
     if (index < _viewModel.outputFiles.length) {
       final result = await OpenFile.open(_viewModel.outputFiles[index]);
+      if (result.type != ResultType.done) {
+        _showSnackbarSafely('Failed to open file. Error: ${result.message}');
+      }
+    }
+  }
+
+  Future<void> _openInputFile(int index) async {
+    if (index < _viewModel.selectedFiles.length) {
+      final result = await OpenFile.open(_viewModel.selectedFiles[index]);
       if (result.type != ResultType.done) {
         _showSnackbarSafely('Failed to open file. Error: ${result.message}');
       }

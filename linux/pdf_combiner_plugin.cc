@@ -237,9 +237,10 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
             return FL_METHOD_RESPONSE(fl_method_error_response_new(
                     "image_loading_failed", ("Failed to load JPEG image: " + input_path).c_str(), nullptr));
         }
-        fclose(image_file);
         // Insert image object into the page
         FPDFPage_InsertObject(new_page, image_obj);
+        // Close the image file
+        fclose(image_file);
     }
 
     MyFileWrite file_write;
