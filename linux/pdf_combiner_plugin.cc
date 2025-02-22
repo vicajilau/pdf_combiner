@@ -255,7 +255,7 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
                 "invalid_arguments", "Expected a map with inputPath and outputDirPath", nullptr));
     }
 
-    // Obtener los parámetros del mapa
+    // Get params from the map
     const char* input_path = fl_value_get_string(fl_value_lookup_string(args, "path"));
     const char* output_path = fl_value_get_string(fl_value_lookup_string(args, "outputDirPath"));
     if (!input_path || !output_path) {
@@ -263,7 +263,7 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
                 "invalid_arguments", "Missing path or outputDirPath", nullptr));
     }
 
-    // Cargar el documento PDF
+    // Load the PDF document
     FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path, nullptr);
     if (!doc) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new(
@@ -283,11 +283,11 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
         FPDF_PAGE page = FPDF_LoadPage(doc, i);
         if (!page) continue;
 
-        // Obtener tamaño de la página
+        // Get the size of the page
         double width = FPDF_GetPageWidth(page);
         double height = FPDF_GetPageHeight(page);
 
-        // Crear un bitmap del tamaño adecuado
+        // Create a bitmap of the appropriate size
         FPDF_BITMAP bitmap = FPDFBitmap_Create((int)width, (int)height, 0);
         if (!bitmap) {
             FPDF_ClosePage(page);
@@ -296,10 +296,10 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
                     "bitmap_creation_failed", "Failed to create bitmap", nullptr));
         }
 
-        // Renderizar la página en el bitmap
+        // Render the page into the bitmap
         FPDF_RenderPageBitmap(bitmap, page, 0, 0, (int)width, (int)height, 0, FPDF_ANNOT);
 
-        // Guardar el bitmap en un archivo PNG
+        // Save the bitmap to a PNG file
         std::string output_image_path = std::string(output_path) + "/page_" + std::to_string(i) + ".png";
         if (!save_bitmap_to_png(bitmap, output_image_path)) {
             FPDF_ClosePage(page);
@@ -308,11 +308,11 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
                     "image_save_failed", "Failed to save image", nullptr));
         }
 
-        // Agregar la ruta de la imagen a la lista de resultados
+        // Add the image path to the result list
         FlValue* image_path_value = fl_value_new_string(output_image_path.c_str());
         fl_value_append(result, image_path_value);
 
-        // Limpiar recursos
+        // Clean resources
         FPDFBitmap_Destroy(bitmap);
         FPDF_ClosePage(page);
     }
