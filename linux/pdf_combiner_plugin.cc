@@ -288,7 +288,7 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
         double height = FPDF_GetPageHeight(page);
 
         // Create a bitmap of the appropriate size
-        FPDF_BITMAP bitmap = FPDFBitmap_Create((int)width, (int)height, 0);
+        FPDF_BITMAP bitmap = FPDFBitmap_Create((int)width, (int)height, 0xFFFFFFFF);
         if (!bitmap) {
             FPDF_ClosePage(page);
             FPDF_CloseDocument(doc);
