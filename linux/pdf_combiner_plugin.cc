@@ -206,7 +206,15 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
         int stride = FPDFBitmap_GetStride(bitmap);
 
         for (int y = 0; y < height; y++) {
-            memcpy(bitmap_buffer + (height - 1 - y) * stride, image_data + y * width * 4, width * 4);
+            unsigned char* src_row = image_data + y * width * 4;
+            unsigned char* dst_row = bitmap_buffer + (height - 1 - y) * stride;
+
+            for (int x = 0; x < width; x++) {
+                dst_row[x * 4 + 0] = src_row[x * 4 + 2]; // Blue  <- Red
+                dst_row[x * 4 + 1] = src_row[x * 4 + 1]; // Green <- Green
+                dst_row[x * 4 + 2] = src_row[x * 4 + 0]; // Red   <- Blue
+                dst_row[x * 4 + 3] = src_row[x * 4 + 3]; // Alpha <- Alpha
+            }
         }
 
         FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
