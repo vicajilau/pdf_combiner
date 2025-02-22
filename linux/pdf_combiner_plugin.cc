@@ -15,6 +15,8 @@
 #include "include/pdfium/fpdf_ppo.h"
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "include/pdf_combiner/stb_image.h"
 
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \
@@ -181,7 +183,25 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 
     // Process each image file in input_paths
     for (const auto& input_path : input_paths) {
-        FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), 612, 792); // Letter size
+        // Open image file
+        FILE* image_file = fopen(input_path.c_str(), "rb");
+        if (!image_file) {
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "image_loading_failed", ("Failed to open image file: " + input_path).c_str(), nullptr));
+        }
+
+        // Load the image and get its dimensions
+        int image_width, image_height, channels;
+        unsigned char* image_data = stbi_load(input_path.c_str(), &image_width, &image_height, &channels, 0);
+        if (!image_data) {
+            fclose(image_file);
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "image_loading_failed", ("Failed to load image: " + input_path).c_str(), nullptr));
+        }
+
+        FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), image_width, image_height);
         if (!new_page) {
             FPDF_CloseDocument(new_doc);
             return FL_METHOD_RESPONSE(fl_method_error_response_new(
@@ -196,24 +216,20 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
                     "image_object_creation_failed", ("Failed to create image object for: " + input_path).c_str(), nullptr));
         }
 
-        // Open image file
-        FILE* image_file = fopen(input_path.c_str(), "rb");
-        if (!image_file) {
-            FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "image_loading_failed", ("Failed to open image file: " + input_path).c_str(), nullptr));
-        }
-
         // Set up file access structure
         FPDF_FILEACCESS file_access;
         fseek(image_file, 0, SEEK_END);
         file_access.m_FileLen = ftell(image_file);
         rewind(image_file);
+
         file_access.m_GetBlock = [](void* param, unsigned long position, unsigned char* buffer, unsigned long size) -> int {
             FILE* file = (FILE*)param;
-            fseek(file, position, SEEK_SET);
+            if (fseek(file, position, SEEK_SET) != 0) {
+                return 0; // Error moving the pointer
+            }
             return fread(buffer, 1, size, file) == size;
         };
+
         file_access.m_Param = image_file;
 
         // Load JPEG file
@@ -224,7 +240,6 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
                     "image_loading_failed", ("Failed to load JPEG image: " + input_path).c_str(), nullptr));
         }
         fclose(image_file);
-
         // Insert image object into the page
         FPDFPage_InsertObject(new_page, image_obj);
     }
