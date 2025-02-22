@@ -137,7 +137,115 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
 }
 
 FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
-    return FL_METHOD_RESPONSE(fl_method_error_response_new("UNIMPLEMENTED", "createPDFFromMultipleImage not implemented", nullptr));
+    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
+    }
+
+    // Get inputPaths (List<String>)
+    FlValue* input_paths_value = fl_value_lookup_string(args, "paths");
+    if (!input_paths_value || fl_value_get_type(input_paths_value) != FL_VALUE_TYPE_LIST) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "inputPaths must be a list of strings", nullptr));
+    }
+
+    // Get outputPath (String)
+    FlValue* output_path_value = fl_value_lookup_string(args, "outputDirPath");
+    if (!output_path_value || fl_value_get_type(output_path_value) != FL_VALUE_TYPE_STRING) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "outputPath must be a string", nullptr));
+    }
+
+    // Cast outputPath to C-string
+    const char* output_path = fl_value_get_string(output_path_value);
+
+    // Cast inputPaths to a strings vector
+    int num_images = fl_value_get_length(input_paths_value);
+    std::vector<std::string> input_paths;
+    for (int i = 0; i < num_images; i++) {
+        FlValue* path_value = fl_value_get_list_value(input_paths_value, i);
+        if (!path_value || fl_value_get_type(path_value) != FL_VALUE_TYPE_STRING) {
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "invalid_arguments", "Each item in inputPaths must be a string", nullptr));
+        }
+        input_paths.push_back(std::string(fl_value_get_string(path_value)));
+    }
+
+    // Create an empty document
+    FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
+    if (!new_doc) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "document_creation_failed", "Failed to create new PDF document", nullptr));
+    }
+
+    // Process each image file in input_paths
+    for (const auto& input_path : input_paths) {
+        FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), 612, 792); // Letter size
+        if (!new_page) {
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "page_creation_failed", ("Failed to create page for image: " + input_path).c_str(), nullptr));
+        }
+
+        // Create image object
+        FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
+        if (!image_obj) {
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "image_object_creation_failed", ("Failed to create image object for: " + input_path).c_str(), nullptr));
+        }
+
+        // Open image file
+        FILE* image_file = fopen(input_path.c_str(), "rb");
+        if (!image_file) {
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "image_loading_failed", ("Failed to open image file: " + input_path).c_str(), nullptr));
+        }
+
+        // Set up file access structure
+        FPDF_FILEACCESS file_access;
+        fseek(image_file, 0, SEEK_END);
+        file_access.m_FileLen = ftell(image_file);
+        rewind(image_file);
+        file_access.m_GetBlock = [](void* param, unsigned long position, unsigned char* buffer, unsigned long size) -> int {
+            FILE* file = (FILE*)param;
+            fseek(file, position, SEEK_SET);
+            return fread(buffer, 1, size, file) == size;
+        };
+        file_access.m_Param = image_file;
+
+        // Load JPEG file
+        if (!FPDFImageObj_LoadJpegFile(nullptr, 0, image_obj, &file_access)) {
+            fclose(image_file);
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "image_loading_failed", ("Failed to load JPEG image: " + input_path).c_str(), nullptr));
+        }
+        fclose(image_file);
+
+        // Insert image object into the page
+        FPDFPage_InsertObject(new_page, image_obj);
+    }
+
+    MyFileWrite file_write;
+    file_write.version = 1;
+    file_write.WriteBlock = MyWriteBlock;
+    file_write.filename = output_path;
+
+    // Save the new document
+    if (!FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL)) {
+        FPDF_CloseDocument(new_doc);
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "document_save_failed", "Failed to save the new PDF document", nullptr));
+    }
+
+    // Close the new document
+    FPDF_CloseDocument(new_doc);
+
+    // Return success response with the output path
+    g_autoptr(FlValue) result = fl_value_new_string(output_path);
+    return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
 }
 
 FlMethodResponse* create_image_from_pdf(FlValue* args) {
