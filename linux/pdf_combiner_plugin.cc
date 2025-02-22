@@ -9,14 +9,14 @@
 #include <string>
 
 #include "pdf_combiner_plugin_private.h"
+reooooooooooooooooooorder
 #include "include/pdfium/fpdfview.h"
 #include "include/pdfium/fpdf_edit.h"
 #include "include/pdfium/fpdf_save.h"
 #include "include/pdfium/fpdf_ppo.h"
+
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "include/pdf_combiner/stb_image.h"
 
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \

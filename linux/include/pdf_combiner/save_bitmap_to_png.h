@@ -1,9 +1,11 @@
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../pdfium/fpdfview.h"
 #include <cstring>
 #include <vector>
 #include <string>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 bool save_bitmap_to_png(FPDF_BITMAP bitmap, const std::string& output_path) {
     int width = FPDFBitmap_GetWidth(bitmap);
