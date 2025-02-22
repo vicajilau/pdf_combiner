@@ -163,6 +163,7 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
     // Cast inputPaths to a strings vector
     int num_images = fl_value_get_length(input_paths_value);
     std::vector<std::string> input_paths;
+
     for (int i = 0; i < num_images; i++) {
         FlValue* path_value = fl_value_get_list_value(input_paths_value, i);
         if (!path_value || fl_value_get_type(path_value) != FL_VALUE_TYPE_STRING) {
@@ -181,66 +182,48 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 
     // Process each image file in input_paths
     for (const auto& input_path : input_paths) {
-        // Open image file
-        FILE* image_file = fopen(input_path.c_str(), "rb");
-        if (!image_file) {
-            FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "image_loading_failed", ("Failed to open image file: " + input_path).c_str(), nullptr));
-        }
-
         // Load the image and get its dimensions
-        int image_width, image_height, channels;
-        unsigned char* image_data = stbi_load(input_path.c_str(), &image_width, &image_height, &channels, 0);
+        int width, height, channels;
+        unsigned char* image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
         if (!image_data) {
-            fclose(image_file);
             FPDF_CloseDocument(new_doc);
             return FL_METHOD_RESPONSE(fl_method_error_response_new(
                     "image_loading_failed", ("Failed to load image: " + input_path).c_str(), nullptr));
         }
 
-        FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), image_width, image_height);
+        FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), width, height);
         if (!new_page) {
+            stbi_image_free(image_data);
             FPDF_CloseDocument(new_doc);
             return FL_METHOD_RESPONSE(fl_method_error_response_new(
                     "page_creation_failed", ("Failed to create page for image: " + input_path).c_str(), nullptr));
         }
 
-        // Create image object
+        // Crate bitmap of the image
+        FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0);
+        FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
+        unsigned char* bitmap_buffer = (unsigned char*)FPDFBitmap_GetBuffer(bitmap);
+        int stride = FPDFBitmap_GetStride(bitmap);
+
+        for (int y = 0; y < height; y++) {
+            memcpy(bitmap_buffer + (height - 1 - y) * stride, image_data + y * width * 4, width * 4);
+        }
+
         FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
         if (!image_obj) {
+            stbi_image_free(image_data);
             FPDF_CloseDocument(new_doc);
             return FL_METHOD_RESPONSE(fl_method_error_response_new(
                     "image_object_creation_failed", ("Failed to create image object for: " + input_path).c_str(), nullptr));
         }
 
-        // Set up file access structure
-        FPDF_FILEACCESS file_access;
-        fseek(image_file, 0, SEEK_END);
-        file_access.m_FileLen = ftell(image_file);
-        rewind(image_file);
-
-        file_access.m_GetBlock = [](void* param, unsigned long position, unsigned char* buffer, unsigned long size) -> int {
-            FILE* file = (FILE*)param;
-            if (fseek(file, position, SEEK_SET) != 0) {
-                return 0; // Error moving the pointer
-            }
-            return fread(buffer, 1, size, file) == size;
-        };
-
-        file_access.m_Param = image_file;
-
-        // Load JPEG file
-        if (!FPDFImageObj_LoadJpegFile(nullptr, 0, image_obj, &file_access)) {
-            fclose(image_file);
-            FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "image_loading_failed", ("Failed to load JPEG image: " + input_path).c_str(), nullptr));
-        }
-        // Insert image object into the page
+        FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
+        FPDFImageObj_SetMatrix(image_obj, width, 0, 0, -height, 0, height);
         FPDFPage_InsertObject(new_page, image_obj);
-        // Close the image file
-        fclose(image_file);
+        FPDFPage_GenerateContent(new_page);
+
+        stbi_image_free(image_data);
+        FPDFBitmap_Destroy(bitmap);
     }
 
     MyFileWrite file_write;
