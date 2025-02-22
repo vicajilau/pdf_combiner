@@ -104,6 +104,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
+                      subtitle: Text(_viewModel.selectedFiles[index]),
                       trailing: IconButton(
                         icon: const Icon(Icons.open_in_new),
                         onPressed: () => _openInputFile(index),
