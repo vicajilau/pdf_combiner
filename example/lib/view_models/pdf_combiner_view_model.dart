@@ -71,9 +71,7 @@ class PdfCombinerViewModel {
       final response = await PdfCombiner.createPDFFromMultipleImages(
           inputPaths: selectedFiles,
           outputPath: outputFilePath,
-          maxWidth: 100,
-          maxHeight: 100,
-          needImageCompressor: true);
+          needImageCompressor: false);
       if (response.status == PdfCombinerStatus.success) {
         outputFiles = [response.response!];
       } else {
