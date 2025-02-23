@@ -104,9 +104,10 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
+                      subtitle: Text(_viewModel.selectedFiles[index]),
                       trailing: IconButton(
-                        icon: const Icon(Icons.copy),
-                        onPressed: () => _copySelectedFilesToClipboard(index),
+                        icon: const Icon(Icons.open_in_new),
+                        onPressed: () => _openInputFile(index),
                       ),
                     ),
                   );
@@ -195,11 +196,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     }
   }
 
-  Future<void> _copySelectedFilesToClipboard(int index) async {
-    await _viewModel.copySelectedFilesToClipboard(index);
-    _showSnackbarSafely('Selected file copied to clipboard');
-  }
-
   Future<void> _copyOutputToClipboard(int index) async {
     await _viewModel.copyOutputToClipboard(index);
     _showSnackbarSafely('Output path copied to clipboard');
@@ -208,6 +204,15 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   Future<void> _openOutputFile(int index) async {
     if (index < _viewModel.outputFiles.length) {
       final result = await OpenFile.open(_viewModel.outputFiles[index]);
+      if (result.type != ResultType.done) {
+        _showSnackbarSafely('Failed to open file. Error: ${result.message}');
+      }
+    }
+  }
+
+  Future<void> _openInputFile(int index) async {
+    if (index < _viewModel.selectedFiles.length) {
+      final result = await OpenFile.open(_viewModel.selectedFiles[index]);
       if (result.type != ResultType.done) {
         _showSnackbarSafely('Failed to open file. Error: ${result.message}');
       }
