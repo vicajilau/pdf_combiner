@@ -316,42 +316,116 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
 
     FlValue* result = fl_value_new_list();
 
-    for (int i = 0; i < page_count; ++i) {
-        FPDF_PAGE page = FPDF_LoadPage(doc, i);
-        if (!page) continue;
 
-        // Get the size of the page
-        double width = FPDF_GetPageWidth(page);
-        double height = FPDF_GetPageHeight(page);
+    // Get createOneImage (Bool)
+    FlValue* create_one_image_value = fl_value_lookup_string(args, "createOneImage");
+    if (!create_one_image_value || fl_value_get_type(create_one_image_value) != FL_VALUE_TYPE_BOOL) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "createOneImage must be a boolean", nullptr));
+    }
 
-        // Create a bitmap of the appropriate size
-        FPDF_BITMAP bitmap = FPDFBitmap_Create((int)width, (int)height, 0xFFFFFFFF);
-        if (!bitmap) {
-            FPDF_ClosePage(page);
-            FPDF_CloseDocument(doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "bitmap_creation_failed", "Failed to create bitmap", nullptr));
+    // Get boolean value
+    bool create_one_image = fl_value_get_bool(create_one_image_value);
+
+    if (create_one_image) {
+        int total_width = 0;
+        int total_height = 0;
+
+        // First, calculate the total width and height for the combined image
+        std::vector<FPDF_PAGE> pages(page_count);
+        std::vector<double> page_widths(page_count);
+        std::vector<double> page_heights(page_count);
+
+        for (int i = 0; i < page_count; ++i) {
+            FPDF_PAGE page = FPDF_LoadPage(doc, i);
+            if (!page) continue;
+
+            // Get the size of the page
+            double width = FPDF_GetPageWidth(page);
+            double height = FPDF_GetPageHeight(page);
+
+            pages[i] = page;
+            page_widths[i] = width;
+            page_heights[i] = height;
+
+            total_width = std::max(total_width, (int)width); // Use the max width
+            total_height += (int)height; // Sum the heights for vertical layout
         }
 
-        // Render the page into the bitmap
-        FPDF_RenderPageBitmap(bitmap, page, 0, 0, (int)width, (int)height, 0, FPDF_ANNOT);
-
-        // Save the bitmap to a PNG file
-        std::string output_image_path = std::string(output_path) + "/page_" + std::to_string(i) + ".png";
-        if (!save_bitmap_to_png(bitmap, output_image_path)) {
-            FPDF_ClosePage(page);
+        // Create a bitmap large enough to hold all pages vertically
+        FPDF_BITMAP combined_bitmap = FPDFBitmap_Create(total_width, total_height, 0xFFFFFFFF);
+        if (!combined_bitmap) {
             FPDF_CloseDocument(doc);
             return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "image_save_failed", "Failed to save image", nullptr));
+                    "bitmap_creation_failed", "Failed to create combined bitmap", nullptr));
         }
 
-        // Add the image path to the result list
+        int current_y = 0;
+
+        // Render each page into the large combined image
+        for (int i = 0; i < page_count; ++i) {
+            FPDF_PAGE page = pages[i];
+
+            // Render the page into the combined bitmap at the correct position
+            FPDF_RenderPageBitmap(combined_bitmap, page, 0, current_y, (int)page_widths[i], (int)page_heights[i], 0, FPDF_ANNOT);
+            current_y += (int)page_heights[i]; // Move the y position down for the next page
+        }
+
+        // Save the combined bitmap to a PNG file
+        std::string output_image_path = std::string(output_path) + "/combined_image.png";
+        if (!save_bitmap_to_png(combined_bitmap, output_image_path)) {
+            FPDFBitmap_Destroy(combined_bitmap);
+            FPDF_CloseDocument(doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                    "image_save_failed", "Failed to save combined image", nullptr));
+        }
+
+        // Add the combined image path to the result list
         FlValue* image_path_value = fl_value_new_string(output_image_path.c_str());
         fl_value_append(result, image_path_value);
 
-        // Clean resources
-        FPDFBitmap_Destroy(bitmap);
-        FPDF_ClosePage(page);
+        // Clean up resources
+        FPDFBitmap_Destroy(combined_bitmap);
+        for (int i = 0; i < page_count; ++i) {
+            FPDF_ClosePage(pages[i]);
+        }
+    } else {
+        for (int i = 0; i < page_count; ++i) {
+            FPDF_PAGE page = FPDF_LoadPage(doc, i);
+            if (!page) continue;
+
+            // Get the size of the page
+            double width = FPDF_GetPageWidth(page);
+            double height = FPDF_GetPageHeight(page);
+
+            // Create a bitmap of the appropriate size
+            FPDF_BITMAP bitmap = FPDFBitmap_Create((int)width, (int)height, 0xFFFFFFFF);
+            if (!bitmap) {
+                FPDF_ClosePage(page);
+                FPDF_CloseDocument(doc);
+                return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                        "bitmap_creation_failed", "Failed to create bitmap", nullptr));
+            }
+
+            // Render the page into the bitmap
+            FPDF_RenderPageBitmap(bitmap, page, 0, 0, (int)width, (int)height, 0, FPDF_ANNOT);
+
+            // Save the bitmap to a PNG file
+            std::string output_image_path = std::string(output_path) + "/page_" + std::to_string(i) + ".png";
+            if (!save_bitmap_to_png(bitmap, output_image_path)) {
+                FPDF_ClosePage(page);
+                FPDF_CloseDocument(doc);
+                return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                        "image_save_failed", "Failed to save image", nullptr));
+            }
+
+            // Add the image path to the result list
+            FlValue* image_path_value = fl_value_new_string(output_image_path.c_str());
+            fl_value_append(result, image_path_value);
+
+            // Clean resources
+            FPDFBitmap_Destroy(bitmap);
+            FPDF_ClosePage(page);
+        }
     }
 
     FPDF_CloseDocument(doc);
