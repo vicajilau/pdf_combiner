@@ -49,22 +49,19 @@ static void pdf_combiner_plugin_handle_method_call( PdfCombinerPlugin* self, FlM
 
 FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
     }
 
     // Get inputPaths (List<String>)
     FlValue* input_paths_value = fl_value_lookup_string(args, "paths");
     if (!input_paths_value || fl_value_get_type(input_paths_value) != FL_VALUE_TYPE_LIST) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "invalid_arguments", "inputPaths must be a list of strings", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "inputPaths must be a list of strings", nullptr));
     }
 
     // Get outputPath (String)
     FlValue* output_path_value = fl_value_lookup_string(args, "outputDirPath");
     if (!output_path_value || fl_value_get_type(output_path_value) != FL_VALUE_TYPE_STRING) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "invalid_arguments", "outputPath must be a string", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "outputPath must be a string", nullptr));
     }
 
     // Cast outputPath to C-string
@@ -76,8 +73,7 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
     for (int i = 0; i < num_pdfs; i++) {
         FlValue* path_value = fl_value_get_list_value(input_paths_value, i);
         if (!path_value || fl_value_get_type(path_value) != FL_VALUE_TYPE_STRING) {
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "invalid_arguments", "Each item in inputPaths must be a string", nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Each item in inputPaths must be a string", nullptr));
         }
         input_paths.push_back(std::string(fl_value_get_string(path_value)));
     }
@@ -85,8 +81,7 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
     // Create an empty document
     FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
     if (!new_doc) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "document_creation_failed", "Failed to create new PDF document", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("document_creation_failed", "Failed to create new PDF document", nullptr));
     }
 
     int total_pages = 0;  // Variable to track total pages
@@ -97,8 +92,7 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
         FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
         if (!doc) {
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "document_loading_failed", ("Failed to load document: " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("document_loading_failed", ("Failed to load document: " + input_path).c_str(), nullptr));
         }
 
         // Get the number of pages in the loaded document
@@ -108,8 +102,7 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
         if (!FPDF_ImportPages(new_doc, doc, nullptr, total_pages)) {
             FPDF_CloseDocument(doc);
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "page_import_failed", "Failed to import page into new document", nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("page_import_failed", "Failed to import page into new document", nullptr));
         }
         total_pages += page_count;
 
@@ -125,8 +118,7 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
     // Save the new document
     if (!FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL)) {
         FPDF_CloseDocument(new_doc);
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "document_save_failed", "Failed to save the new PDF document", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("document_save_failed", "Failed to save the new PDF document", nullptr));
     }
 
     // Close the new document
@@ -139,22 +131,46 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
 
 FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
     }
 
     // Get inputPaths (List<String>)
     FlValue* input_paths_value = fl_value_lookup_string(args, "paths");
     if (!input_paths_value || fl_value_get_type(input_paths_value) != FL_VALUE_TYPE_LIST) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "invalid_arguments", "inputPaths must be a list of strings", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "inputPaths must be a list of strings", nullptr));
     }
+
+    // Get needImageCompressor (Bool)
+    FlValue* need_image_compressor_value = fl_value_lookup_string(args, "needImageCompressor");
+    if (!need_image_compressor_value || fl_value_get_type(need_image_compressor_value) != FL_VALUE_TYPE_BOOL) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "needImageCompressor must be a boolean", nullptr));
+    }
+
+    // Get boolean value
+    bool need_image_compressor = fl_value_get_bool(need_image_compressor_value);
+
+    // Get maxWidth (String)
+    FlValue* max_width_value = fl_value_lookup_string(args, "maxWidth");
+    if (!max_width_value || fl_value_get_type(max_width_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "maxWidth must be an int", nullptr));
+    }
+
+    // Cast maxWidth to C-int
+    int64_t max_width = fl_value_get_int(max_width_value);
+
+    // Get maxHeight (String)
+    FlValue* max_height_value = fl_value_lookup_string(args, "maxHeight");
+    if (!max_height_value || fl_value_get_type(max_height_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "maxHeight must be an int", nullptr));
+    }
+
+    // Cast maxWidth to C-int
+    int64_t max_height = fl_value_get_int(max_height_value);
 
     // Get outputPath (String)
     FlValue* output_path_value = fl_value_lookup_string(args, "outputDirPath");
     if (!output_path_value || fl_value_get_type(output_path_value) != FL_VALUE_TYPE_STRING) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "invalid_arguments", "outputPath must be a string", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "outputPath must be a string", nullptr));
     }
 
     // Cast outputPath to C-string
@@ -167,8 +183,7 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
     for (int i = 0; i < num_images; i++) {
         FlValue* path_value = fl_value_get_list_value(input_paths_value, i);
         if (!path_value || fl_value_get_type(path_value) != FL_VALUE_TYPE_STRING) {
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "invalid_arguments", "Each item in inputPaths must be a string", nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Each item in inputPaths must be a string", nullptr));
         }
         input_paths.push_back(std::string(fl_value_get_string(path_value)));
     }
@@ -176,8 +191,7 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
     // Create an empty document
     FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
     if (!new_doc) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "document_creation_failed", "Failed to create new PDF document", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("document_creation_failed", "Failed to create new PDF document", nullptr));
     }
 
     // Process each image file in input_paths
@@ -187,16 +201,36 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
         unsigned char* image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
         if (!image_data) {
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "image_loading_failed", ("Failed to load image: " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image: " + input_path).c_str(), nullptr));
+        }
+
+        // Dimensions reduction if need_image_compressor is true
+        if (need_image_compressor) {
+            int new_width = max_width;
+            int new_height = max_height;
+
+            unsigned char* resized_image_data = new unsigned char[new_width * new_height * 4];
+
+            if (!stbir_resize_uint8_linear(image_data, width, height, 0, resized_image_data, new_width, new_height, 0, STBIR_RGBA)) {
+                stbi_image_free(image_data);
+                FPDF_CloseDocument(new_doc);
+                return FL_METHOD_RESPONSE(fl_method_error_response_new("image_resize_failed", "Failed to resize image", nullptr));
+            }
+
+            // Free only the original image, not the resized one
+            stbi_image_free(image_data);
+
+            // Assigning the new values
+            image_data = resized_image_data;
+            width = new_width;
+            height = new_height;
         }
 
         FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), width, height);
         if (!new_page) {
             stbi_image_free(image_data);
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "page_creation_failed", ("Failed to create page for image: " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("page_creation_failed", ("Failed to create page for image: " + input_path).c_str(), nullptr));
         }
 
         // Crate bitmap of the image
@@ -221,8 +255,7 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
         if (!image_obj) {
             stbi_image_free(image_data);
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                    "image_object_creation_failed", ("Failed to create image object for: " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_object_creation_failed", ("Failed to create image object for: " + input_path).c_str(), nullptr));
         }
 
         FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
@@ -242,8 +275,7 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
     // Save the new document
     if (!FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL)) {
         FPDF_CloseDocument(new_doc);
-        return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "document_save_failed", "Failed to save the new PDF document", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("document_save_failed", "Failed to save the new PDF document", nullptr));
     }
 
     // Close the new document
