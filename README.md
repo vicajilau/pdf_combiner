@@ -22,6 +22,13 @@
 
 A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS, Linux, MacOS and Web platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
 
+### Underlying Technologies
+
+- **Android**: Uses the [PDFBox](https://pdfbox.apache.org/) library from Apache.
+- **iOS and macOS**: PDF manipulation is done natively using Swift, with no external dependencies.
+- **Linux and Windows**: Utilizes [PDFium](https://pdfium.googlesource.com/pdfium/) from Google, a C++ library.
+- **Web**: Uses [PDFLib](https://pdf-lib.js.org/) in JavaScript for PDF manipulation.
+
 ## Features
 
 ### Merge Multiple PDFs
