@@ -56,9 +56,6 @@ void main() {
     final result = await platform.createPDFFromMultipleImages(
       inputPaths: ['image1.jpg', 'image2.png'],
       outputPath: '/output/path',
-      maxWidth: 500,
-      maxHeight: 500,
-      needImageCompressor: false,
     );
 
     expect(result, 'created.pdf');

@@ -1,4 +1,5 @@
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 /// A mock implementation of the [PdfCombinerPlatform] interface for testing purposes.
@@ -30,18 +31,12 @@ class MockPdfCombinerPlatform
   /// Simulates the creation of a PDF from multiple image files. It returns a mock result
   /// indicating that a PDF was created successfully from images.
   ///
-  /// [inputPaths] A list of file paths to the images.
-  /// [outputPath] The path where the created PDF should be saved.
-  /// [maxWidth] The maximum width for resizing the images (optional).
-  /// [maxHeight] The maximum height for resizing the images (optional).
-  /// [needImageCompressor] Whether to compress the images (optional).
+  /// [config] The configuration for the PDF creation.
   @override
   Future<String?> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? needImageCompressor,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
     return Future.value('Created PDF from Images');
   }
@@ -64,7 +59,7 @@ class MockPdfCombinerPlatform
     int? maxHeight,
     bool? createOneImage,
   }) {
-    if(createOneImage == true) {
+    if (createOneImage == true) {
       return Future.value(['image1.png']);
     } else {
       return Future.value(['image1.png', 'image2.png']);

@@ -70,7 +70,7 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   Future<String?> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    required PdfFromMultipleImageConfig config,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
     throw UnimplementedError(
         'createPDFFromMultipleImage() has not been implemented.');
