@@ -31,7 +31,7 @@ dependencies:
   file_picker: ^9.0.0
   path_provider: ^2.1.5
   path: ^1.9.0
-  permission_handler: ^11.3.1
+  permission_handler: ^11.4.0
   get: ^4.7.2
   open_file: ^3.5.10
   platform_detail: ^4.2.0
