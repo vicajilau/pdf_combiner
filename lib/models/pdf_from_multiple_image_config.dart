@@ -22,5 +22,5 @@ class PdfFromMultipleImageConfig {
     ImageScale? rescale,
     this.compression = ImageQuality.high,
     this.keepAspectRatio = true,
-  }): rescale = rescale ?? ImageScale.original;
+  }) : rescale = rescale ?? ImageScale.original;
 }

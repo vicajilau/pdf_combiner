@@ -42,15 +42,16 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// Creates a PDF from multiple image files.
   ///
   /// This method sends a request to the native platform to create a PDF from the
-  /// images specified in the `paths` parameter. The resulting PDF is saved in the
+  /// images specified in the `inputPaths` parameter. The resulting PDF is saved in the
   /// `outputPath` directory.
   ///
   /// Parameters:
   /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
   /// - `outputPath`: The directory path where the created PDF should be saved.
-  /// - `maxWidth`: The maximum width of each image in the PDF (default is 360).
-  /// - `maxHeight`: The maximum height of each image in the PDF (default is 360).
-  /// - `needImageCompressor`: Whether to compress images before converting them to PDF (default is `true`).
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
+  ///   - `keepAspectRatio`: Indicates whether to maintain the aspect ratio of the images (default is `true`).
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. If the operation

@@ -78,22 +78,20 @@ class PdfCombiner {
     return mergeMultiplePDFResponse;
   }
 
-  /// Create a PDF from multiple images.
+  /// Creates a PDF from multiple image files.
   ///
-  /// This method takes a list of image file paths (`inputPaths`) representing the images to be combined,
-  /// and an `outputPath` where the resulting combined PDF should be saved.
-  ///
-  /// If the operation is successful, it returns the result from the platform-specific implementation.
-  /// If an error occurs, it returns a message describing the error.
+  /// This method sends a request to the native platform to create a PDF from the
+  /// images specified in the `inputPaths` parameter. The resulting PDF is saved in the
+  /// `outputPath` directory.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of strings representing the paths of the image files to be combined.
-  /// - `outputPath`: A string representing the directory where the combined PDF should be saved.
+  /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
+  /// - `outputPath`: The directory path where the created PDF should be saved.
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
+  ///   - `keepAspectRatio`: Indicates whether to maintain the aspect ratio of the images (default is `true`).
   ///
-  /// Optional Parameters:
-  /// - `maxWidth`: An integer value with the max width of the images. Default set to 360.
-  /// - `maxHeight`: An integer value with the max height of the images. Default set to 360.
-  /// - `needImageCompressor`: A boolean if images should be compressed or not. Default set to true.
   /// Returns:
   /// - A `Future<PdfFromMultipleImageResponse?>` representing the result of the operation (either the success message or an error message).
   static Future<PdfFromMultipleImageResponse> createPDFFromMultipleImages({
