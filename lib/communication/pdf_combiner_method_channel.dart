@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../models/pdf_from_multiple_image_config.dart';
 import 'pdf_combiner_platform_interface.dart';
 
 /// Implementation of PdfCombinerPlatform using MethodChannel.
@@ -58,18 +59,17 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   Future<String?> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? needImageCompressor,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
     final result = await methodChannel.invokeMethod<String>(
       'createPDFFromMultipleImage',
       {
         'paths': inputPaths,
         'outputDirPath': outputPath,
-        'maxWidth': maxWidth ?? 360,
-        'maxHeight': maxHeight ?? 360,
-        'needImageCompressor': needImageCompressor ?? true,
+        'height': config.rescale.height,
+        'width': config.rescale.width,
+        'compression': config.compression.value,
+        'keepAspectRatio': config.keepAspectRatio,
       },
     );
     return result;

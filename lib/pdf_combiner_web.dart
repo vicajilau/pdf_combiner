@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:js_interop';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:pdf_combiner/web/list_to_js_array_extension.dart';
 import 'package:pdf_combiner/web/pdf_combiner_web_bindings.dart';
 import 'package:web/web.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
+import 'models/pdf_from_multiple_image_config.dart';
 
 /// Web implementation of the PdfCombinerPlatform.
 /// This class handles the interaction between the Flutter app and JavaScript functions
@@ -78,9 +80,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   Future<String> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? needImageCompressor,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
     final JSString result =

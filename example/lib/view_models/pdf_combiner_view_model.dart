@@ -85,9 +85,7 @@ class PdfCombinerViewModel {
       final directory = await _getOutputDirectory();
       outputFilePath = '${directory?.path}/combined_output.pdf';
       final response = await PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: selectedFiles,
-          outputPath: outputFilePath,
-          needImageCompressor: false);
+          inputPaths: selectedFiles, outputPath: outputFilePath);
       if (response.status == PdfCombinerStatus.success) {
         outputFiles = [response.response!];
       } else {

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
@@ -95,12 +96,11 @@ class PdfCombiner {
   /// - `needImageCompressor`: A boolean if images should be compressed or not. Default set to true.
   /// Returns:
   /// - A `Future<PdfFromMultipleImageResponse?>` representing the result of the operation (either the success message or an error message).
-  static Future<PdfFromMultipleImageResponse> createPDFFromMultipleImages(
-      {required List<String> inputPaths,
-      required String outputPath,
-      int maxWidth = 360,
-      int maxHeight = 360,
-      bool needImageCompressor = true}) async {
+  static Future<PdfFromMultipleImageResponse> createPDFFromMultipleImages({
+    required List<String> inputPaths,
+    required String outputPath,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
+  }) async {
     PdfFromMultipleImageResponse createPDFFromMultipleImageResponse =
         PdfFromMultipleImageResponse();
     if (inputPaths.isEmpty) {
@@ -125,13 +125,12 @@ class PdfCombiner {
               PdfCombinerMessages.errorMessageImage(path);
           createPDFFromMultipleImageResponse.response = null;
         } else {
-          final String? response = await PdfCombinerPlatform.instance
-              .createPDFFromMultipleImages(
-                  inputPaths: inputPaths,
-                  outputPath: outputPath,
-                  maxWidth: maxWidth,
-                  maxHeight: maxHeight,
-                  needImageCompressor: needImageCompressor);
+          final String? response =
+              await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
+            inputPaths: inputPaths,
+            outputPath: outputPath,
+            config: config,
+          );
 
           if (response != "error") {
             createPDFFromMultipleImageResponse.status =

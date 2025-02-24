@@ -1,5 +1,6 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
+import '../models/pdf_from_multiple_image_config.dart';
 import 'pdf_combiner_method_channel.dart';
 
 /// Abstract class that serves as the platform interface for PdfCombiner.
@@ -57,9 +58,7 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// Parameters:
   /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
   /// - `outputPath`: The directory path where the created PDF should be saved.
-  /// - `maxWidth`: The maximum width of each image in the PDF (default is 360).
-  /// - `maxHeight`: The maximum height of each image in the PDF (default is 360).
-  /// - `needImageCompressor`: Whether to compress images before converting them to PDF (default is `true`).
+  /// - `config`: The maximum width of each image in the PDF (default is 360).
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. By default,
@@ -67,9 +66,7 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   Future<String?> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? needImageCompressor,
+    required PdfFromMultipleImageConfig config,
   }) {
     throw UnimplementedError(
         'createPDFFromMultipleImage() has not been implemented.');
