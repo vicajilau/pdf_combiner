@@ -44,9 +44,10 @@ void main() {
         expect(methodCall.arguments, {
           'paths': ['image1.jpg', 'image2.png'],
           'outputDirPath': '/output/path',
-          'maxWidth': 500,
-          'maxHeight': 500,
-          'needImageCompressor': false,
+          'height': 0,
+          'width': 0,
+          'compression': 100,
+          'keepAspectRatio': true
         });
         return 'created.pdf';
       }
