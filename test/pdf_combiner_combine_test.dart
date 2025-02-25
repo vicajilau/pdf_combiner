@@ -58,10 +58,10 @@ void main() {
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, 'Merged PDF');
+      expect(result.outputPath, 'Merged PDF');
       expect(result.message, 'Processed successfully');
       expect(result.toString(),
-          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
 
     // Test for error setting a different type of file in the mergeMultiplePDF method.
@@ -80,7 +80,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.response, null);
+      expect(result.outputPath, null);
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
     });
@@ -101,7 +101,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.response, null);
+      expect(result.outputPath, null);
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'File is not of PDF type or does not exist: path1');
     });
@@ -138,7 +138,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.response, null);
+      expect(result.outputPath, null);
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'File is not of PDF type or does not exist: path1.pdf');
     });
@@ -162,10 +162,10 @@ void main() {
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
+      expect(result.outputPath, null);
       expect(result.message, 'Error in processing');
       expect(result.toString(),
-          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
 
     // Test for error processing when combining multiple PDFs using PdfCombiner.
@@ -187,10 +187,10 @@ void main() {
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
+      expect(result.outputPath, null);
       expect(result.message, 'Exception: Mocked Exception');
       expect(result.toString(),
-          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
   });
 }

@@ -33,12 +33,10 @@ class PdfCombiner {
   /// - A `Future<MergeMultiplePDFResponse?>` representing the result of the operation (either the success message or an error message).
   static Future<MergeMultiplePDFResponse> mergeMultiplePDFs(
       {required List<String> inputPaths, required String outputPath}) async {
-    MergeMultiplePDFResponse mergeMultiplePDFResponse =
-        MergeMultiplePDFResponse();
     if (inputPaths.isEmpty) {
-      mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
-      mergeMultiplePDFResponse.message =
-          PdfCombinerMessages.emptyParameterMessage("inputPaths");
+      return MergeMultiplePDFResponse(
+          status: PdfCombinerStatus.error,
+          message: PdfCombinerMessages.emptyParameterMessage("inputPaths"));
     } else {
       try {
         bool success = true;
@@ -52,31 +50,30 @@ class PdfCombiner {
         }
 
         if (!success) {
-          mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
-          mergeMultiplePDFResponse.message =
-              PdfCombinerMessages.errorMessagePDF(path);
+          return MergeMultiplePDFResponse(
+              status: PdfCombinerStatus.error,
+              message: PdfCombinerMessages.errorMessagePDF(path));
         } else {
           final String? response = await PdfCombinerPlatform.instance
               .mergeMultiplePDFs(
                   inputPaths: inputPaths, outputPath: outputPath);
 
-          if (response != "error") {
-            mergeMultiplePDFResponse.status = PdfCombinerStatus.success;
-            mergeMultiplePDFResponse.message =
-                PdfCombinerMessages.successMessage;
-            mergeMultiplePDFResponse.response = response;
+          if (response != null && response != "error") {
+            return MergeMultiplePDFResponse(
+                status: PdfCombinerStatus.success,
+                message: PdfCombinerMessages.successMessage,
+                outputPath: response);
           } else {
-            mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
-            mergeMultiplePDFResponse.message = PdfCombinerMessages.errorMessage;
+            return MergeMultiplePDFResponse(
+                status: PdfCombinerStatus.error,
+                message: PdfCombinerMessages.errorMessage);
           }
         }
       } catch (e) {
-        mergeMultiplePDFResponse.status = PdfCombinerStatus.error;
-        mergeMultiplePDFResponse.message = e.toString();
+        return MergeMultiplePDFResponse(
+            status: PdfCombinerStatus.error, message: e.toString());
       }
     }
-
-    return mergeMultiplePDFResponse;
   }
 
   /// Creates a PDF from multiple image files.

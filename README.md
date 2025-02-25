@@ -20,35 +20,39 @@
   </a>
 </p>
 
-A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS, Linux, MacOS and Web platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
+## Overview
+
+**PDF Combiner** is a Flutter plugin designed for combining and manipulating PDF files. It supports multiple platforms including Android, iOS, Linux, macOS, and web, enabling users to:
+
+- Merge multiple PDF files.
+- Create PDFs from images.
+- Extract images from PDFs.
 
 ### Underlying Technologies
 
-- **Android**: Uses the [PDFBox](https://pdfbox.apache.org/) library from Apache.
+- **Android**: Utilizes the [PDFBox](https://pdfbox.apache.org/) library from Apache.
 - **iOS and macOS**: PDF manipulation is done natively using Swift, with no external dependencies.
-- **Linux and Windows**: Utilizes [PDFium](https://pdfium.googlesource.com/pdfium/) from Google, a C++ library.
-- **Web**: Uses [PDFLib](https://pdf-lib.js.org/) in JavaScript for PDF manipulation.
+- **Linux and Windows**: Employs [PDFium](https://pdfium.googlesource.com/pdfium/) from Google, a C++ library.
+- **Web**: Implements [PDFLib](https://pdf-lib.js.org/) in JavaScript for PDF manipulation.
 
 ## Features
 
 ### Merge Multiple PDFs
 
-Combine multiple PDF files into a single document.
+Combine several PDF files into a single document.
 
 **Required Parameters:**
-- `inputPaths`: A list of strings representing the paths of the PDF files to be combined.
-- `outputPath`: A string representing the directory where the combined PDF should be saved.
+- `inputPaths`: A list of strings representing the paths of the PDF files to combine.
 
 ```dart
 MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
-  inputPaths: filesPath, 
-  outputPath: outputDirPath,
+  inputPaths: filesPath,
 );
 
 if (response.status == PdfCombinerStatus.success) {
-  // response.response contains the output path as a String
-  // response.message contains a success message as a String
+  print("File saved to: ${response.response}");
 }
+
 ```
 
 ### Create PDF From Multiple Images
@@ -56,8 +60,8 @@ if (response.status == PdfCombinerStatus.success) {
 Convert a list of image files into a single PDF document.
 
 **Required Parameters:**
-- `inputPaths`: A list of strings representing the paths of the image files.
-- `outputPath`: A string representing the directory where the generated PDF should be saved.
+- `inputPaths`: A list of strings representing the image file paths.
+- `outputPath`: A string representing the absolute path where the generated PDF should be saved.
 
 By default, images are added to the PDF without modifications. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
@@ -68,8 +72,7 @@ outputPath: outputPath,
 );
 
 if (response.status == PdfCombinerStatus.success) {
-// response.response contains the output path as a String
-// response.message contains a success message as a String
+  print("File saved to: ${response.outputPath}");
 }
 ```
 #### Custom Creation of PDF From Multiple Images

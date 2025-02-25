@@ -53,7 +53,7 @@ class PdfCombinerViewModel {
           outputPath: outputFilePath); // Combine the PDFs
 
       if (response.status == PdfCombinerStatus.success) {
-        outputFiles = [response.response!];
+        outputFiles = [response.outputPath];
       } else {
         throw Exception('Error combining PDFs: ${response.message}.');
       }
