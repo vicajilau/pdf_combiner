@@ -130,7 +130,7 @@ PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleI
   outputPath: outputPath,
   config: const ImageFromPdfConfig(
     rescale: ImageScale(width: 480, height: 640),
-    compression: true,
+    compression: ImageQuality.custom(35),
     createOneImage: true,
   ),
 );
