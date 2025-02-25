@@ -53,12 +53,12 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.outputPath, 'Merged PDF');
+      expect(result.outputPath, "output/path.pdf");
       expect(result.message, 'Processed successfully');
       expect(result.toString(),
           'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
@@ -80,7 +80,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
     });
@@ -101,7 +101,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'File is not of PDF type or does not exist: path1');
     });
@@ -138,7 +138,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'File is not of PDF type or does not exist: path1.pdf');
     });
@@ -162,8 +162,8 @@ void main() {
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
-      expect(result.message, 'Error in processing');
+      expect(result.outputPath, "");
+      expect(result.message, 'error');
       expect(result.toString(),
           'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
@@ -187,7 +187,7 @@ void main() {
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.message, 'Exception: Mocked Exception');
       expect(result.toString(),
           'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');

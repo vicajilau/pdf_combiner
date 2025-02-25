@@ -24,7 +24,7 @@ class MockPdfCombinerPlatform
     required List<String> inputPaths,
     required String outputPath,
   }) {
-    return Future.value('Merged PDF');
+    return Future.value(outputPath);
   }
 
   /// Mocks the `createPDFFromMultipleImage` method.
@@ -39,7 +39,7 @@ class MockPdfCombinerPlatform
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
-    return Future.value('Created PDF from Images');
+    return Future.value(outputPath);
   }
 
   /// Mocks the `createImageFromPDF` method.
@@ -56,9 +56,9 @@ class MockPdfCombinerPlatform
       required String outputPath,
       ImageFromPdfConfig config = const ImageFromPdfConfig()}) {
     if (config.createOneImage == true) {
-      return Future.value(['image1.png']);
+      return Future.value(['$outputPath/image1.png']);
     } else {
-      return Future.value(['image1.png', 'image2.png']);
+      return Future.value(['$outputPath/image1.png', '$outputPath/image2.png']);
     }
   }
 }

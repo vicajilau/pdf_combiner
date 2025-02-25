@@ -58,7 +58,7 @@ class PdfCombiner {
               .mergeMultiplePDFs(
                   inputPaths: inputPaths, outputPath: outputPath);
 
-          if (response != null && response != "error") {
+          if (response != null && response == outputPath) {
             return MergeMultiplePDFResponse(
                 status: PdfCombinerStatus.success,
                 message: PdfCombinerMessages.successMessage,
@@ -66,7 +66,7 @@ class PdfCombiner {
           } else {
             return MergeMultiplePDFResponse(
                 status: PdfCombinerStatus.error,
-                message: PdfCombinerMessages.errorMessage);
+                message: response ?? PdfCombinerMessages.errorMessage);
           }
         }
       } catch (e) {
@@ -97,12 +97,11 @@ class PdfCombiner {
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
-    PdfFromMultipleImageResponse createPDFFromMultipleImageResponse =
-        PdfFromMultipleImageResponse();
     if (inputPaths.isEmpty) {
-      createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
-      createPDFFromMultipleImageResponse.message =
-          PdfCombinerMessages.emptyParameterMessage("inputPaths");
+      return PdfFromMultipleImageResponse(
+        status: PdfCombinerStatus.error,
+        message: PdfCombinerMessages.emptyParameterMessage("inputPaths"),
+      );
     } else {
       try {
         bool success = true;
@@ -116,10 +115,10 @@ class PdfCombiner {
         }
 
         if (!success) {
-          createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
-          createPDFFromMultipleImageResponse.message =
-              PdfCombinerMessages.errorMessageImage(path);
-          createPDFFromMultipleImageResponse.response = null;
+          return PdfFromMultipleImageResponse(
+            status: PdfCombinerStatus.error,
+            message: PdfCombinerMessages.errorMessageImage(path),
+          );
         } else {
           final String? response =
               await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
@@ -128,25 +127,26 @@ class PdfCombiner {
             config: config,
           );
 
-          if (response != "error") {
-            createPDFFromMultipleImageResponse.status =
-                PdfCombinerStatus.success;
-            createPDFFromMultipleImageResponse.message =
-                PdfCombinerMessages.successMessage;
-            createPDFFromMultipleImageResponse.response = response;
+          if (response != null && response == outputPath) {
+            return PdfFromMultipleImageResponse(
+              status: PdfCombinerStatus.success,
+              message: PdfCombinerMessages.successMessage,
+              outputPath: response,
+            );
           } else {
-            createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
-            createPDFFromMultipleImageResponse.message =
-                PdfCombinerMessages.errorMessage;
+            return PdfFromMultipleImageResponse(
+              status: PdfCombinerStatus.error,
+              message: response ?? PdfCombinerMessages.errorMessage,
+            );
           }
         }
       } catch (e) {
-        createPDFFromMultipleImageResponse.status = PdfCombinerStatus.error;
-        createPDFFromMultipleImageResponse.message = e.toString();
+        return PdfFromMultipleImageResponse(
+          status: PdfCombinerStatus.error,
+          message: e.toString(),
+        );
       }
     }
-
-    return createPDFFromMultipleImageResponse;
   }
 
   /// For Creating a Image from PDF
@@ -164,7 +164,7 @@ class PdfCombiner {
   ///
   /// Parameters:
   /// - `inputPath`: A string representing the pdf document file path to be extracted.
-  /// - `outputPath`: A string representing the directory where the list of images should be saved.
+  /// - `outputDirPath`: A string representing the directory where the list of images should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
   ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
@@ -174,47 +174,52 @@ class PdfCombiner {
   /// - A `Future<ImageFromPDFResponse?>` representing the result of the operation (either the success message or an error message).
   static Future<ImageFromPDFResponse> createImageFromPDF(
       {required String inputPath,
-      required String outputPath,
+      required String outputDirPath,
       ImageFromPdfConfig config = const ImageFromPdfConfig()}) async {
-    ImageFromPDFResponse createImageFromPDFResponse = ImageFromPDFResponse();
-
     if (inputPath.trim().isEmpty) {
-      createImageFromPDFResponse.status = PdfCombinerStatus.error;
-      createImageFromPDFResponse.message =
-          PdfCombinerMessages.emptyParameterMessage("inputPath");
+      return ImageFromPDFResponse(
+          status: PdfCombinerStatus.error,
+          message: PdfCombinerMessages.emptyParameterMessage("inputPath"));
     } else {
       try {
         bool success = await DocumentUtils.isPDF(inputPath);
 
         if (!success) {
-          createImageFromPDFResponse.status = PdfCombinerStatus.error;
-          createImageFromPDFResponse.message =
-              PdfCombinerMessages.errorMessagePDF(inputPath);
+          return ImageFromPDFResponse(
+            status: PdfCombinerStatus.error,
+            message: PdfCombinerMessages.errorMessagePDF(inputPath),
+          );
         } else {
           final response =
               await PdfCombinerPlatform.instance.createImageFromPDF(
             inputPath: inputPath,
-            outputPath: outputPath,
+            outputPath: outputDirPath,
             config: config,
           );
 
           if (response != null && response.isNotEmpty) {
-            createImageFromPDFResponse.response = [];
-            for (var file in response) {
-              createImageFromPDFResponse.response!.add(file);
+            if (response.first.contains(outputDirPath)) {
+              return ImageFromPDFResponse(
+                status: PdfCombinerStatus.success,
+                outputPaths: response,
+              );
+            } else {
+              return ImageFromPDFResponse(
+                status: PdfCombinerStatus.error,
+                message: response.first,
+              );
             }
+          } else {
+            return ImageFromPDFResponse(
+              status: PdfCombinerStatus.error,
+              message: PdfCombinerMessages.errorMessage,
+            );
           }
-
-          createImageFromPDFResponse.status = PdfCombinerStatus.success;
-          createImageFromPDFResponse.message =
-              PdfCombinerMessages.successMessage;
         }
       } catch (e) {
-        createImageFromPDFResponse.status = PdfCombinerStatus.error;
-        createImageFromPDFResponse.message = e.toString();
+        return ImageFromPDFResponse(
+            status: PdfCombinerStatus.error, message: e.toString());
       }
     }
-
-    return createImageFromPDFResponse;
   }
 }

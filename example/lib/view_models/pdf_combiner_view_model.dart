@@ -72,7 +72,7 @@ class PdfCombinerViewModel {
       final response = await PdfCombiner.createPDFFromMultipleImages(
           inputPaths: selectedFiles, outputPath: outputFilePath);
       if (response.status == PdfCombinerStatus.success) {
-        outputFiles = [response.response!];
+        outputFiles = [response.outputPath];
       } else {
         throw Exception('Error creating PDF: ${response.message}.');
       }
@@ -87,18 +87,17 @@ class PdfCombinerViewModel {
     if (selectedFiles.length > 1) {
       throw Exception('Only you can select a single document.');
     }
-    String outputFilePath = "combined_output.pdf";
     try {
       final directory = await _getOutputDirectory();
-      outputFilePath = '${directory?.path}';
+      final outputFilePath = '${directory?.path}';
       final response = await PdfCombiner.createImageFromPDF(
         inputPath: selectedFiles.first,
-        outputPath: outputFilePath,
+        outputDirPath: outputFilePath,
         config: ImageFromPdfConfig(createOneImage: false),
       );
 
       if (response.status == PdfCombinerStatus.success) {
-        outputFiles = response.response!;
+        outputFiles = response.outputPaths;
       } else {
         throw Exception('${response.message}.');
       }

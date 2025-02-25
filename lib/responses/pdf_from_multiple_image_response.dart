@@ -2,12 +2,16 @@ import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 class PdfFromMultipleImageResponse {
   PdfCombinerStatus status;
-  String? response, message;
+  String outputPath;
+  String? message;
 
-  PdfFromMultipleImageResponse(
-      {this.status = PdfCombinerStatus.empty, this.response, this.message});
+  PdfFromMultipleImageResponse({
+    required this.status,
+    this.outputPath = "",
+    this.message,
+  });
 
   @override
   String toString() =>
-      "PdfFromMultipleImageResponse{response: $response, message: $message, status: $status }";
+      "PdfFromMultipleImageResponse{outputPath: $outputPath, message: $message, status: $status }";
 }

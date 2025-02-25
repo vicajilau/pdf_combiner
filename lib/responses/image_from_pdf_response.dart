@@ -3,12 +3,15 @@ import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 class ImageFromPDFResponse {
   PdfCombinerStatus status;
   String? message;
-  List<String>? response;
+  List<String> outputPaths;
 
-  ImageFromPDFResponse(
-      {this.status = PdfCombinerStatus.empty, this.response, this.message});
+  ImageFromPDFResponse({
+    required this.status,
+    this.outputPaths = const [],
+    this.message,
+  });
 
   @override
   String toString() =>
-      "ImageFromPDFResponse{response: $response, message: $message, status: $status }";
+      "ImageFromPDFResponse{outputPaths: $outputPaths, message: $message, status: $status }";
 }

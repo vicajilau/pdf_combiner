@@ -4,10 +4,11 @@ class MergeMultiplePDFResponse {
   String outputPath, message;
   PdfCombinerStatus status;
 
-  MergeMultiplePDFResponse(
-      {this.status = PdfCombinerStatus.empty,
-      this.outputPath = "",
-      required this.message});
+  MergeMultiplePDFResponse({
+    required this.status,
+    this.outputPath = "",
+    required this.message,
+  });
 
   @override
   String toString() =>
