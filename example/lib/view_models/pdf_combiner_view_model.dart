@@ -49,8 +49,9 @@ class PdfCombinerViewModel {
       outputFilePath = '${directory?.path}/combined_output.pdf';
 
       final response = await PdfCombiner.mergeMultiplePDFs(
-          inputPaths: selectedFiles,
-          outputPath: outputFilePath); // Combine the PDFs
+        inputPaths: selectedFiles,
+        outputPath: outputFilePath,
+      ); // Combine the PDFs
 
       if (response.status == PdfCombinerStatus.success) {
         outputFiles = [response.outputPath];
@@ -70,11 +71,15 @@ class PdfCombinerViewModel {
       final directory = await _getOutputDirectory();
       outputFilePath = '${directory?.path}/combined_output.pdf';
       final response = await PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: selectedFiles, outputPath: outputFilePath);
-      if (response.status == PdfCombinerStatus.success) {
-        outputFiles = [response.outputPath];
-      } else {
-        throw Exception('Error creating PDF: ${response.message}.');
+        inputPaths: selectedFiles,
+        outputPath: outputFilePath,
+      );
+
+      switch (response.status) {
+        case PdfCombinerStatus.success:
+          outputFiles = [response.outputPath];
+        case PdfCombinerStatus.error:
+          throw Exception('Error creating PDF: ${response.message}.');
       }
     } catch (e) {
       throw Exception('Error creating PDF: ${e.toString()}.');

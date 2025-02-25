@@ -43,14 +43,21 @@ Combine several PDF files into a single document.
 
 **Required Parameters:**
 - `inputPaths`: A list of strings representing the paths of the PDF files to combine.
+- `outputPath`: A string representing the absolute path of the file where the combined PDF should be saved. In the case of web, this parameter is ignored.
 
 ```dart
+final filesPath = ["path/to/file1.pdf", "path/to/file2.pdf"];
+final outputPath = "path/to/output.pdf";
+
 MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
   inputPaths: filesPath,
+  outputPath: outputPath,
 );
 
 if (response.status == PdfCombinerStatus.success) {
   print("File saved to: ${response.response}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
 }
 
 ```
@@ -61,18 +68,23 @@ Convert a list of image files into a single PDF document.
 
 **Required Parameters:**
 - `inputPaths`: A list of strings representing the image file paths.
-- `outputPath`: A string representing the absolute path where the generated PDF should be saved.
+- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored.
 
 By default, images are added to the PDF without modifications. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
+final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
+final outputPath = "path/to/output.pdf";
+
 PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
-inputPaths: imagePaths,
-outputPath: outputPath,
+  inputPaths: imagePaths,
+  outputPath: outputPath,
 );
 
 if (response.status == PdfCombinerStatus.success) {
   print("File saved to: ${response.outputPath}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
 }
 ```
 #### Custom Creation of PDF From Multiple Images
@@ -85,6 +97,9 @@ The `PdfFromMultipleImageConfig` class is used to configure how images are proce
 
 Example Usage:
 ```dart
+final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
+final outputPath = "path/to/output.pdf";
+
 PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
   inputPaths: imagePaths,
   outputPath: outputPath,
@@ -93,6 +108,12 @@ PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleI
     keepAspectRatio: true,
   ),
 );
+
+if (response.status == PdfCombinerStatus.success) {
+  print("File saved to: ${response.outputPath}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
+}
 ```
 
 ### Create Images From PDF
@@ -101,19 +122,23 @@ Extract images from a PDF file.
 
 **Required Parameters:**
 - `inputPath`: A string representing the file path of the PDF to extract images from.
-- `outputPath`: A string representing the directory where the extracted images should be saved.
+- `outputDirPath`: A string representing the directory folder where the extracted images should be saved. In the case of web, this parameter is ignored.
 
 By default, images are extracted in their original format. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
+final pdfFilePath = "path/to/input.pdf";
+final outputDirPath = "path/to/output";
+
 ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
   inputPath: pdfFilePath, 
-  outputPath: outputPath,
+  outputDirPath: outputDirPath,
 );
 
 if (response.status == PdfCombinerStatus.success) {
-  // response.response contains a list of output paths as List<String>
-  // response.message contains a success message as a String
+  print("Files generated: ${response.outputPaths}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
 }
 ```
 
@@ -128,6 +153,9 @@ The `ImageFromPdfConfig` class is used to configure how images are processed bef
 
 Example Usage:
 ```dart
+final pdfFilePath = "path/to/input.pdf";
+final outputDirPath = "path/to/output";
+
 PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
   inputPaths: imagePaths,
   outputPath: outputPath,
