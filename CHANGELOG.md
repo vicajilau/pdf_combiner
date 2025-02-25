@@ -1,3 +1,10 @@
+## 4.0.0
+### General
+* New optional parameter `config` of type `PdfFromMultipleImageConfig` to the method `createPDFFromMultipleImages`.
+* New optional parameter `config` of type `ImageFromPdfConfig` to the method `createImageFromPDF`.
+* **BREAKING CHANGE:** `maxWidth`, `maxHeight` and `needImageCompressor` has been inserted inside of `config` property on `createPDFFromMultipleImages`method.
+* **BREAKING CHANGE:** `maxWidth`, `maxHeight` and `createOneImage` has been inserted inside of `config` property on `createImageFromPDF`method.
+
 ## 3.4.0
 ### Linux
 * Added support with PDFium by Google with C++.
