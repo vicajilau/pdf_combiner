@@ -73,6 +73,24 @@ if (response.status == PdfCombinerStatus.success) {
 }
 ```
 
+The `PdfFromMultipleImageConfig` class is used to configure how images are processed before creating a PDF.
+
+**Parameters:**
+- `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
+- `keepAspectRatio` (default: `true`): Ensures that the aspect ratio of the images is preserved when scaling.
+
+#### Example Usage:
+```dart
+PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
+  inputPaths: imagePaths,
+  outputPath: outputPath,
+  config: const PdfFromMultipleImageConfig(
+    rescale: ImageScale(width: 480, height: 640),
+    keepAspectRatio: true,
+  ),
+);
+```
+
 ### Create Images From PDF
 
 Extract images from a PDF file.
@@ -93,6 +111,26 @@ if (response.status == PdfCombinerStatus.success) {
   // response.response contains a list of output paths as List<String>
   // response.message contains a success message as a String
 }
+```
+
+The `ImageFromPdfConfig` class is used to configure how images are processed before creating a list of images.
+
+**Parameters:**
+- `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
+- `keepAspectRatio` (default: `true`): Ensures that the aspect ratio of the images is preserved when scaling.
+- `createOneImage` (default: `true`): If you want to create a single image with all pages of the PDF or if you want one image per page.
+
+#### Example Usage:
+```dart
+PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
+  inputPaths: imagePaths,
+  outputPath: outputPath,
+  config: const ImageFromPdfConfig(
+    rescale: ImageScale(width: 480, height: 640),
+    keepAspectRatio: true,
+    createOneImage: true,
+  ),
+);
 ```
 
 ## Usage
