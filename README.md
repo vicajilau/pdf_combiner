@@ -176,19 +176,17 @@ The `ImageQuality` class provides three predefined quality levels:
 
 - **`ImageQuality.low`** (30) → High compression, lower quality, smaller file size.
 - **`ImageQuality.medium`** (60) → Balanced compression and image clarity.
-- **`ImageQuality.high`** (100) → Minimal compression, highest quality, larger file size.
+- **`ImageQuality.high`** (100) → Minimal compression, highest quality, larger file size. (The default).
 - **`ImageQuality.custom(int value)`** → Allows for custom quality levels between 1 and 100.
-
-These predefined values are implemented as constant instances of `_FixedImageQuality` or `_CustomImageQuality` ensuring immutability.
 
 Summary of Supported Cases
 
-| Quality Level | Internal Class        | Value Range | Example Usage             |
-|---------------|-----------------------|-------------|---------------------------|
-| **Low**       | `_FixedImageQuality`  | `30`        | `ImageQuality.low`        |
-| **Medium**    | `_FixedImageQuality`  | `60`        | `ImageQuality.medium`     |
-| **High**      | `_FixedImageQuality`  | `100`       | `ImageQuality.high`       |
-| **Custom**    | `_CustomImageQuality` | `1 - 100`   | `ImageQuality.custom(75)` |
+| Quality Level | Value Range | Example Usage             |
+|---------------|-------------|---------------------------|
+| **Low**       | `30`        | `ImageQuality.low`        |
+| **Medium**    | `60`        | `ImageQuality.medium`     |
+| **High**      | `100`       | `ImageQuality.high`       |
+| **Custom**    | `1 - 100`   | `ImageQuality.custom(75)` |
 
 Example Usage:
 ```dart
