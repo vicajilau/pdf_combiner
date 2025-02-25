@@ -9,6 +9,7 @@ import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
+import 'models/image_from_pdf_config.dart';
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
 ///
@@ -167,19 +168,17 @@ class PdfCombiner {
   /// Parameters:
   /// - `inputPath`: A string representing the pdf document file path to be extracted.
   /// - `outputPath`: A string representing the directory where the list of images should be saved.
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
+  ///   - `createOneImage`: Indicates whether to create a single image or separate images for each page (default is `true`).
   ///
-  /// Optional Parameters:
-  /// - `maxWidth`: An integer value with the max width of the images. Default set to 360.
-  /// - `maxHeight`: An integer value with the max height of the images. Default set to 360.
-  /// - `createOneImage`: A boolean representing if a single image should be created or separate images for each page. Default set to true.
   /// Returns:
   /// - A `Future<ImageFromPDFResponse?>` representing the result of the operation (either the success message or an error message).
   static Future<ImageFromPDFResponse> createImageFromPDF(
       {required String inputPath,
       required String outputPath,
-      int maxWidth = 360,
-      int maxHeight = 360,
-      bool createOneImage = true}) async {
+      ImageFromPdfConfig config = const ImageFromPdfConfig()}) async {
     ImageFromPDFResponse createImageFromPDFResponse = ImageFromPDFResponse();
 
     if (inputPath.trim().isEmpty) {
@@ -195,13 +194,12 @@ class PdfCombiner {
           createImageFromPDFResponse.message =
               PdfCombinerMessages.errorMessagePDF(inputPath);
         } else {
-          final response = await PdfCombinerPlatform.instance
-              .createImageFromPDF(
-                  inputPath: inputPath,
-                  outputPath: outputPath,
-                  maxWidth: maxWidth,
-                  maxHeight: maxHeight,
-                  createOneImage: createOneImage);
+          final response =
+              await PdfCombinerPlatform.instance.createImageFromPDF(
+            inputPath: inputPath,
+            outputPath: outputPath,
+            config: config,
+          );
 
           if (response != null && response.isNotEmpty) {
             createImageFromPDFResponse.response = [];

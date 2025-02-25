@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 
 import '../models/pdf_from_multiple_image_config.dart';
 import 'pdf_combiner_platform_interface.dart';
@@ -84,9 +85,10 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// Parameters:
   /// - `inputPath`: The file path of the PDF from which images will be extracted.
   /// - `outputPath`: The directory path where the images should be saved.
-  /// - `maxWidth`: The maximum width of each extracted image (default is 360).
-  /// - `maxHeight`: The maximum height of each extracted image (default is 360).
-  /// - `createOneImage`: Whether to create a single image from all PDF pages or separate images for each page (default is `true`).
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
+  ///   - `createOneImage`: Indicates whether to create a single image or separate images for each page (default is `true`).
   ///
   /// Returns:
   /// - A `Future<List<String>?>` representing a list of image file paths. If the operation
@@ -95,18 +97,17 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   Future<List<String>?> createImageFromPDF({
     required String inputPath,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? createOneImage,
+    ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
     final result = await methodChannel.invokeMethod<List<dynamic>>(
       'createImageFromPDF',
       {
         'path': inputPath,
         'outputDirPath': outputPath,
-        'maxWidth': maxWidth ?? 360,
-        'maxHeight': maxHeight ?? 360,
-        'createOneImage': createOneImage ?? true,
+        'height': config.rescale.height,
+        'width': config.rescale.width,
+        'compression': config.compression.value,
+        'createOneImage': config.createOneImage,
       },
     );
     return result?.cast<String>();

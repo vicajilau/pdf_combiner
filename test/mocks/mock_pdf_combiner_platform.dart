@@ -1,4 +1,5 @@
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -48,18 +49,13 @@ class MockPdfCombinerPlatform
   ///
   /// [inputPath] The path to the PDF file.
   /// [outputPath] The path where the images should be saved.
-  /// [maxWidth] The maximum width for resizing the images (optional).
-  /// [maxHeight] The maximum height for resizing the images (optional).
-  /// [createOneImage] Whether to create a single image from the entire PDF (optional).
+  /// [config] The configuration for the image creation.
   @override
-  Future<List<String>?> createImageFromPDF({
-    required String inputPath,
-    required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? createOneImage,
-  }) {
-    if (createOneImage == true) {
+  Future<List<String>?> createImageFromPDF(
+      {required String inputPath,
+      required String outputPath,
+      ImageFromPdfConfig config = const ImageFromPdfConfig()}) {
+    if (config.createOneImage == true) {
       return Future.value(['image1.png']);
     } else {
       return Future.value(['image1.png', 'image2.png']);

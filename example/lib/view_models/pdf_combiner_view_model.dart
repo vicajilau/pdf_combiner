@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:platform_detail/platform_detail.dart';
@@ -91,9 +92,10 @@ class PdfCombinerViewModel {
       final directory = await _getOutputDirectory();
       outputFilePath = '${directory?.path}';
       final response = await PdfCombiner.createImageFromPDF(
-          inputPath: selectedFiles.first,
-          outputPath: outputFilePath,
-          createOneImage: false);
+        inputPath: selectedFiles.first,
+        outputPath: outputFilePath,
+        config: ImageFromPdfConfig(createOneImage: false),
+      );
 
       if (response.status == PdfCombinerStatus.success) {
         outputFiles = response.response!;

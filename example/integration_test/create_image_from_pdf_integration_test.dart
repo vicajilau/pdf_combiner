@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
@@ -41,7 +42,8 @@ void main() {
 
       expect(result.status, PdfCombinerStatus.error);
       expect(result.response, null);
-      expect(result.message, 'File is not of PDF type or does not exist: ${inputPaths[0]}');
+      expect(result.message,
+          'File is not of PDF type or does not exist: ${inputPaths[0]}');
     });
 
     testWidgets('Test creating with non-supported file', (tester) async {
@@ -66,10 +68,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('image_final.jpeg');
 
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: inputPaths[0],
-        outputPath: outputPath,
-        createOneImage: true
-      );
+          inputPath: inputPaths[0], outputPath: outputPath);
 
       expect(result.status, PdfCombinerStatus.success);
       expect(result.response?.length, 1);
@@ -85,8 +84,7 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
           inputPath: inputPaths[0],
           outputPath: outputPath,
-          createOneImage: false
-      );
+          config: ImageFromPdfConfig(createOneImage: false));
 
       expect(result.status, PdfCombinerStatus.success);
       expect(result.response?.length, 4);

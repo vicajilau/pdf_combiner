@@ -1,3 +1,4 @@
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../models/pdf_from_multiple_image_config.dart';
@@ -84,9 +85,10 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// Parameters:
   /// - `inputPath`: The file path of the PDF from which images will be extracted.
   /// - `outputPath`: The directory path where the images should be saved.
-  /// - `maxWidth`: The maximum width of each extracted image (default is 360).
-  /// - `maxHeight`: The maximum height of each extracted image (default is 360).
-  /// - `createOneImage`: Whether to create a single image from all PDF pages or separate images for each page (default is `true`).
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
+  ///   - `createOneImage`: Indicates whether to create a single image or separate images for each page (default is `true`).
   ///
   /// Returns:
   /// - A `Future<List<String>?>` representing a list of image file paths. By default,
@@ -94,9 +96,7 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   Future<List<String>?> createImageFromPDF({
     required String inputPath,
     required String outputPath,
-    int maxWidth = 360,
-    int maxHeight = 360,
-    bool createOneImage = true,
+    ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
     throw UnimplementedError('createImageFromPDF() has not been implemented.');
   }
