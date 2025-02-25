@@ -48,7 +48,6 @@ void main() {
           'outputDirPath': '/output/path',
           'height': 0,
           'width': 0,
-          'compression': 100,
           'keepAspectRatio': true
         });
         return 'created.pdf';

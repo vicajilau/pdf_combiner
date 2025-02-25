@@ -59,23 +59,17 @@ Convert a list of image files into a single PDF document.
 - `inputPaths`: A list of strings representing the paths of the image files.
 - `outputPath`: A string representing the directory where the generated PDF should be saved.
 
-**Optional Parameters:**
-- `maxWidth` (default: 360): Maximum width for image compression.
-- `maxHeight` (default: 360): Maximum height for image compression.
-- `needImageCompressor` (default: true): Whether to compress the images.
+By default, images are added to the PDF without modifications. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
 PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
-  inputPaths: imagePaths,
-  outputPath: outputPath,
-  maxWidth: 480, // Optional
-  maxHeight: 640, // Optional
-  needImageCompressor: false, // Optional
+inputPaths: imagePaths,
+outputPath: outputPath,
 );
 
 if (response.status == PdfCombinerStatus.success) {
-  // response.response contains the output path as a String
-  // response.message contains a success message as a String
+// response.response contains the output path as a String
+// response.message contains a success message as a String
 }
 ```
 
@@ -87,18 +81,12 @@ Extract images from a PDF file.
 - `inputPath`: A string representing the file path of the PDF to extract images from.
 - `outputPath`: A string representing the directory where the extracted images should be saved.
 
-**Optional Parameters:**
-- `maxWidth` (default: 360): Maximum width for the extracted images.
-- `maxHeight` (default: 360): Maximum height for the extracted images.
-- `createOneImage` (default: true): Whether to create a single composite image from the PDF.
+By default, images are extracted in their original format. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
 ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
   inputPath: pdfFilePath, 
   outputPath: outputPath,
-  maxWidth: 720, // Optional
-  maxHeight: 1080, // Optional
-  createOneImage: false, // Optional
 );
 
 if (response.status == PdfCombinerStatus.success) {

@@ -62,7 +62,6 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// - `outputPath`: The directory path where the created PDF should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
-  ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
   ///   - `keepAspectRatio`: Indicates whether to maintain the aspect ratio of the images (default is `true`).
   ///
   /// Returns:
