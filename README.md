@@ -72,6 +72,7 @@ if (response.status == PdfCombinerStatus.success) {
 // response.message contains a success message as a String
 }
 ```
+#### Custom Creation of PDF From Multiple Images
 
 The `PdfFromMultipleImageConfig` class is used to configure how images are processed before creating a PDF.
 
@@ -79,7 +80,7 @@ The `PdfFromMultipleImageConfig` class is used to configure how images are proce
 - `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
 - `keepAspectRatio` (default: `true`): Ensures that the aspect ratio of the images is preserved when scaling.
 
-#### Example Usage:
+Example Usage:
 ```dart
 PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
   inputPaths: imagePaths,
@@ -113,26 +114,56 @@ if (response.status == PdfCombinerStatus.success) {
 }
 ```
 
+### Custom Creation of Images From PDF
+
 The `ImageFromPdfConfig` class is used to configure how images are processed before creating a list of images.
 
 **Parameters:**
 - `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
-- `keepAspectRatio` (default: `true`): Ensures that the aspect ratio of the images is preserved when scaling.
+- `compression` (default: `ImageQuality.high`): Sets the quality level for image compression.
 - `createOneImage` (default: `true`): If you want to create a single image with all pages of the PDF or if you want one image per page.
 
-#### Example Usage:
+Example Usage:
 ```dart
 PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
   inputPaths: imagePaths,
   outputPath: outputPath,
   config: const ImageFromPdfConfig(
     rescale: ImageScale(width: 480, height: 640),
-    keepAspectRatio: true,
+    compression: true,
     createOneImage: true,
   ),
 );
 ```
 
+#### ImageQuality
+
+Represents the quality level of an image, affecting compression and file size.
+
+Predefined Quality Levels
+The `ImageQuality` class provides three predefined quality levels:
+
+- **`ImageQuality.low`** (30) → High compression, lower quality, smaller file size.
+- **`ImageQuality.medium`** (60) → Balanced compression and image clarity.
+- **`ImageQuality.high`** (100) → Minimal compression, highest quality, larger file size.
+- **`ImageQuality.custom(int value)`** → Allows for custom quality levels between 1 and 100.
+
+These predefined values are implemented as constant instances of `_FixedImageQuality` or `_CustomImageQuality` ensuring immutability.
+
+Summary of Supported Cases
+
+| Quality Level | Internal Class        | Value Range | Example Usage             |
+|---------------|-----------------------|-------------|---------------------------|
+| **Low**       | `_FixedImageQuality`  | `30`        | `ImageQuality.low`        |
+| **Medium**    | `_FixedImageQuality`  | `60`        | `ImageQuality.medium`     |
+| **High**      | `_FixedImageQuality`  | `100`       | `ImageQuality.high`       |
+| **Custom**    | `_CustomImageQuality` | `1 - 100`   | `ImageQuality.custom(75)` |
+
+Example Usage:
+```dart
+final quality = ImageQuality.medium;
+print(quality.value); // Output: 60
+```
 ## Usage
 
 This plugin works with `file_picker` or `image_picker` for selecting files. Ensure you handle permissions using `permission_handler` before invoking the plugin.
