@@ -7,6 +7,7 @@ class ImageScale {
   final int height;
 
   /// Creates an instance of [ImageScale] with the given width and height.
+  ///
   /// Asserts that [width] and [height] are non-negative.
   const ImageScale({required this.width, required this.height})
       : assert(width >= 0 && height >= 0,
