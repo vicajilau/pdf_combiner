@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
@@ -112,7 +113,31 @@ void main() {
     });
 
     // Test successfully for createImageFromPDF
-    test('createImageFromPDF - success generate images', () async {
+    test('createImageFromPDF - success generate a single image', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      final outputDirPath = 'output/path';
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.createImageFromPDF(
+        inputPath: 'example/assets/document_1.pdf',
+        outputDirPath: outputDirPath,
+        config: ImageFromPdfConfig(createOneImage: true),
+      );
+
+      // Verify the error result matches the expected values.
+      expect(result.outputPaths, ['$outputDirPath/image1.png']);
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.message, null);
+      expect(result.toString(),
+          'ImageFromPDFResponse{outputPaths: ${result.outputPaths}, message: ${result.message}, status: ${result.status} }');
+    });
+
+    // Test successfully for createImageFromPDF
+    test('createImageFromPDF - success generate multiple images', () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
       // Replace the platform instance with the mock implementation.
@@ -127,7 +152,8 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.outputPaths, ['$outputDirPath/image1.png']);
+      expect(result.outputPaths,
+          ['$outputDirPath/image1.png', '$outputDirPath/image2.png']);
       expect(result.status, PdfCombinerStatus.success);
       expect(result.message, null);
       expect(result.toString(),

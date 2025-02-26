@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/image_scale.dart';
+import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:platform_detail/platform_detail.dart';
@@ -73,6 +75,10 @@ class PdfCombinerViewModel {
       final response = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
+        config: PdfFromMultipleImageConfig(
+          rescale: ImageScale(width: 100, height: 100),
+          keepAspectRatio: true,
+        ),
       );
 
       switch (response.status) {
@@ -98,7 +104,10 @@ class PdfCombinerViewModel {
       final response = await PdfCombiner.createImageFromPDF(
         inputPath: selectedFiles.first,
         outputDirPath: outputFilePath,
-        config: ImageFromPdfConfig(createOneImage: false),
+        config: ImageFromPdfConfig(
+          rescale: ImageScale(width: 100, height: 100),
+          createOneImage: true,
+        ),
       );
 
       if (response.status == PdfCombinerStatus.success) {
