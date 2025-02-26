@@ -7,7 +7,9 @@ class ImageScale {
   final int height;
 
   /// Creates an instance of [ImageScale] with the given width and height.
-  const ImageScale({required this.width, required this.height});
+  const ImageScale({required this.width, required this.height})
+      : assert(width >= 0 && height >= 0,
+            'width and height must be higher than 0');
 
   /// Factory constructor for representing the original image without scaling.
   ///
