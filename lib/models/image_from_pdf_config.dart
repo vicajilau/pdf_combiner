@@ -17,10 +17,10 @@ class ImageFromPdfConfig {
   ///
   /// [rescale] allows specifying a scaling option for the images.
   /// [compression] sets the quality level for the images, defaulting to [ImageQuality.high].
-  /// [createOneImage] determines if a single image should be created or separate images for each page.
+  /// [createOneImage] determines if a single image should be created or separate images for each page. Default is `false`.
   const ImageFromPdfConfig({
     ImageScale? rescale,
     this.compression = ImageQuality.high,
-    this.createOneImage = true,
+    this.createOneImage = false,
   }) : rescale = rescale ?? ImageScale.original;
 }

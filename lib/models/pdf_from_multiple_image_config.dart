@@ -13,7 +13,6 @@ class PdfFromMultipleImageConfig {
   /// Creates an instance of [PdfFromMultipleImageConfig].
   ///
   /// [rescale] allows specifying a scaling option for the images.
-  /// [compression] sets the quality level for the images, defaulting to [ImageQuality.high].
   /// [keepAspectRatio] determines if the aspect ratio should be preserved, defaulting to `true`.
   const PdfFromMultipleImageConfig({
     ImageScale? rescale,
