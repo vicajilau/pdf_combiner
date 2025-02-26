@@ -6,7 +6,8 @@ sealed class ImageQuality {
   /// Private constructor to enforce controlled instantiation.
   ///
   /// Asserts that [value] is between 1 and 100.
-  const ImageQuality._(this.value) : assert(value > 0 && value <= 100, 'Quality must be between 1 and 100.');
+  const ImageQuality._(this.value)
+      : assert(value > 0 && value <= 100, 'Quality must be between 1 and 100.');
 
   /// Low image quality, with higher compression and smaller file size.
   static const low = _FixedImageQuality(30);

@@ -1,5 +1,3 @@
-import 'package:pdf_combiner/models/image_quality.dart';
-
 import 'image_scale.dart';
 
 /// Configuration for generating a PDF from multiple images.
