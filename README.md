@@ -156,7 +156,7 @@ Example Usage:
 final pdfFilePath = "path/to/input.pdf";
 final outputDirPath = "path/to/output";
 
-PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
+ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
   inputPaths: imagePaths,
   outputPath: outputPath,
   config: const ImageFromPdfConfig(
