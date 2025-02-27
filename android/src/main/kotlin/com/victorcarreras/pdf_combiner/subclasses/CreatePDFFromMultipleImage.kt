@@ -2,7 +2,6 @@ package com.victorcarreras.pdf_combiner.subclasses
 
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
-import android.media.Image
 import androidx.exifinterface.media.ExifInterface
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -18,19 +17,19 @@ class ImageScale(
     val maxWidth: Int = 480,
     val maxHeight: Int = 640,
 )
-enum class ImageQuality(val value: Int) {
+enum class CompressionLevel(val value: Int) {
     low(30),
     medium(60),
     high(100),
     custom(100);
 
     companion object {
-        fun custom(value: Int): ImageQuality {
+        fun custom(value: Int): CompressionLevel {
             return custom.apply {
                 this._customValue = value
             }
         }
-        fun getImageQuality(value: Int):ImageQuality{
+        fun getCompressionLevel(value: Int):CompressionLevel{
             return when(value){
                 30 -> low
                 60 -> medium

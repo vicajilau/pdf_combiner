@@ -4,7 +4,7 @@ import android.content.Context
 import com.victorcarreras.pdf_combiner.subclasses.CreatePDFFromMultipleImage
 import com.victorcarreras.pdf_combiner.subclasses.MergeMultiplePDF
 import com.victorcarreras.pdf_combiner.subclasses.CreateImageFromPDF
-import com.victorcarreras.pdf_combiner.subclasses.ImageQuality
+import com.victorcarreras.pdf_combiner.subclasses.CompressionLevel
 import com.victorcarreras.pdf_combiner.subclasses.ImageFromPdfConfig
 import com.victorcarreras.pdf_combiner.subclasses.ImageScale
 import com.victorcarreras.pdf_combiner.subclasses.PdfFromMultipleImageConfig
@@ -13,7 +13,6 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 
 /** PdfCombinerPlugin */
 class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
@@ -41,6 +40,7 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
           result.error("INVALID_ARGUMENTS", "paths or outputDirPath cannot be null", null)
         }
       }
+
       "createPDFFromMultipleImage" -> {
         val paths = call.argument<List<String>>("paths")
         val outputDirPath = call.argument<String>("outputDirPath")
@@ -52,7 +52,7 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
             paths,
             outputDirPath,
             PdfFromMultipleImageConfig(
-              ImageScale(maxWidth,maxHeight),
+              ImageScale(maxWidth, maxHeight),
               keepAspectRatio
             )
           )
@@ -60,6 +60,7 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
           result.error("INVALID_ARGUMENTS", "paths or outputDirPath cannot be null", null)
         }
       }
+
       "createImageFromPDF" -> {
         val path = call.argument<String>("path")
         val outputDirPath = call.argument<String>("outputDirPath")
@@ -70,13 +71,16 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
 
         if (path != null && outputDirPath != null) {
           CreateImageFromPDF(context, result).create(
-            path, outputDirPath, ImageFromPdfConfig(ImageScale(maxWidth,maxHeight),
-              ImageQuality.getImageQuality(levelCompression),createOneImage)
+            path, outputDirPath, ImageFromPdfConfig(
+              ImageScale(maxWidth, maxHeight),
+              CompressionLevel.getCompressionLevel(levelCompression), createOneImage
+            )
           )
         } else {
           result.error("INVALID_ARGUMENTS", "path or outputDirPath cannot be null", null)
         }
       }
+
       else -> result.notImplemented()
     }
   }

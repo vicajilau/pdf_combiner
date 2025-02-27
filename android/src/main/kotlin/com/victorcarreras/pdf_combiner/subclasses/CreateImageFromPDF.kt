@@ -20,7 +20,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 
-class ImageFromPdfConfig(val rescale:ImageScale = ImageScale(maxWidth = 480, maxHeight = 640), val compression:ImageQuality= ImageQuality.custom(35), val createOneImage: Boolean = false)
+class ImageFromPdfConfig(val rescale:ImageScale = ImageScale(maxWidth = 480, maxHeight = 640), val compression:CompressionLevel= CompressionLevel.custom(35), val createOneImage: Boolean = false)
 
 class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
 
