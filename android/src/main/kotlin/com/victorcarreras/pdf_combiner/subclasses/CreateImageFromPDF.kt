@@ -19,6 +19,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
+
+class ImageFromPdfConfig(val rescale:ImageScale = ImageScale(maxWidth = 480, maxHeight = 640), val compression:ImageQuality= ImageQuality.custom(35), val createOneImage: Boolean = false)
+
 class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
 
     private var context: Context = getContext
@@ -26,8 +29,8 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
 
     @OptIn(DelicateCoroutinesApi::class)
     fun create(
-        path: String, outputDirPath: String, maxWidth: Int, maxHeight: Int, createOneImage: Boolean
-    ) {
+        inputPath: String, outputPath: String, config: ImageFromPdfConfig)
+     {
         var status = ""
         val pdfImagesPath: MutableList<String> = mutableListOf<String>()
 
@@ -37,7 +40,7 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
                 val decodeService = DecodeServiceBase(PdfContext())
                 decodeService.setContentResolver(context.contentResolver)
 
-                val file = File(path)
+                val file = File(inputPath)
                 decodeService.open(Uri.fromFile(file))
 
                 val pdfImages: MutableList<Bitmap> = mutableListOf<Bitmap>()
@@ -47,13 +50,13 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
                     val page: CodecPage = decodeService.getPage(i)
                     val rectF = RectF(0.toFloat(), 0.toFloat(), 1.toFloat(), 1.toFloat())
 
-                    val bitmap: Bitmap = page.renderBitmap(maxWidth, maxHeight, rectF)
+                    val bitmap: Bitmap = page.renderBitmap(config.rescale.maxWidth, config.rescale.maxHeight, rectF)
                     pdfImages.add(bitmap)
 
-                    if (!createOneImage) {
+                    if (!config.createOneImage) {
 
-                        val splitPath = outputDirPath.replace(outputDirPath.split(".").last(),"")
-                        val splitPathExt = outputDirPath.split(".").last()
+                        val splitPath = outputPath.replace(outputPath.split(".").last(),"")
+                        val splitPathExt = outputPath.split(".").last()
 
                         print(splitPath)
                         print(splitPathExt)
@@ -61,16 +64,16 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
                         val newPath = """$splitPath$i.$splitPathExt"""
                         pdfImagesPath.add(newPath)
                         val outputStream = FileOutputStream(newPath)
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                        bitmap.compress(Bitmap.CompressFormat.PNG, config.compression.value, outputStream)
                         outputStream.close()
                     }
                 }
 
-                if (createOneImage) {
-                    pdfImagesPath.add(outputDirPath)
-                    val bitmap = mergeThemAll(pdfImages, maxWidth, maxHeight)
-                    val outputStream = FileOutputStream(outputDirPath)
-                    bitmap!!.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                if (config.createOneImage) {
+                    pdfImagesPath.add(outputPath)
+                    val bitmap = mergeThemAll(pdfImages, config.rescale.maxWidth, config.rescale.maxHeight)
+                    val outputStream = FileOutputStream(outputPath)
+                    bitmap!!.compress(Bitmap.CompressFormat.PNG, config.compression.value, outputStream)
                     outputStream.close()
                 }
 

@@ -2,46 +2,70 @@ package com.victorcarreras.pdf_combiner.subclasses
 
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
+import android.media.Image
 import androidx.exifinterface.media.ExifInterface
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.math.roundToInt
 
+class ImageScale(
+    val maxWidth: Int = 480,
+    val maxHeight: Int = 640,
+)
+enum class ImageQuality(val value: Int) {
+    low(30),
+    medium(60),
+    high(100),
+    custom(100);
+
+    companion object {
+        fun custom(value: Int): ImageQuality {
+            return custom.apply {
+                this._customValue = value
+            }
+        }
+        fun getImageQuality(value: Int):ImageQuality{
+            return when(value){
+                30 -> low
+                60 -> medium
+                100 -> high
+                else -> custom(value)
+            }
+        }
+    }
+
+    private var _customValue: Int = value
+}
+class PdfFromMultipleImageConfig(val rescale: ImageScale,val keepAspectRatio:Boolean = true)
+
+
 class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
 
     private var result: MethodChannel.Result = getResult
 
-
     @OptIn(DelicateCoroutinesApi::class)
     fun create(
-        paths: List<String>,
-        outputDirPath: String,
-        needImageCompressor: Boolean,
-        maxWidth: Int,
-        maxHeight: Int
+        inputPaths: List<String>,
+        outputPath: String,
+        config: PdfFromMultipleImageConfig,
     ) {
         var status = ""
 
         val pdfFromMultipleImage = GlobalScope.launch(Dispatchers.IO) {
             try {
-                val file = File(outputDirPath)
+                val file = File(outputPath)
                 val fileOutputStream = FileOutputStream(file)
                 val pdfDocument = PdfDocument()
                 val i = 0
-                for (item in paths) {
+                for (item in inputPaths) {
 
-                    var bitmap = if (needImageCompressor) {
-                        compressImage(item, maxWidth, maxHeight)
-                    } else {
-                        BitmapFactory.decodeFile(item)
-                    }
+                    var bitmap = compressImage(item, config.rescale.maxWidth, config.rescale.maxHeight,config.keepAspectRatio)
 
                     val pageInfo =
                         PdfDocument.PageInfo.Builder(bitmap!!.width, bitmap.height, i + 1).create()
@@ -65,7 +89,7 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
 
         pdfFromMultipleImage.invokeOnCompletion {
             if (status == "success")
-                status = outputDirPath
+                status = outputPath
             else if (status == "error")
                 status = "error"
 
@@ -75,7 +99,12 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
         }
     }
 
-    private fun compressImage(imagePath: String, maxWidthGet: Int, maxHeightGet: Int): Bitmap? {
+    private fun compressImage(
+        imagePath: String,
+        maxWidthGet: Int,
+        maxHeightGet: Int,
+        keepAspectRatio: Boolean
+    ): Bitmap? {
 
         val maxHeight = maxWidthGet.toFloat()
         val maxWidth = maxHeightGet.toFloat()
@@ -93,7 +122,7 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
         var imgRatio = actualWidth.toFloat() / actualHeight.toFloat()
         val maxRatio = maxWidth / maxHeight
 
-        if (actualHeight > maxHeight || actualWidth > maxWidth) {
+        if (keepAspectRatio && actualHeight > maxHeight) {
             if (imgRatio < maxRatio) {
                 imgRatio = maxHeight / actualHeight
                 actualWidth = (imgRatio * actualWidth).toInt()
@@ -118,8 +147,6 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
 
         try {
             bmp = BitmapFactory.decodeFile(imagePath, options)
-            val baos = ByteArrayOutputStream()
-            bmp.compress(Bitmap.CompressFormat.JPEG, 10, baos)
         } catch (exception: OutOfMemoryError) {
             exception.printStackTrace()
             return null

@@ -4,12 +4,15 @@ import android.content.Context
 import com.victorcarreras.pdf_combiner.subclasses.CreatePDFFromMultipleImage
 import com.victorcarreras.pdf_combiner.subclasses.MergeMultiplePDF
 import com.victorcarreras.pdf_combiner.subclasses.CreateImageFromPDF
+import com.victorcarreras.pdf_combiner.subclasses.ImageQuality
+import com.victorcarreras.pdf_combiner.subclasses.ImageFromPdfConfig
+import com.victorcarreras.pdf_combiner.subclasses.ImageScale
+import com.victorcarreras.pdf_combiner.subclasses.PdfFromMultipleImageConfig
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 
 /** PdfCombinerPlugin */
 class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
@@ -40,12 +43,13 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
       "createPDFFromMultipleImage" -> {
         val paths = call.argument<List<String>>("paths")
         val outputDirPath = call.argument<String>("outputDirPath")
-        val needImageCompressor = call.argument<Boolean>("needImageCompressor") ?: false
-        val maxWidth = call.argument<Int>("maxWidth") ?: 0
-        val maxHeight = call.argument<Int>("maxHeight") ?: 0
+        val maxWidth = call.argument<Int>("width") ?: 0
+        val maxHeight = call.argument<Int>("height") ?: 0
+        val keepAspectRatio = call.argument<Boolean>("keepAspectRatio") ?: false
         if (paths != null && outputDirPath != null) {
           CreatePDFFromMultipleImage(result).create(
-            paths, outputDirPath, needImageCompressor, maxWidth, maxHeight
+            paths, outputDirPath,
+            PdfFromMultipleImageConfig(ImageScale(maxWidth,maxHeight),keepAspectRatio)
           )
         } else {
           result.error("INVALID_ARGUMENTS", "paths or outputDirPath cannot be null", null)
@@ -54,12 +58,15 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
       "createImageFromPDF" -> {
         val path = call.argument<String>("path")
         val outputDirPath = call.argument<String>("outputDirPath")
-        val maxWidth = call.argument<Int>("maxWidth") ?: 0
-        val maxHeight = call.argument<Int>("maxHeight") ?: 0
+        val levelCompression = call.argument<Int>("levelCompression") ?: 30
+        val maxWidth = call.argument<Int>("width") ?: 0
+        val maxHeight = call.argument<Int>("height") ?: 0
+        val keepAspectRatio = call.argument<Boolean>("keepAspectRatio") ?: false
         val createOneImage = call.argument<Boolean>("createOneImage") ?: false
         if (path != null && outputDirPath != null) {
           CreateImageFromPDF(context, result).create(
-            path, outputDirPath, maxWidth, maxHeight, createOneImage
+            path, outputDirPath, ImageFromPdfConfig(ImageScale(maxWidth,maxHeight),
+              ImageQuality.getImageQuality(levelCompression),createOneImage)
           )
         } else {
           result.error("INVALID_ARGUMENTS", "path or outputDirPath cannot be null", null)
