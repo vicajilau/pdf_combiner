@@ -44,9 +44,9 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
       "createPDFFromMultipleImage" -> {
         val paths = call.argument<List<String>>("paths")
         val outputDirPath = call.argument<String>("outputDirPath")
-        val maxWidth = call.argument<Int>("width") ?: 0
-        val maxHeight = call.argument<Int>("height") ?: 0
-        val keepAspectRatio = call.argument<Boolean>("keepAspectRatio") ?: false
+        val maxWidth = call.argument<Int>("width")
+        val maxHeight = call.argument<Int>("height")
+        val keepAspectRatio = call.argument<Boolean>("keepAspectRatio")
         if (paths != null && outputDirPath != null) {
           CreatePDFFromMultipleImage(result).create(
             paths,
@@ -64,10 +64,10 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
       "createImageFromPDF" -> {
         val path = call.argument<String>("path")
         val outputDirPath = call.argument<String>("outputDirPath")
-        val levelCompression = call.argument<Int>("levelCompression") ?: 30
-        val maxWidth = call.argument<Int>("width") ?: 0
-        val maxHeight = call.argument<Int>("height") ?: 0
-        val createOneImage = call.argument<Boolean>("createOneImage") ?: false
+        val levelCompression = call.argument<Int>("levelCompression")
+        val maxWidth = call.argument<Int>("width")
+        val maxHeight = call.argument<Int>("height")
+        val createOneImage = call.argument<Boolean>("createOneImage")
 
         if (path != null && outputDirPath != null) {
           CreateImageFromPDF(context, result).create(
