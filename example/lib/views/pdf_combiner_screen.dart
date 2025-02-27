@@ -86,11 +86,11 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                     key: ValueKey(_viewModel.selectedFiles[index]),
                     direction: DismissDirection.horizontal,
                     onDismissed: (direction) {
+                      final path = p.basename(_viewModel.selectedFiles[index]);
                       setState(() {
                         _viewModel.removeFileAt(index);
                       });
-                      _showSnackbarSafely(
-                          'File ${p.basename(_viewModel.selectedFiles[index])} removed.');
+                      _showSnackbarSafely('File $path removed.');
                     },
                     background: Container(
                       color: Colors.red,
@@ -160,6 +160,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   void _restart() {
     _viewModel.restart();
     setState(() {});
+    _showSnackbarSafely('App restarted!');
   }
 
   // Function to combine selected PDF files into a single output file
