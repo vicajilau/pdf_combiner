@@ -83,7 +83,6 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   /// - `outputPath`: The directory path where the created PDF should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
-  ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
   ///   - `keepAspectRatio`: Indicates whether to maintain the aspect ratio of the images (default is `true`).
   ///
   /// Returns:
@@ -111,7 +110,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   /// - `outputPath`: The directory path where the images should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
-  ///   - `compression`: The image quality level for compression, affecting file size and clarity (default is [ImageQuality.high]).
+  ///   - `compression`: The image compression level for compression, affecting file size quality and clarity (default is [ImageCompression.none]).
   ///   - `createOneImage`: Indicates whether to create a single image or separate images for each page (default is `true`).
   ///
   /// Returns:
