@@ -31,7 +31,6 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
     fun create(
         inputPath: String, outputPath: String, config: ImageFromPdfConfig)
      {
-        var status = ""
         val pdfImagesPath: MutableList<String> = mutableListOf<String>()
 
         val pdfFromMultipleImage = GlobalScope.launch(Dispatchers.IO) {
@@ -75,11 +74,8 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
                     outputStream.close()
                 }
 
-                status = "success"
             } catch (e: IOException) {
                 e.printStackTrace()
-                status = "error"
-
             }
         }
 
