@@ -66,20 +66,25 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
                 for (item in inputPaths) {
 
                     var bitmap = compressImage(item, config.rescale.maxWidth, config.rescale.maxHeight,config.keepAspectRatio)
+                    if(bitmap != null){
+                        val scaledBitmap = scaleBitmap(bitmap, config.rescale.maxWidth)
+                        val pageInfo =
+                            PdfDocument.PageInfo.Builder(scaledBitmap.width, scaledBitmap.height, i + 1).create()
+                        val page = pdfDocument.startPage(pageInfo)
+                        val canvas = page.canvas
+                        val paint = Paint()
+                        canvas.drawPaint(paint)
+                        canvas.drawBitmap(scaledBitmap, 0f, 0f, paint)
+                        pdfDocument.finishPage(page)
+                        scaledBitmap.recycle()
+                        pdfDocument.writeTo(fileOutputStream)
+                        status = "success"
+                    } else{
+                        status = "error"
+                    }
 
-                    val pageInfo =
-                        PdfDocument.PageInfo.Builder(bitmap!!.width, bitmap.height, i + 1).create()
-                    val page = pdfDocument.startPage(pageInfo)
-                    val canvas = page.canvas
-                    val paint = Paint()
-                    canvas.drawPaint(paint)
-                    canvas.drawBitmap(bitmap, 0f, 0f, paint)
-                    pdfDocument.finishPage(page)
-                    bitmap.recycle()
                 }
-                pdfDocument.writeTo(fileOutputStream)
                 pdfDocument.close()
-                status = "success"
             } catch (e: IOException) {
                 e.printStackTrace()
                 status = "error"
@@ -97,6 +102,13 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
                 result.success(status)
             }
         }
+    }
+
+    // Escalar la imagen manteniendo proporciones
+    fun scaleBitmap(bitmap: Bitmap, targetWidth: Int): Bitmap {
+        val scaleFactor = targetWidth.toFloat() / bitmap.width
+        val targetHeight = (bitmap.height * scaleFactor).toInt()
+        return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true)
     }
 
     private fun compressImage(
