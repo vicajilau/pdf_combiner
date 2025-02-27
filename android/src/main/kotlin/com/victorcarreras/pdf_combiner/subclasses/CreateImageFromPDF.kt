@@ -31,7 +31,6 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
     fun create(
         inputPath: String, outputPath: String, config: ImageFromPdfConfig)
      {
-        var status = ""
         val pdfImagesPath: MutableList<String> = mutableListOf<String>()
 
         val pdfFromMultipleImage = GlobalScope.launch(Dispatchers.IO) {
@@ -55,33 +54,28 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
 
                     if (!config.createOneImage) {
 
-                        val splitPath = outputPath.replace(outputPath.split(".").last(),"")
-                        val splitPathExt = outputPath.split(".").last()
+                        val splitPath = "$outputPath/image_$i.png"
 
-                        print(splitPath)
-                        print(splitPathExt)
+                        print("pathfile: $splitPath")
 
-                        val newPath = """$splitPath$i.$splitPathExt"""
-                        pdfImagesPath.add(newPath)
-                        val outputStream = FileOutputStream(newPath)
+                        pdfImagesPath.add(splitPath)
+                        val outputStream = FileOutputStream(splitPath)
                         bitmap.compress(Bitmap.CompressFormat.PNG, config.compression.value, outputStream)
                         outputStream.close()
                     }
                 }
 
                 if (config.createOneImage) {
-                    pdfImagesPath.add(outputPath)
+                    pdfImagesPath.add("$outputPath/image_pdf.png")
+                    print("pathfile: $outputPath/image_pdf.png")
                     val bitmap = mergeThemAll(pdfImages, config.rescale.maxWidth, config.rescale.maxHeight)
-                    val outputStream = FileOutputStream(outputPath)
+                    val outputStream = FileOutputStream("$outputPath/image_pdf.png")
                     bitmap!!.compress(Bitmap.CompressFormat.PNG, config.compression.value, outputStream)
                     outputStream.close()
                 }
 
-                status = "success"
             } catch (e: IOException) {
                 e.printStackTrace()
-                status = "error"
-
             }
         }
 
