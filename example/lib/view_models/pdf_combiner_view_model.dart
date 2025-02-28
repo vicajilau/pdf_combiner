@@ -76,7 +76,7 @@ class PdfCombinerViewModel {
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
         config: PdfFromMultipleImageConfig(
-          rescale: ImageScale(width: 100, height: 100),
+          rescale: ImageScale(width: 480, height: 640),
           keepAspectRatio: true,
         ),
       );
@@ -105,7 +105,7 @@ class PdfCombinerViewModel {
         inputPath: selectedFiles.first,
         outputDirPath: outputFilePath,
         config: ImageFromPdfConfig(
-          rescale: ImageScale(width: 100, height: 100),
+          rescale: ImageScale(width: 480, height: 640),
           createOneImage: true,
         ),
       );
