@@ -21,12 +21,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         title: const Text('PDF Combiner Example'),
         actions: [
           IconButton(
-            onPressed: () => _restart(),
+            onPressed: _restart,
             icon: const Icon(Icons.restart_alt),
             tooltip: "Restart app",
           ),
           IconButton(
-            onPressed: () => _pickFiles(),
+            onPressed: _pickFiles,
             icon: const Icon(Icons.add),
             tooltip: "Add new files",
           ),
@@ -34,14 +34,14 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       ),
       body: SafeArea(
         child: Column(
+          spacing: 20,
           children: [
             // Output Files Section
             if (_viewModel.outputFiles.isNotEmpty)
               Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Output Files:',
+                    'OUTPUT FILES',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -55,20 +55,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                         title: Text(
                           p.basename(_viewModel.outputFiles[index]),
                           overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.copy),
-                              onPressed: () => _copyOutputToClipboard(index),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.open_in_new),
-                              onPressed: () => _openOutputFile(index),
-                            ),
-                          ],
+                        onTap: () => _openOutputFile(index),
+                        subtitle: Text(_viewModel.outputFiles[index]),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.copy),
+                          onPressed: () => _copyOutputToClipboard(index),
                         ),
                       );
                     },
@@ -76,6 +68,13 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                   const Divider(),
                 ],
               ),
+            const Text(
+              'INPUT FILES',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
             // Input Files Section
             Expanded(
               child: ReorderableListView.builder(
@@ -86,11 +85,11 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                     key: ValueKey(_viewModel.selectedFiles[index]),
                     direction: DismissDirection.horizontal,
                     onDismissed: (direction) {
+                      final path = p.basename(_viewModel.selectedFiles[index]);
                       setState(() {
                         _viewModel.removeFileAt(index);
                       });
-                      _showSnackbarSafely(
-                          'File ${p.basename(_viewModel.selectedFiles[index])} removed.');
+                      _showSnackbarSafely('File $path removed.');
                     },
                     background: Container(
                       color: Colors.red,
@@ -102,19 +101,14 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                       title: Text(
                         p.basename(_viewModel.selectedFiles[index]),
                         overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
                       ),
+                      onTap: () async => await _openInputFile(index),
                       subtitle: Text(_viewModel.selectedFiles[index]),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.open_in_new),
-                        onPressed: () => _openInputFile(index),
-                      ),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 20),
             // Buttons Section
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -160,6 +154,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   void _restart() {
     _viewModel.restart();
     setState(() {});
+    _showSnackbarSafely('App restarted!');
   }
 
   // Function to combine selected PDF files into a single output file
