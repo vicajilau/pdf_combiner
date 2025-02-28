@@ -17,31 +17,9 @@ class ImageScale(
     val maxWidth: Int,
     val maxHeight: Int,
 )
-enum class CompressionLevel(val value: Int) {
-    low(30),
-    medium(60),
-    high(100),
-    custom(100);
 
-    companion object {
-        fun custom(value: Int): CompressionLevel {
-            return custom.apply {
-                this._customValue = value
-            }
-        }
-        fun getCompressionLevel(value: Int):CompressionLevel{
-            return when(value){
-                30 -> low
-                60 -> medium
-                100 -> high
-                else -> custom(value)
-            }
-        }
-    }
-
-    private var _customValue: Int = value
-}
-class PdfFromMultipleImageConfig(val rescale: ImageScale,val keepAspectRatio:Boolean? = true)
+class CompressionLevel(val value: Int)
+class PdfFromMultipleImageConfig(val rescale: ImageScale, val keepAspectRatio: Boolean)
 
 
 class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
@@ -64,11 +42,18 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
                 val i = 0
                 for (item in inputPaths) {
 
-                    var bitmap = compressImage(item, config.rescale.maxWidth, config.rescale.maxHeight,config.keepAspectRatio!!)
-                    if(bitmap != null){
+                    val bitmap = compressImage(
+                        item, config.rescale.maxWidth, config.rescale.maxHeight,
+                        config.keepAspectRatio
+                    )
+                    if (bitmap != null) {
                         val scaledBitmap = scaleBitmap(bitmap, config.rescale.maxWidth)
                         val pageInfo =
-                            PdfDocument.PageInfo.Builder(scaledBitmap.width, scaledBitmap.height, i + 1).create()
+                            PdfDocument.PageInfo.Builder(
+                                scaledBitmap.width,
+                                scaledBitmap.height,
+                                i + 1
+                            ).create()
                         val page = pdfDocument.startPage(pageInfo)
                         val canvas = page.canvas
                         val paint = Paint()
@@ -78,7 +63,7 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
                         scaledBitmap.recycle()
                         pdfDocument.writeTo(fileOutputStream)
                         status = "success"
-                    } else{
+                    } else {
                         status = "error"
                     }
 
@@ -87,7 +72,6 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
             } catch (e: IOException) {
                 e.printStackTrace()
                 status = "error"
-
             }
         }
 
@@ -103,8 +87,8 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
         }
     }
 
-    // Escalar la imagen manteniendo proporciones
-    fun scaleBitmap(bitmap: Bitmap, targetWidth: Int): Bitmap {
+    // Scale image maintaining proportions
+    private fun scaleBitmap(bitmap: Bitmap, targetWidth: Int): Bitmap {
         val scaleFactor = targetWidth.toFloat() / bitmap.width
         val targetHeight = (bitmap.height * scaleFactor).toInt()
         return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true)
