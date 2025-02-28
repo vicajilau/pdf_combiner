@@ -53,7 +53,7 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
             paths,
             outputDirPath,
             PdfFromMultipleImageConfig(
-              ImageScale(maxWidth, maxHeight),
+              ImageScale(maxWidth!!, maxHeight!!),
               keepAspectRatio
             )
           )
@@ -65,7 +65,7 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
       "createImageFromPDF" -> {
         val path = call.argument<String>("path")
         val outputDirPath = call.argument<String>("outputDirPath")
-        val levelCompression = call.argument<Int>("levelCompression")
+        val compression = call.argument<Int>("compression")
         val maxWidth = call.argument<Int>("width")
         val maxHeight = call.argument<Int>("height")
         val createOneImage = call.argument<Boolean>("createOneImage")
@@ -73,8 +73,8 @@ class PdfCombinerPlugin: FlutterPlugin, MethodCallHandler {
         if (path != null && outputDirPath != null) {
           CreateImageFromPDF(context, result).create(
             path, outputDirPath, ImageFromPdfConfig(
-              ImageScale(maxWidth, maxHeight),
-              CompressionLevel.getCompressionLevel(levelCompression), createOneImage
+              ImageScale(maxWidth!!, maxHeight!!),
+              CompressionLevel.getCompressionLevel(compression!!), createOneImage!!
             )
           )
         } else {

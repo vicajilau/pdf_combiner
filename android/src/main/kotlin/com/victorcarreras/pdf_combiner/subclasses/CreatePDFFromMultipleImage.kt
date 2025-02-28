@@ -14,8 +14,8 @@ import java.io.IOException
 import kotlin.math.roundToInt
 
 class ImageScale(
-    val maxWidth: Int = 480,
-    val maxHeight: Int = 640,
+    val maxWidth: Int,
+    val maxHeight: Int,
 )
 enum class CompressionLevel(val value: Int) {
     low(30),
@@ -41,7 +41,7 @@ enum class CompressionLevel(val value: Int) {
 
     private var _customValue: Int = value
 }
-class PdfFromMultipleImageConfig(val rescale: ImageScale,val keepAspectRatio:Boolean = true)
+class PdfFromMultipleImageConfig(val rescale: ImageScale,val keepAspectRatio:Boolean? = true)
 
 
 class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
@@ -64,7 +64,7 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
                 val i = 0
                 for (item in inputPaths) {
 
-                    var bitmap = compressImage(item, config.rescale.maxWidth, config.rescale.maxHeight,config.keepAspectRatio)
+                    var bitmap = compressImage(item, config.rescale.maxWidth, config.rescale.maxHeight,config.keepAspectRatio!!)
                     if(bitmap != null){
                         val scaledBitmap = scaleBitmap(bitmap, config.rescale.maxWidth)
                         val pageInfo =

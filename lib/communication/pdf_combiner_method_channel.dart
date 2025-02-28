@@ -104,7 +104,7 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
         'outputDirPath': outputPath,
         'height': config.rescale.height,
         'width': config.rescale.width,
-        'levelCompression': config.compression.value,
+        'compression': config.compression.value,
         'createOneImage': config.createOneImage,
       },
     );
