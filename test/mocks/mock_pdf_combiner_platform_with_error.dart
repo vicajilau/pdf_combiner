@@ -59,6 +59,6 @@ class MockPdfCombinerPlatformWithError
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
-    throw Exception("Mocked Exception");
+    return Future.value(['error']);
   }
 }
