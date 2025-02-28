@@ -83,7 +83,16 @@ private extension PdfCombinerPlugin {
         completionHandler(outputDirPath)
     }
 
-    // MARK: Create pdf from multiple images
+/*
+'createPDFFromMultipleImage',
+      {
+        'paths': inputPaths,
+        'outputDirPath': outputPath,
+        'height': config.rescale.height,
+        'width': config.rescale.width,
+        'keepAspectRatio': config.keepAspectRatio,
+      }
+*/
     func createPDFFromMultipleImage(args: Dictionary<String, Any>, completionHandler: @escaping (String) -> Void) {
         guard let paths = args["paths"] as? [String],
               let outputDirPath = args["outputDirPath"] as? String,
@@ -127,7 +136,17 @@ private extension PdfCombinerPlugin {
         completionHandler(outputDirPath)
     }
 
-    // MARK: Merge one or multiple images from pdf
+    /*
+    'createImageFromPDF',
+          {
+            'path': inputPath,
+            'outputDirPath': outputPath,
+            'height': config.rescale.height,
+            'width': config.rescale.width,
+            'compression': config.compression.value,
+            'createOneImage': config.createOneImage,
+          }
+    */
     func createImageFromPDF(args: Dictionary<String, Any>, completionHandler: @escaping ([String]) -> Void) {
         guard let path = args["path"] as? String,
               let outputDirPath = args["outputDirPath"] as? String,
