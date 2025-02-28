@@ -148,50 +148,52 @@ The `ImageFromPdfConfig` class is used to configure how images are processed bef
 
 **Parameters:**
 - `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
-- `compression` (default: `ImageQuality.high`): Sets the quality level for image compression.
-- `createOneImage` (default: `true`): If you want to create a single image with all pages of the PDF or if you want one image per page.
+- `compression` (default: `ImageCompression.none`): Sets the compression level for image, affecting file size quality and clarity.
+- `createOneImage` (default: `false`): If you want to create a single image with all pages of the PDF or if you want one image per page.
 
 Example Usage:
 ```dart
 final pdfFilePath = "path/to/input.pdf";
 final outputDirPath = "path/to/output";
 
-PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
+ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
   inputPaths: imagePaths,
   outputPath: outputPath,
   config: const ImageFromPdfConfig(
     rescale: ImageScale(width: 480, height: 640),
-    compression: ImageQuality.custom(35),
+    compression: ImageCompression.custom(35),
     createOneImage: true,
   ),
 );
 ```
 
-#### ImageQuality
+#### ImageCompression
 
-Represents the quality level of an image, affecting compression and file size.
+Represents the compression level of an image, affecting quality and file size.
 
-Predefined Quality Levels
-The `ImageQuality` class provides three predefined quality levels:
+Predefined Compression Levels
+The `ImageCompression` class provides three predefined quality levels:
 
-- **`ImageQuality.low`** (30) → High compression, lower quality, smaller file size.
-- **`ImageQuality.medium`** (60) → Balanced compression and image clarity.
-- **`ImageQuality.high`** (100) → Minimal compression, highest quality, larger file size. (The default).
-- **`ImageQuality.custom(int value)`** → Allows for custom quality levels between 1 and 100.
+- **`ImageCompression.none`** (0) → No compression, highest quality, largest file size. (The default).
+- **`ImageCompression.low`** (30) → Minimal compression, highest quality, larger file size.
+- **`ImageCompression.medium`** (60) → Balanced compression and image clarity.
+- **`ImageCompression.high`** (100) → High compression, lower quality, smaller file size.
+- **`ImageCompression.custom(int value)`** → Allows for custom quality levels between 1 and 100.
 
 Summary of Supported Cases
 
-| Quality Level | Value Range | Example Usage             |
-|---------------|-------------|---------------------------|
-| **Low**       | `30`        | `ImageQuality.low`        |
-| **Medium**    | `60`        | `ImageQuality.medium`     |
-| **High**      | `100`       | `ImageQuality.high`       |
-| **Custom**    | `1 - 100`   | `ImageQuality.custom(75)` |
+| Compression Level | Value Range | Example Usage                 |
+|-------------------|-------------|-------------------------------|
+| **None**          | `0`         | `ImageCompression.none`       |
+| **Low**           | `30`        | `ImageCompression.low`        |
+| **Medium**        | `60`        | `ImageCompression.medium`     |
+| **High**          | `100`       | `ImageCompression.high`       |
+| **Custom**        | `1 - 100`   | `ImageCompression.custom(75)` |
 
 Example Usage:
 ```dart
-final quality = ImageQuality.medium;
-print(quality.value); // Output: 60
+final compression = ImageCompression.medium;
+print(compression.value); // Output: 60
 ```
 ## Usage
 

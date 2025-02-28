@@ -9,7 +9,7 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb_image_resize2.h"
 
-bool save_bitmap_to_png(FPDF_BITMAP bitmap, const std::string& output_path) {
+bool save_bitmap_to_png(FPDF_BITMAP bitmap, const std::string& output_path, int compression) {
     int width = FPDFBitmap_GetWidth(bitmap);
     int height = FPDFBitmap_GetHeight(bitmap);
     void* buffer = FPDFBitmap_GetBuffer(bitmap);

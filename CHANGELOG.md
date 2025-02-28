@@ -6,6 +6,7 @@
 * **BREAKING CHANGE:** `maxWidth`, `maxHeight` and `needImageCompressor` has been inserted inside of `config` property on `createPDFFromMultipleImages`method.
 * **BREAKING CHANGE:** `maxWidth`, `maxHeight` and `createOneImage` has been inserted inside of `config` property on `createImageFromPDF`method.
 * **BREAKING CHANGE:** `outputPath` parameter has been renamed by `outputDirPath` in `createImageFromPDF` method.
+* **BREAKING CHANGE:** `createOneImage` is false by default in `createImageFromPDF` method.
 
 ## 3.4.0
 ### Linux

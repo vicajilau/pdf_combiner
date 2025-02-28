@@ -72,7 +72,7 @@ void main() {
           'outputDirPath': '/output/path',
           'height': 400,
           'width': 400,
-          'compression': 100,
+          'compression': 0,
           'createOneImage': false
         });
         return ['image1.png', 'image2.png'];
