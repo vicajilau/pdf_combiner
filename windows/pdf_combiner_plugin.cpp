@@ -13,6 +13,8 @@
 #include <memory>
 #include <sstream>
 
+#include "include/pdfium/fpdfview.h"
+
 namespace pdf_combiner {
 
 // static
@@ -33,9 +35,13 @@ void PdfCombinerPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-PdfCombinerPlugin::PdfCombinerPlugin() {}
+PdfCombinerPlugin::PdfCombinerPlugin() {
+    FPDF_InitLibrary(); // Initialize the FPDF library
+}
 
-PdfCombinerPlugin::~PdfCombinerPlugin() {}
+PdfCombinerPlugin::~PdfCombinerPlugin() {
+    FPDF_DestroyLibrary(); // Destroy the FPDF library
+}
 
 void PdfCombinerPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
