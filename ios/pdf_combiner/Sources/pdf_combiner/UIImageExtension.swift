@@ -69,12 +69,10 @@ extension UIImage {
                                        height: CGFloat(actualHeight)))
         let newSize = AVMakeRect(aspectRatio: size, insideRect: rect).size
         
-        UIGraphicsBeginImageContextWithOptions(newSize, false, .zero)
-        draw(in: CGRect(origin: .zero, size: newSize))
-        let scaled = UIGraphicsGetImageFromCurrentImageContext() ?? self
-        UIGraphicsEndImageContext()
-        
-        return scaled
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            draw(in: CGRect(origin: .zero, size: newSize))
+        }
     }
     
     /// Resize an image to a specific width and height. This function does NOT keep the aspect ratio of the original image.

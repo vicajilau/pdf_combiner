@@ -2,6 +2,7 @@ import Cocoa
 import FlutterMacOS
 import ImageIO
 import CoreGraphics
+import PDFKit
 
 public class PdfCombinerPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -12,7 +13,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? Dictionary<String, Any> else {
-            result("Error: Arguments can't be empty"); return
+            result("Arguments can't be empty"); return
         }
 
         switch call.method {
@@ -58,13 +59,13 @@ private extension PdfCombinerPlugin {
         guard let paths = args["paths"] as? [String],
               let outputDirPath = args["outputDirPath"] as? String
         else {
-            completionHandler("Error: Arguments 'paths' or 'outputDirPath' can't be empty"); return
+            completionHandler("Arguments 'paths' or 'outputDirPath' can't be empty"); return
         }
 
         var mediaBox = CGRect.zero
         let url = URL(fileURLWithPath: outputDirPath) as CFURL
         guard let destContext = CGContext(url, mediaBox: &mediaBox, nil) else {
-            completionHandler("Error: Creating context for pdf"); return
+            completionHandler("Couldn't create context for pdf"); return
         }
 
         for path in paths {
@@ -83,41 +84,34 @@ private extension PdfCombinerPlugin {
         completionHandler(outputDirPath)
     }
 
-/*
-'createPDFFromMultipleImage',
-      {
-        'paths': inputPaths,
-        'outputDirPath': outputPath,
-        'height': config.rescale.height,
-        'width': config.rescale.width,
-        'keepAspectRatio': config.keepAspectRatio,
-      }
-*/
+    //MARK: Create Pdf from images
     func createPDFFromMultipleImage(args: Dictionary<String, Any>, completionHandler: @escaping (String) -> Void) {
         guard let paths = args["paths"] as? [String],
               let outputDirPath = args["outputDirPath"] as? String,
-              let needImageCompressor = args["needImageCompressor"] as? Bool,
-              let maxWidth = args["maxWidth"] as? Int,
-              let maxHeight = args["maxHeight"] as? Int
+              var height = args["height"] as? Int,
+              var width = args["width"] as? Int,
+              var keepAspectRatio = args["keepAspectRatio"] as? Bool
         else {
-            completionHandler("Error: Arguments 'paths', 'outputDirPath', 'needImageCompressor', 'maxWidth' or 'maxHeight' can't be empty"); return
+            completionHandler("Arguments 'paths', 'outputDirPath', 'needImageCompressor', 'width' or 'height' can't be empty"); return
         }
 
         var images = [NSImage]()
         paths.forEach { path in
             guard let image = NSImage(contentsOfFile: path) else {
-                completionHandler("Error: Loading image from disk"); return
+                completionHandler("Couldn't load image from disk"); return
             }
 
-            if needImageCompressor, let resizedImage = image.resize(maxWidth: maxWidth, maxHeight: maxHeight) {
-                images.append(resizedImage)
+            if width > 0 && height > 0 && keepAspectRatio {
+                images.append(image.resize(width: width))
+            } else if width > 0 && height > 0 && !keepAspectRatio {
+                images.append(image.resize(width: width, height: height))
             } else {
                 images.append(image)
             }
         }
 
         guard let image = NSImage.mergeVertically(images : images) else {
-            completionHandler("Error: Merging images"); return
+            completionHandler("Couldn't merge images"); return
         }
 
         var imageRect = CGRect(origin: .zero, size: image.size)
@@ -125,7 +119,7 @@ private extension PdfCombinerPlugin {
         guard let destContext = CGContext(url, mediaBox: &imageRect, nil),
               let inputCGImage = image.cgImage(forProposedRect: &imageRect, context: nil, hints: nil)
         else {
-            completionHandler("Error: Creating context or image for pdf"); return
+            completionHandler("Couldn't create context or image for pdf"); return
         }
 
         destContext.beginPage(mediaBox: nil)
@@ -136,86 +130,100 @@ private extension PdfCombinerPlugin {
         completionHandler(outputDirPath)
     }
 
-    /*
-    'createImageFromPDF',
-          {
-            'path': inputPath,
-            'outputDirPath': outputPath,
-            'height': config.rescale.height,
-            'width': config.rescale.width,
-            'compression': config.compression.value,
-            'createOneImage': config.createOneImage,
-          }
-    */
+    //MARK: Images from pdf.
     func createImageFromPDF(args: Dictionary<String, Any>, completionHandler: @escaping ([String]) -> Void) {
         guard let path = args["path"] as? String,
               let outputDirPath = args["outputDirPath"] as? String,
-              let maxWidth = args["maxWidth"] as? Int,
-              let maxHeight = args["maxHeight"] as? Int,
-              let createOneImage = args["createOneImage"] as? Bool,
-              let pdfDocument = CGPDFDocument(NSURL(fileURLWithPath: path) as CFURL)
+              let width = args["width"] as? Int,
+              let height = args["height"] as? Int,
+              let compression = args["compression"] as? Int,
+              let createOneImage = args["createOneImage"] as? Bool
         else {
-            completionHandler([]); return
+            completionHandler(["Arguments 'paths', 'outputDirPath', 'compression', 'createOneImage', 'width' or 'height' can't be empty"]); return
         }
-
+        
+        guard let pdfDocument = PDFDocument(url: URL(fileURLWithPath: path)) else {
+            completionHandler(["Couldn't open PDF file"]); return
+        }
+        
+        let compressionQuality = 1.0 - CGFloat(compression) / 100.0
         var pdfImagesPath: [String] = []
         var imagePages: [ImagePage] = []
         let group = DispatchGroup()
 
         // Page number starts at 1, not 0
-        for pageNumber in 1...pdfDocument.numberOfPages {
+        for pageNumber in 1...pdfDocument.pageCount {
             group.enter()
             guard let pdfPage = pdfDocument.page(at: pageNumber) else {
                 group.leave(); continue
             }
-            // Scale the image improve the final resolution
-            let scale = 200 / 72.0
-            let mediaBoxRect = pdfPage.getBoxRect(.mediaBox)
-            let width = Int(mediaBoxRect.width * CGFloat(scale))
-            let height = Int(mediaBoxRect.height * CGFloat(scale))
+            
+            let pageRect = pdfPage.bounds(for: .mediaBox)
+            let renderSize = pageRect.size
 
-            guard let context = CGContext(data: nil,
-                                          width: width,
-                                          height: height,
-                                          bitsPerComponent: 16,
-                                          bytesPerRow: 0,
-                                          space: CGColorSpaceCreateDeviceRGB(),
-                                          bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
-            else {
-                group.leave(); continue
+            let image = NSImage(size: renderSize)
+            image.lockFocus()
+            
+            guard let context = NSGraphicsContext.current?.cgContext else {
+                image.unlockFocus()
+                group.leave()
+                continue
             }
-
-            context.interpolationQuality = .high
-            context.setFillColor(NSColor.white.cgColor)
-            context.fill(CGRect(origin: .zero,
-                                size: CGSize(width: width, height: height)))
-            context.scaleBy(x: CGFloat(scale), y: CGFloat(scale))
-            context.drawPDFPage(pdfPage)
-
-            if let image = context.makeImage() {
-                let convertNSImage = NSImage(cgImage: image, size: .zero)
-                if let resizedImage = convertNSImage.resize(maxWidth: maxWidth, maxHeight: maxHeight) {
-                    imagePages.append(.init(page: pageNumber, image: resizedImage))
-                    if !createOneImage {
-                        let finalPath = outputDirPath.renameFileName(with: pageNumber)
-                        resizedImage.save(to: finalPath)
-                        pdfImagesPath.append(finalPath)
-                    }
+            
+            context.saveGState()
+            // context.translateBy(x: 0, y: renderSize.height)
+            // context.scaleBy(x: 1, y: -1)
+            pdfPage.draw(with: .mediaBox, to: context)
+            context.restoreGState()
+            image.unlockFocus()
+            
+            var resizedImage = image
+            if width > 0 && height > 0 {
+                resizedImage = image.resize(width: width, height: height)
+            }
+            
+            if !createOneImage {
+                if let finalPath = createFileName(path: outputDirPath, with: pageNumber) {
+                    do {
+                        try resizedImage.save(to: finalPath, quality: compressionQuality)
+                        pdfImagesPath.append(finalPath.absoluteString)
+                    } catch {}
                 }
+            } else {
+                imagePages.append(.init(page: pageNumber, image: resizedImage))
             }
             group.leave()
         }
 
-        group.notify(queue: .global()) {
+        group.notify(queue: .global()) { [weak self] in
             if createOneImage {
                 let images = imagePages.sorted { $0.page > $1.page }.map(\.self.image)
                 guard let imageMerged = NSImage.mergeVertically(images: images) else {
-                    completionHandler([]); return
+                    completionHandler(["Couldn't create the images"]); return
                 }
-                pdfImagesPath.append(outputDirPath)
-                imageMerged.save(to: outputDirPath)
+                if let finalPath = self?.createFileName(path: outputDirPath) {
+                    do {
+                        try imageMerged.save(to: finalPath, quality: compressionQuality)
+                        pdfImagesPath.append(finalPath.absoluteString)
+                    } catch { }
+                } else {
+                    completionHandler(["Couldn't save the file"]); return
+                }
+                
             }
             completionHandler(pdfImagesPath)
         }
+    }
+    
+    func createFileName(path: String, with index: Int? = nil) -> URL? {
+        var basePath = URL(fileURLWithPath: path)
+        guard let index else {
+            basePath.appendPathComponent("image.jpeg")
+            return basePath
+        }
+        
+        let fileName = "image_\(index).jpeg"
+        basePath.appendPathComponent(fileName)
+        return basePath
     }
 }

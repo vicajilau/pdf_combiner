@@ -13,7 +13,7 @@ public class PdfCombinerPlugin: NSObject, FlutterPlugin {
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let args = call.arguments as? Dictionary<String, Any> else {
-            result("Error: Arguments can't be empty"); return
+            result("Arguments can't be empty"); return
         }
 
         switch call.method {
@@ -125,14 +125,14 @@ private extension PdfCombinerPlugin {
         completionHandler(outputDirPath)
     }
 
+    //MARK: Images from pdf.
     func createImageFromPDF(args: Dictionary<String, Any>, completionHandler: @escaping ([String]) -> Void) {
-        guard
-            let path = args["path"] as? String,
-            let outputDirPath = args["outputDirPath"] as? String,
-            let width = args["width"] as? Int,
-            let height = args["height"] as? Int,
-            let compression = args["compression"] as? Int,
-            let createOneImage = args["createOneImage"] as? Bool
+        guard let path = args["path"] as? String,
+              let outputDirPath = args["outputDirPath"] as? String,
+              let width = args["width"] as? Int,
+              let height = args["height"] as? Int,
+              let compression = args["compression"] as? Int,
+              let createOneImage = args["createOneImage"] as? Bool
         else {
             completionHandler(["Arguments 'paths', 'outputDirPath', 'compression', 'createOneImage', 'width' or 'height' can't be empty"]); return
         }
@@ -141,7 +141,7 @@ private extension PdfCombinerPlugin {
             completionHandler(["Couldn't open PDF file"]); return
         }
         
-        let compressionQuality = CGFloat(compression) / 100.0
+        let compressionQuality = 1.0 - CGFloat(compression) / 100.0
         var pdfImagesPath: [String] = []
         var imagePages: [ImagePage] = []
         let group = DispatchGroup()
@@ -175,12 +175,10 @@ private extension PdfCombinerPlugin {
             if !createOneImage {
                 if let fileURL = createFileName(path: outputDirPath, with: pageNumber),
                    let data = resizedImage.jpegData(compressionQuality: compressionQuality) {
-                    pdfImagesPath.append(fileURL.absoluteString)
                     do {
                         try data.write(to: fileURL)
-                    } catch {
-                        print(error)
-                    }
+                        pdfImagesPath.append(fileURL.absoluteString)
+                    } catch { }
                 }
             } else {
                 imagePages.append(.init(page: pageNumber, image: resizedImage))
@@ -201,7 +199,7 @@ private extension PdfCombinerPlugin {
                     do {
                         try data.write(to: fileURL)
                     } catch {
-                        print(error)
+                        completionHandler(["Couldn't save the file"]); return
                     }
                     
                 }
