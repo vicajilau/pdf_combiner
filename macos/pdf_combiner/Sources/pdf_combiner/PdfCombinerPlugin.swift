@@ -1,7 +1,5 @@
 import Cocoa
 import FlutterMacOS
-import ImageIO
-import CoreGraphics
 import PDFKit
 
 public class PdfCombinerPlugin: NSObject, FlutterPlugin {
@@ -62,25 +60,22 @@ private extension PdfCombinerPlugin {
             completionHandler("Arguments 'paths' or 'outputDirPath' can't be empty"); return
         }
 
-        var mediaBox = CGRect.zero
-        let url = URL(fileURLWithPath: outputDirPath) as CFURL
-        guard let destContext = CGContext(url, mediaBox: &mediaBox, nil) else {
-            completionHandler("Couldn't create context for pdf"); return
-        }
-
+        let mergedPDF = PDFDocument()
+        var pageIndex = 0
+        
         for path in paths {
-            guard let pdfRef = CGPDFDocument(NSURL(fileURLWithPath: path)) else { continue }
+            guard let pdfDocument = PDFDocument(url: URL(fileURLWithPath: path)) else { continue }
 
-            for index in 1...pdfRef.numberOfPages {
-                if let page = pdfRef.page(at: index) {
-                    var mediaBox = page.getBoxRect(.mediaBox)
-                    destContext.beginPage(mediaBox: &mediaBox)
-                    destContext.drawPDFPage(page)
-                    destContext.endPage()
-                }
+            for index in 0..<pdfDocument.pageCount {
+                guard let page = pdfDocument.page(at: index) else { continue }
+                    mergedPDF.insert(page, at: pageIndex)
+                    pageIndex += 1
             }
         }
-        destContext.closePDF()
+
+        guard mergedPDF.write(to: URL(fileURLWithPath: outputDirPath)) else {
+            completionHandler("Couldn't save the pdf"); return
+        }
         completionHandler(outputDirPath)
     }
 
@@ -151,8 +146,7 @@ private extension PdfCombinerPlugin {
         var imagePages: [ImagePage] = []
         let group = DispatchGroup()
 
-        // Page number starts at 1, not 0
-        for pageNumber in 1...pdfDocument.pageCount {
+        for pageNumber in 0..<pdfDocument.pageCount {
             group.enter()
             guard let pdfPage = pdfDocument.page(at: pageNumber) else {
                 group.leave(); continue

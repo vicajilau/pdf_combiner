@@ -1,7 +1,5 @@
 import Flutter
 import UIKit
-import MobileCoreServices
-import ImageIO
 import PDFKit
 
 public class PdfCombinerPlugin: NSObject, FlutterPlugin {
@@ -57,29 +55,26 @@ private extension PdfCombinerPlugin {
     //MARK: Merge Pdfs
     func mergeMultiplePDF(args: Dictionary<String, Any>, completionHandler: @escaping (String) -> Void) {
         guard let paths = args["paths"] as? [String],
-              let outputDirPath = args["outputDirPath"] as? String,
-              UIGraphicsBeginPDFContextToFile(outputDirPath, .zero, nil),
-              let destContext = UIGraphicsGetCurrentContext()
+              let outputDirPath = args["outputDirPath"] as? String
         else {
-            completionHandler("Arguments 'paths' or 'outputDirPath' can't be empty or couldn't create context for pdf"); return
+            completionHandler("Arguments 'paths' or 'outputDirPath' can't be empty"); return
         }
-
+        let mergedPDF = PDFDocument()
+        var pageIndex = 0
+        
         for path in paths {
-            guard let pdfRef = CGPDFDocument(NSURL(fileURLWithPath: path)) else { continue }
+            guard let pdfDocument = PDFDocument(url: URL(fileURLWithPath: path)) else { continue }
 
-            for index in 1...pdfRef.numberOfPages {
-                if let page = pdfRef.page(at: index) {
-                    var mediaBox = page.getBoxRect(.mediaBox)
-                    destContext.beginPage(mediaBox: &mediaBox)
-                    destContext.drawPDFPage(page)
-                    destContext.endPage()
-                }
+            for index in 0..<pdfDocument.pageCount {
+                guard let page = pdfDocument.page(at: index) else { continue }
+                    mergedPDF.insert(page, at: pageIndex)
+                    pageIndex += 1
             }
         }
 
-        destContext.closePDF()
-        UIGraphicsEndPDFContext()
-
+        guard mergedPDF.write(to: URL(fileURLWithPath: outputDirPath)) else {
+            completionHandler("Couldn't save the pdf"); return
+        }
         completionHandler(outputDirPath)
     }
 
@@ -87,14 +82,13 @@ private extension PdfCombinerPlugin {
     func createPDFFromMultipleImage(args: Dictionary<String, Any>, completionHandler: @escaping (String) -> Void) {
         guard let paths = args["paths"] as? [String],
               let outputDirPath = args["outputDirPath"] as? String,
-              let height = args["height"] as? Int,
               let width = args["width"] as? Int,
-              let keepAspectRatio = args["keepAspectRatio"] as? Bool,
-              UIGraphicsBeginPDFContextToFile(outputDirPath, CGRect.zero, nil)
+              let height = args["height"] as? Int,
+              let keepAspectRatio = args["keepAspectRatio"] as? Bool
         else {
             completionHandler("Arguments 'paths', 'outputDirPath', 'needImageCompressor', 'width' or 'height' can't be empty"); return
         }
-
+        
         var images: [UIImage] = []
         for path in paths {
             guard let image = UIImage(contentsOfFile: path) else {
@@ -146,8 +140,7 @@ private extension PdfCombinerPlugin {
         var imagePages: [ImagePage] = []
         let group = DispatchGroup()
 
-        // Page number starts at 1, not 0
-        for pageNumber in 1...pdfDocument.pageCount {
+        for pageNumber in 0..<pdfDocument.pageCount {
             group.enter()
             guard let pdfPage = pdfDocument.page(at: pageNumber) else {
                 group.leave(); continue
