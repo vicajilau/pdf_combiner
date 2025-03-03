@@ -212,11 +212,11 @@ private extension PdfCombinerPlugin {
     func createFileName(path: String, with index: Int? = nil) -> URL? {
         var basePath = URL(fileURLWithPath: path)
         guard let index else {
-            basePath.appendPathComponent("image.jpeg")
+            basePath.appendPathComponent("image_final.jpeg")
             return basePath
         }
         
-        let fileName = "image_\(index).jpeg"
+        let fileName = "image_final_\(index).jpeg"
         basePath.appendPathComponent(fileName)
         return basePath
     }
