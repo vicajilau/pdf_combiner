@@ -1,5 +1,6 @@
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/image_scale.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -59,6 +60,9 @@ class MockPdfCombinerPlatformWithError
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
-    throw Exception("Mocked Exception");
+    if (config.rescale == ImageScale.original) {
+      return Future.value(['error']);
+    }
+    return Future.value([]);
   }
 }
