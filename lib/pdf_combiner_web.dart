@@ -96,7 +96,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   }) async {
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
     final JSString result =
-        (await createPdfFromImages(jsInputPaths).toDart) as JSString;
+        (await createPdfFromImages(jsInputPaths,config.jsify()).toDart) as JSString;
     return result.toDart;
   }
 
@@ -124,8 +124,8 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   }) async {
     final JSString jsInputPath = inputPath.toJS;
     final JSArray<JSString> result = config.createOneImage
-        ? (await pdfToImage(jsInputPath).toDart) as JSArray<JSString>
-        : (await convertPdfToImages(jsInputPath).toDart) as JSArray<JSString>;
+        ? (await pdfToImage(jsInputPath,config.jsify()).toDart) as JSArray<JSString>
+        : (await convertPdfToImages(jsInputPath,config.jsify()).toDart) as JSArray<JSString>;
     return result.toList();
   }
 }
