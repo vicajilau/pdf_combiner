@@ -58,7 +58,7 @@ class PdfCombiner {
               .mergeMultiplePDFs(
                   inputPaths: inputPaths, outputPath: outputPath);
 
-          if (response != null && response == outputPath) {
+          if (response != null && (response == outputPath || response.contains("blob"))) {
             return MergeMultiplePDFResponse(
                 status: PdfCombinerStatus.success,
                 message: PdfCombinerMessages.successMessage,
@@ -126,7 +126,7 @@ class PdfCombiner {
             config: config,
           );
 
-          if (response != null && response == outputPath) {
+          if (response != null && (response == outputPath || response.contains("blob"))) {
             return PdfFromMultipleImageResponse(
               status: PdfCombinerStatus.success,
               message: PdfCombinerMessages.successMessage,
@@ -197,7 +197,7 @@ class PdfCombiner {
           );
 
           if (response != null && response.isNotEmpty) {
-            if (response.first.contains(outputDirPath)) {
+            if (response.first.contains(outputDirPath) || response.first.contains("blob")) {
               return ImageFromPDFResponse(
                 status: PdfCombinerStatus.success,
                 outputPaths: response,
