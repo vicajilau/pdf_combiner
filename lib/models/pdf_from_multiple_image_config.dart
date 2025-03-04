@@ -10,10 +10,10 @@ class PdfFromMultipleImageConfig {
 
   /// Creates an instance of [PdfFromMultipleImageConfig].
   ///
-  /// [rescale] allows specifying a scaling option for the images.
+  /// [rescale] allows specifying a scaling option for the images, defaulting to `ImageScale.original`.
   /// [keepAspectRatio] determines if the aspect ratio should be preserved, defaulting to `true`.
   const PdfFromMultipleImageConfig({
-    ImageScale rescale = ImageScale.original,
+    this.rescale = ImageScale.original,
     this.keepAspectRatio = true,
-  }) : rescale = rescale ?? ImageScale.original;
+  });
 }
