@@ -26,10 +26,9 @@ class MergeMultiplePDF(getContext: Context, getResult: MethodChannel.Result) {
 
     fun mergePdfs(inputPaths: List<String>, outputPath: String) = GlobalScope.launch(Dispatchers.IO) {
         try {
-            // Crear un PdfDocument para el documento de salida
+
             val outputDocument = PdfDocument()
 
-            // Función para agregar las páginas de un PDF a otro
             fun addPdfToDocument(pdfFile: File) {
                 val fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
                 val renderer = PdfRenderer(fileDescriptor)
@@ -38,15 +37,11 @@ class MergeMultiplePDF(getContext: Context, getResult: MethodChannel.Result) {
                     val page = renderer.openPage(pageIndex)
                     val newPage = outputDocument.startPage(PdfDocument.PageInfo.Builder(page.width, page.height, pageIndex).create())
 
-                    // Dibuja la página sobre el canvas del nuevo documento
                     val canvas = newPage.canvas
                     val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
-                    //val bitmapCanvas = Canvas(bitmap)
 
-                    // Renderiza la página en el bitmap
                     page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
 
-                    // Dibuja el bitmap en el canvas del documento de salida
                     canvas.drawBitmap(bitmap, 0f, 0f, null)
 
                     outputDocument.finishPage(newPage)
@@ -62,12 +57,10 @@ class MergeMultiplePDF(getContext: Context, getResult: MethodChannel.Result) {
                 addPdfToDocument(pdfFile)
             }
 
-            // Escribir el documento combinado a un archivo de salida
             FileOutputStream(outputPath).use { outputStream ->
                 outputDocument.writeTo(outputStream)
             }
 
-            // Cerrar el documento de salida
             status = "success"
             outputDocument.close()
         } catch (e: IOException) {
