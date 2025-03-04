@@ -58,7 +58,8 @@ class PdfCombiner {
               .mergeMultiplePDFs(
                   inputPaths: inputPaths, outputPath: outputPath);
 
-          if (response != null && response == outputPath) {
+          if (response != null &&
+              (response == outputPath || response.startsWith("blob:http"))) {
             return MergeMultiplePDFResponse(
                 status: PdfCombinerStatus.success,
                 message: PdfCombinerMessages.successMessage,
@@ -126,7 +127,8 @@ class PdfCombiner {
             config: config,
           );
 
-          if (response != null && response == outputPath) {
+          if (response != null &&
+              (response == outputPath || response.startsWith("blob:http"))) {
             return PdfFromMultipleImageResponse(
               status: PdfCombinerStatus.success,
               message: PdfCombinerMessages.successMessage,
@@ -197,7 +199,8 @@ class PdfCombiner {
           );
 
           if (response != null && response.isNotEmpty) {
-            if (response.first.contains(outputDirPath)) {
+            if (response.first.contains(outputDirPath) ||
+                response.first.startsWith("blob:http")) {
               return ImageFromPDFResponse(
                 status: PdfCombinerStatus.success,
                 outputPaths: response,
