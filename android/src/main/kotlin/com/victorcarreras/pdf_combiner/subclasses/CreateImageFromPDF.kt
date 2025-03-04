@@ -5,16 +5,15 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.graphics.pdf.PdfRenderer
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.vudroid.core.DecodeServiceBase
-import org.vudroid.core.codec.CodecPage
-import org.vudroid.pdfdroid.codec.PdfContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -39,46 +38,31 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
 
         val pdfFromMultipleImage = GlobalScope.launch(Dispatchers.IO) {
             try {
-
-                val decodeService = DecodeServiceBase(PdfContext())
-                decodeService.setContentResolver(context.contentResolver)
-
-                val file = File(inputPath)
-                decodeService.open(Uri.fromFile(file))
-
+                val fileDescriptor = ParcelFileDescriptor.open(File(inputPath), ParcelFileDescriptor.MODE_READ_ONLY)
+                val renderer = PdfRenderer(fileDescriptor)
                 val pdfImages: MutableList<Bitmap> = mutableListOf()
 
-                val pageCount: Int = decodeService.pageCount
-                for (i in 0 until pageCount) {
-                    val page: CodecPage = decodeService.getPage(i)
-                    val rectF = RectF(0.toFloat(), 0.toFloat(), 1.toFloat(), 1.toFloat())
-
-                    val bitmap: Bitmap =
-                        page.renderBitmap(config.rescale.maxWidth, config.rescale.maxHeight, rectF)
-                    pdfImages.add(bitmap)
-
-                    if (!config.createOneImage) {
-
-                        val splitPath = "$outputPath/image_$i.png"
-
-                        Log.d("pdf_combiner", "pathfile: $splitPath")
-
-                        pdfImagesPath.add(splitPath)
-                        val outputStream = FileOutputStream(splitPath)
-                        bitmap.compress(
-                            Bitmap.CompressFormat.PNG,
-                            config.compression.value,
-                            outputStream
-                        )
-                        outputStream.close()
+                for (pageIndex in 0 until renderer.pageCount) {
+                    val page = renderer.openPage(pageIndex)
+                    val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    val imageName = "image_${pageIndex + 1}.png"
+                    pdfImagesPath.add("$outputPath/$imageName")
+                    val outputFile = File(outputPath, "$imageName")
+                    FileOutputStream(outputFile).use { out ->
+                        bitmap.compress(Bitmap.CompressFormat.PNG, config.compression.value, out)
+                        pdfImages.add(bitmap)
                     }
+                    page.close()
                 }
+                renderer.close()
+                fileDescriptor.close()
 
                 if (config.createOneImage) {
+                    pdfImagesPath.clear()
                     pdfImagesPath.add("$outputPath/image.png")
                     Log.d("pdf_combiner", "pathfile: $outputPath/image_pdf.png")
-                    val bitmap =
-                        mergeThemAll(pdfImages, config.rescale.maxWidth, config.rescale.maxHeight)
+                    val bitmap = mergeThemAll(pdfImages, config.rescale.maxWidth, config.rescale.maxHeight)
                     val outputStream = FileOutputStream("$outputPath/image_pdf.png")
                     bitmap?.compress(
                         Bitmap.CompressFormat.PNG,
