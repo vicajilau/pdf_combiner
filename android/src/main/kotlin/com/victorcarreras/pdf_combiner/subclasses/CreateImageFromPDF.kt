@@ -55,15 +55,18 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
                     }
                     page.close()
                 }
-                renderer.close()
-                fileDescriptor.close()
 
                 if (config.createOneImage) {
+                    val filepath = "$outputPath/image.png"
                     pdfImagesPath.clear()
-                    pdfImagesPath.add("$outputPath/image.png")
-                    Log.d("pdf_combiner", "pathfile: $outputPath/image_pdf.png")
+                    pdfImagesPath.add(filepath)
+                    Log.d("pdf_combiner", "pathfile: $filepath")
                     val bitmap = mergeThemAll(pdfImages, config.rescale.maxWidth, config.rescale.maxHeight)
-                    val outputStream = FileOutputStream("$outputPath/image_pdf.png")
+                    FileOutputStream(filepath).use { out ->
+                        bitmap?.compress(Bitmap.CompressFormat.PNG, config.compression.value, out)
+                        bitmap?.let { pdfImages.add(it) }
+                    }
+                    val outputStream = FileOutputStream("$filepath")
                     bitmap?.compress(
                         Bitmap.CompressFormat.PNG,
                         config.compression.value,
@@ -71,7 +74,8 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
                     )
                     outputStream.close()
                 }
-
+                renderer.close()
+                fileDescriptor.close()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -101,7 +105,7 @@ class CreateImageFromPDF(getContext: Context, getResult: MethodChannel.Result) {
             var chunkHeightCal = 0
             for (i in orderImagesList.indices) {
                 canvas.drawBitmap(
-                    orderImagesList[i], (0).toFloat(), (chunkHeightCal).toFloat(), paint
+                    orderImagesList[i], 0F, chunkHeightCal.toFloat(), paint
                 )
                 chunkHeightCal += maxHeight
             }
