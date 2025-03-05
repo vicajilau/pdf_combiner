@@ -4,6 +4,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/image_scale.dart';
+import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:platform_detail/platform_detail.dart';
@@ -48,11 +51,12 @@ class PdfCombinerViewModel {
       outputFilePath = '${directory?.path}/combined_output.pdf';
 
       final response = await PdfCombiner.mergeMultiplePDFs(
-          inputPaths: selectedFiles,
-          outputPath: outputFilePath); // Combine the PDFs
+        inputPaths: selectedFiles,
+        outputPath: outputFilePath,
+      ); // Combine the PDFs
 
       if (response.status == PdfCombinerStatus.success) {
-        outputFiles = [response.response!];
+        outputFiles = [response.outputPath];
       } else {
         throw Exception('Error combining PDFs: ${response.message}.');
       }
@@ -69,13 +73,19 @@ class PdfCombinerViewModel {
       final directory = await _getOutputDirectory();
       outputFilePath = '${directory?.path}/combined_output.pdf';
       final response = await PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: selectedFiles,
-          outputPath: outputFilePath,
-          needImageCompressor: false);
-      if (response.status == PdfCombinerStatus.success) {
-        outputFiles = [response.response!];
-      } else {
-        throw Exception('Error creating PDF: ${response.message}.');
+        inputPaths: selectedFiles,
+        outputPath: outputFilePath,
+        config: PdfFromMultipleImageConfig(
+          rescale: ImageScale(width: 480, height: 640),
+          keepAspectRatio: true,
+        ),
+      );
+
+      switch (response.status) {
+        case PdfCombinerStatus.success:
+          outputFiles = [response.outputPath];
+        case PdfCombinerStatus.error:
+          throw Exception('Error creating PDF: ${response.message}.');
       }
     } catch (e) {
       throw Exception('Error creating PDF: ${e.toString()}.');
@@ -88,17 +98,20 @@ class PdfCombinerViewModel {
     if (selectedFiles.length > 1) {
       throw Exception('Only you can select a single document.');
     }
-    String outputFilePath = "combined_output.pdf";
     try {
       final directory = await _getOutputDirectory();
-      outputFilePath = '${directory?.path}';
+      final outputFilePath = '${directory?.path}';
       final response = await PdfCombiner.createImageFromPDF(
-          inputPath: selectedFiles.first,
-          outputPath: outputFilePath,
-          createOneImage: false);
+        inputPath: selectedFiles.first,
+        outputDirPath: outputFilePath,
+        config: ImageFromPdfConfig(
+          rescale: ImageScale(width: 480, height: 640),
+          createOneImage: true,
+        ),
+      );
 
       if (response.status == PdfCombinerStatus.success) {
-        outputFiles = response.response!;
+        outputFiles = response.outputPaths;
       } else {
         throw Exception('${response.message}.');
       }

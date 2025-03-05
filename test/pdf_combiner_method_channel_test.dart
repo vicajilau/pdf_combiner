@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/image_scale.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -44,9 +46,9 @@ void main() {
         expect(methodCall.arguments, {
           'paths': ['image1.jpg', 'image2.png'],
           'outputDirPath': '/output/path',
-          'maxWidth': 500,
-          'maxHeight': 500,
-          'needImageCompressor': false,
+          'height': 0,
+          'width': 0,
+          'keepAspectRatio': true
         });
         return 'created.pdf';
       }
@@ -56,9 +58,6 @@ void main() {
     final result = await platform.createPDFFromMultipleImages(
       inputPaths: ['image1.jpg', 'image2.png'],
       outputPath: '/output/path',
-      maxWidth: 500,
-      maxHeight: 500,
-      needImageCompressor: false,
     );
 
     expect(result, 'created.pdf');
@@ -71,9 +70,10 @@ void main() {
         expect(methodCall.arguments, {
           'path': 'file.pdf',
           'outputDirPath': '/output/path',
-          'maxWidth': 400,
-          'maxHeight': 400,
-          'createOneImage': false,
+          'height': 400,
+          'width': 400,
+          'compression': 0,
+          'createOneImage': false
         });
         return ['image1.png', 'image2.png'];
       }
@@ -83,9 +83,8 @@ void main() {
     final result = await platform.createImageFromPDF(
       inputPath: 'file.pdf',
       outputPath: '/output/path',
-      maxWidth: 400,
-      maxHeight: 400,
-      createOneImage: false,
+      config: ImageFromPdfConfig(
+          rescale: ImageScale(width: 400, height: 400), createOneImage: false),
     );
 
     expect(result, ['image1.png', 'image2.png']);

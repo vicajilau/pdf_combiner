@@ -140,32 +140,32 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "inputPaths must be a list of strings", nullptr));
     }
 
-    // Get needImageCompressor (Bool)
-    FlValue* need_image_compressor_value = fl_value_lookup_string(args, "needImageCompressor");
-    if (!need_image_compressor_value || fl_value_get_type(need_image_compressor_value) != FL_VALUE_TYPE_BOOL) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "needImageCompressor must be a boolean", nullptr));
-    }
-
-    // Get boolean value
-    bool need_image_compressor = fl_value_get_bool(need_image_compressor_value);
-
-    // Get maxWidth (String)
-    FlValue* max_width_value = fl_value_lookup_string(args, "maxWidth");
+    // Get width (String)
+    FlValue* max_width_value = fl_value_lookup_string(args, "width");
     if (!max_width_value || fl_value_get_type(max_width_value) != FL_VALUE_TYPE_INT) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "maxWidth must be an int", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "width must be an int", nullptr));
     }
 
-    // Cast maxWidth to C-int
+    // Cast width to C-int
     int64_t max_width = fl_value_get_int(max_width_value);
 
-    // Get maxHeight (String)
-    FlValue* max_height_value = fl_value_lookup_string(args, "maxHeight");
+    // Get height (String)
+    FlValue* max_height_value = fl_value_lookup_string(args, "height");
     if (!max_height_value || fl_value_get_type(max_height_value) != FL_VALUE_TYPE_INT) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "maxHeight must be an int", nullptr));
     }
 
-    // Cast maxWidth to C-int
+    // Cast height to C-int
     int64_t max_height = fl_value_get_int(max_height_value);
+
+    // Get keepAspectRatio (Bool)
+    FlValue* keep_aspect_ratio_value = fl_value_lookup_string(args, "keepAspectRatio");
+    if (!keep_aspect_ratio_value || fl_value_get_type(keep_aspect_ratio_value) != FL_VALUE_TYPE_BOOL) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "keepAspectRatio must be a boolean", nullptr));
+    }
+
+    // Get boolean value
+    bool keep_aspect_ratio = fl_value_get_bool(keep_aspect_ratio_value);
 
     // Get outputPath (String)
     FlValue* output_path_value = fl_value_lookup_string(args, "outputDirPath");
@@ -204,10 +204,23 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
             return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image: " + input_path).c_str(), nullptr));
         }
 
-        // Dimensions reduction if need_image_compressor is true
-        if (need_image_compressor) {
-            int new_width = max_width;
-            int new_height = max_height;
+        // Resize the image if necessary
+        if (max_width != 0 || max_height != 0) {
+            int new_width = width;
+            int new_height = height;
+
+            if (max_width != 0) {
+                new_width = max_width;
+            }
+
+            if (max_height != 0) {
+                if (keep_aspect_ratio) {
+                    double aspectRatio = static_cast<double>(height) / width;
+                    new_height = static_cast<int>(max_width * aspectRatio);
+                } else {
+                    new_height = max_height;
+                }
+            }
 
             unsigned char* resized_image_data = new unsigned char[new_width * new_height * 4];
 
@@ -294,6 +307,34 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
 
     // Get params from the map
     const char* input_path = fl_value_get_string(fl_value_lookup_string(args, "path"));
+
+    // Get width (String)
+    FlValue* max_width_value = fl_value_lookup_string(args, "width");
+    if (!max_width_value || fl_value_get_type(max_width_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "width must be an int", nullptr));
+    }
+
+    // Cast width to C-int
+    int64_t max_width = fl_value_get_int(max_width_value);
+
+    // Get height (String)
+    FlValue* max_height_value = fl_value_lookup_string(args, "height");
+    if (!max_height_value || fl_value_get_type(max_height_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "maxHeight must be an int", nullptr));
+    }
+
+    // Cast height to C-int
+    int64_t max_height = fl_value_get_int(max_height_value);
+
+    // Get compression (String)
+    FlValue* compression_value = fl_value_lookup_string(args, "compression");
+    if (!compression_value || fl_value_get_type(compression_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "compression must be an int", nullptr));
+    }
+
+    // Cast height to C-int
+    int compression = (int)fl_value_get_int(compression_value);
+
     const char* output_path = fl_value_get_string(fl_value_lookup_string(args, "outputDirPath"));
     if (!input_path || !output_path) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new(
@@ -343,6 +384,11 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
             double width = FPDF_GetPageWidth(page);
             double height = FPDF_GetPageHeight(page);
 
+            if (max_width != 0 || max_height != 0) {
+                width = (double)max_width;
+                height = (double)max_height;
+            }
+
             pages[i] = page;
             page_widths[i] = width;
             page_heights[i] = height;
@@ -372,7 +418,7 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
 
         // Save the combined bitmap to a PNG file
         std::string output_image_path = std::string(output_path) + "/combined_image.png";
-        if (!save_bitmap_to_png(combined_bitmap, output_image_path)) {
+        if (!save_bitmap_to_png(combined_bitmap, output_image_path, compression)) {
             FPDFBitmap_Destroy(combined_bitmap);
             FPDF_CloseDocument(doc);
             return FL_METHOD_RESPONSE(fl_method_error_response_new(
@@ -393,12 +439,18 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
             FPDF_PAGE page = FPDF_LoadPage(doc, i);
             if (!page) continue;
 
-            // Get the size of the page
-            double width = FPDF_GetPageWidth(page);
-            double height = FPDF_GetPageHeight(page);
+            int width, height;
+            if (max_width != 0 || max_height != 0) {
+                width = max_width;
+                height = max_height;
+            } else {
+                // Get the size of the page
+                width = (int)FPDF_GetPageWidth(page);
+                height = (int)FPDF_GetPageHeight(page);
+            }
 
             // Create a bitmap of the appropriate size
-            FPDF_BITMAP bitmap = FPDFBitmap_Create((int)width, (int)height, 0xFFFFFFFF);
+            FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0xFFFFFFFF);
             if (!bitmap) {
                 FPDF_ClosePage(page);
                 FPDF_CloseDocument(doc);
@@ -411,7 +463,7 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
 
             // Save the bitmap to a PNG file
             std::string output_image_path = std::string(output_path) + "/page_" + std::to_string(i) + ".png";
-            if (!save_bitmap_to_png(bitmap, output_image_path)) {
+            if (!save_bitmap_to_png(bitmap, output_image_path, compression)) {
                 FPDF_ClosePage(page);
                 FPDF_CloseDocument(doc);
                 return FL_METHOD_RESPONSE(fl_method_error_response_new(

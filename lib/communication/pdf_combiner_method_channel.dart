@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 
+import '../models/pdf_from_multiple_image_config.dart';
 import 'pdf_combiner_platform_interface.dart';
 
 /// Implementation of PdfCombinerPlatform using MethodChannel.
@@ -41,15 +43,15 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// Creates a PDF from multiple image files.
   ///
   /// This method sends a request to the native platform to create a PDF from the
-  /// images specified in the `paths` parameter. The resulting PDF is saved in the
+  /// images specified in the `inputPaths` parameter. The resulting PDF is saved in the
   /// `outputPath` directory.
   ///
   /// Parameters:
   /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
   /// - `outputPath`: The directory path where the created PDF should be saved.
-  /// - `maxWidth`: The maximum width of each image in the PDF (default is 360).
-  /// - `maxHeight`: The maximum height of each image in the PDF (default is 360).
-  /// - `needImageCompressor`: Whether to compress images before converting them to PDF (default is `true`).
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `keepAspectRatio`: Indicates whether to maintain the aspect ratio of the images (default is `true`).
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. If the operation
@@ -58,18 +60,16 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   Future<String?> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? needImageCompressor,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
     final result = await methodChannel.invokeMethod<String>(
       'createPDFFromMultipleImage',
       {
         'paths': inputPaths,
         'outputDirPath': outputPath,
-        'maxWidth': maxWidth ?? 360,
-        'maxHeight': maxHeight ?? 360,
-        'needImageCompressor': needImageCompressor ?? true,
+        'height': config.rescale.height,
+        'width': config.rescale.width,
+        'keepAspectRatio': config.keepAspectRatio,
       },
     );
     return result;
@@ -83,9 +83,10 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// Parameters:
   /// - `inputPath`: The file path of the PDF from which images will be extracted.
   /// - `outputPath`: The directory path where the images should be saved.
-  /// - `maxWidth`: The maximum width of each extracted image (default is 360).
-  /// - `maxHeight`: The maximum height of each extracted image (default is 360).
-  /// - `createOneImage`: Whether to create a single image from all PDF pages or separate images for each page (default is `true`).
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `compression`: The image compression level for the images, affecting file size, quality and clarity (default is [ImageCompression.none]).
+  ///   - `createOneImage`: Indicates whether to create a single image or separate images for each page (default is `true`).
   ///
   /// Returns:
   /// - A `Future<List<String>?>` representing a list of image file paths. If the operation
@@ -94,18 +95,17 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   Future<List<String>?> createImageFromPDF({
     required String inputPath,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? createOneImage,
+    ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
     final result = await methodChannel.invokeMethod<List<dynamic>>(
       'createImageFromPDF',
       {
         'path': inputPath,
         'outputDirPath': outputPath,
-        'maxWidth': maxWidth ?? 360,
-        'maxHeight': maxHeight ?? 360,
-        'createOneImage': createOneImage ?? true,
+        'height': config.rescale.height,
+        'width': config.rescale.width,
+        'compression': config.compression.value,
+        'createOneImage': config.createOneImage,
       },
     );
     return result?.cast<String>();

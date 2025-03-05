@@ -1,4 +1,6 @@
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 /// A mock implementation of the [PdfCombinerPlatform] interface for testing purposes.
@@ -22,7 +24,7 @@ class MockPdfCombinerPlatform
     required List<String> inputPaths,
     required String outputPath,
   }) {
-    return Future.value('Merged PDF');
+    return Future.value(outputPath);
   }
 
   /// Mocks the `createPDFFromMultipleImage` method.
@@ -30,20 +32,14 @@ class MockPdfCombinerPlatform
   /// Simulates the creation of a PDF from multiple image files. It returns a mock result
   /// indicating that a PDF was created successfully from images.
   ///
-  /// [inputPaths] A list of file paths to the images.
-  /// [outputPath] The path where the created PDF should be saved.
-  /// [maxWidth] The maximum width for resizing the images (optional).
-  /// [maxHeight] The maximum height for resizing the images (optional).
-  /// [needImageCompressor] Whether to compress the images (optional).
+  /// [config] The configuration for the PDF creation.
   @override
   Future<String?> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? needImageCompressor,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
-    return Future.value('Created PDF from Images');
+    return Future.value(outputPath);
   }
 
   /// Mocks the `createImageFromPDF` method.
@@ -53,21 +49,16 @@ class MockPdfCombinerPlatform
   ///
   /// [inputPath] The path to the PDF file.
   /// [outputPath] The path where the images should be saved.
-  /// [maxWidth] The maximum width for resizing the images (optional).
-  /// [maxHeight] The maximum height for resizing the images (optional).
-  /// [createOneImage] Whether to create a single image from the entire PDF (optional).
+  /// [config] The configuration for the image creation.
   @override
-  Future<List<String>?> createImageFromPDF({
-    required String inputPath,
-    required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? createOneImage,
-  }) {
-    if(createOneImage == true) {
-      return Future.value(['image1.png']);
+  Future<List<String>?> createImageFromPDF(
+      {required String inputPath,
+      required String outputPath,
+      ImageFromPdfConfig config = const ImageFromPdfConfig()}) {
+    if (config.createOneImage == true) {
+      return Future.value(['$outputPath/image1.png']);
     } else {
-      return Future.value(['image1.png', 'image2.png']);
+      return Future.value(['$outputPath/image1.png', '$outputPath/image2.png']);
     }
   }
 }

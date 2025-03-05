@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
@@ -20,11 +21,11 @@ void main() {
 
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: inputPaths[0],
-        outputPath: outputPath,
+        outputDirPath: outputPath,
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, ['${TestFileHelper.basePath}/image_final.jpeg']);
+      expect(result.outputPaths, ['${TestFileHelper.basePath}/image_final.jpeg']);
       expect(result.message, 'Processed successfully');
     });
 
@@ -36,12 +37,13 @@ void main() {
 
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: inputPaths[0],
-        outputPath: outputPath,
+        outputDirPath: outputPath,
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
-      expect(result.message, 'File is not of PDF type or does not exist: ${inputPaths[0]}');
+      expect(result.outputPaths, null);
+      expect(result.message,
+          'File is not of PDF type or does not exist: ${inputPaths[0]}');
     });
 
     testWidgets('Test creating with non-supported file', (tester) async {
@@ -51,11 +53,11 @@ void main() {
 
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: inputPaths[0],
-        outputPath: outputPath,
+        outputDirPath: outputPath,
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
+      expect(result.outputPaths, null);
       expect(result.message,
           'File is not of PDF type or does not exist: ${inputPaths[0]}');
     });
@@ -66,14 +68,11 @@ void main() {
       final outputPath = await helper.getOutputFilePath('image_final.jpeg');
 
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: inputPaths[0],
-        outputPath: outputPath,
-        createOneImage: true
-      );
+          inputPath: inputPaths[0], outputDirPath: outputPath);
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response?.length, 1);
-      expect(result.response, ['${TestFileHelper.basePath}/image_final.jpeg']);
+      expect(result.outputPaths.length, 1);
+      expect(result.outputPaths, ['${TestFileHelper.basePath}/image_final.jpeg']);
       expect(result.message, 'Processed successfully');
     });
 
@@ -84,12 +83,11 @@ void main() {
 
       final result = await PdfCombiner.createImageFromPDF(
           inputPath: inputPaths[0],
-          outputPath: outputPath,
-          createOneImage: false
-      );
+          outputDirPath: outputPath,
+          config: ImageFromPdfConfig(createOneImage: false));
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response?.length, 4);
+      expect(result.outputPaths.length, 4);
       expect(result.message, 'Processed successfully');
     });
   });

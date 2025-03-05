@@ -1,13 +1,16 @@
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 class MergeMultiplePDFResponse {
-  String? response, message;
+  String outputPath, message;
   PdfCombinerStatus status;
 
-  MergeMultiplePDFResponse(
-      {this.status = PdfCombinerStatus.empty, this.response, this.message});
+  MergeMultiplePDFResponse({
+    required this.status,
+    this.outputPath = "",
+    required this.message,
+  });
 
   @override
   String toString() =>
-      "MergeMultiplePDFResponse{response: $response, message: $message, status: $status }";
+      "MergeMultiplePDFResponse{outputPath: $outputPath, message: $message, status: $status }";
 }

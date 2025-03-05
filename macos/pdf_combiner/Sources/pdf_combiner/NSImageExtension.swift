@@ -2,52 +2,11 @@ import AppKit
 import AVFoundation
 
 extension NSImage {
-    func resize(maxWidth: Int, maxHeight: Int) -> NSImage? {
-        var actualHeight = Float(self.size.height)
-        var actualWidth = Float(self.size.width)
-        let maxHeight = Float(maxHeight)
-        let maxWidth = Float(maxWidth)
-        var imgRatio = Float(actualWidth / actualHeight)
-        let maxRatio = Float(maxWidth / maxHeight)
-
-        if actualHeight > maxHeight || actualWidth > maxWidth {
-            if imgRatio < maxRatio {
-                //adjust width according to maxHeight
-                imgRatio = maxHeight / actualHeight
-                actualWidth = imgRatio * actualWidth
-                actualHeight = maxHeight
-            } else if imgRatio > maxRatio {
-                //adjust height according to maxWidth
-                imgRatio = maxWidth / actualWidth
-                actualHeight = imgRatio * actualHeight
-                actualWidth = maxWidth
-            } else {
-                actualHeight = maxHeight
-                actualWidth = maxWidth
-            }
-        }
-
-        let rect = CGRect(origin: .zero,
-                          size: CGSize(width: CGFloat(actualWidth),
-                                       height: CGFloat(actualHeight)))
-        let newSize = AVMakeRect(aspectRatio: self.size, insideRect: rect).size
-
-        let newImage = NSImage(size: newSize)
-        newImage.lockFocus()
-        self.draw(in: CGRect(origin: .zero, size: newSize))
-        newImage.unlockFocus()
-        newImage.size = newSize
-
-        guard
-            let imageData = newImage.tiffRepresentation
-        else {
-            return nil
-        }
-        
-        return NSImage(data: imageData)
-    }
-    
-    // MARK: Merge images vertically
+    /// Merge vertically a list of images
+    ///
+    /// - Parameters:
+    ///   - images: List of images
+    /// - Returns: New image
     static func mergeVertically(images: [NSImage]) -> NSImage? {
         var maxWidth: CGFloat = .zero
         var maxHeight: CGFloat = .zero
@@ -90,15 +49,110 @@ extension NSImage {
         return NSImage(cgImage: outputCGImage, size: .zero)
     }
     
-    // MARK: Sava image to disk
-    func save(to path: String) {
-        guard let cgImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
-        let imageRep = NSBitmapImageRep(cgImage: cgImage)
-        imageRep.size = size
+    /// Resize an image if its width or height is bigger to maxWidth or maxHeight keeping its aspect ratio
+    ///
+    /// - Parameters:
+    ///   - maxWidth: Maximum width
+    ///   - maxHeight: Maximum height
+    /// - Returns: New resized image
+    func resize(maxWidth: Int, maxHeight: Int) -> NSImage? {
+        var actualHeight = Float(size.height)
+        var actualWidth = Float(size.width)
+        let maxHeight = Float(maxHeight)
+        let maxWidth = Float(maxWidth)
+        var imgRatio = Float(actualWidth / actualHeight)
+        let maxRatio = Float(maxWidth / maxHeight)
+
+        if actualHeight > maxHeight || actualWidth > maxWidth {
+            if imgRatio < maxRatio {
+                //adjust width according to maxHeight
+                imgRatio = maxHeight / actualHeight
+                actualWidth = imgRatio * actualWidth
+                actualHeight = maxHeight
+            } else if imgRatio > maxRatio {
+                //adjust height according to maxWidth
+                imgRatio = maxWidth / actualWidth
+                actualHeight = imgRatio * actualHeight
+                actualWidth = maxWidth
+            } else {
+                actualHeight = maxHeight
+                actualWidth = maxWidth
+            }
+        }
+
+        let rect = CGRect(origin: .zero,
+                          size: CGSize(width: CGFloat(actualWidth),
+                                       height: CGFloat(actualHeight)))
+        let newSize = AVMakeRect(aspectRatio: self.size, insideRect: rect).size
+
+        let newImage = NSImage(size: newSize)
         
-        guard let data = imageRep.representation(using: .jpeg, properties: [:]) else { return }
-        let urlOutputDirPath = URL.init(fileURLWithPath: path)
+        newImage.lockFocus()
+        defer { newImage.unlockFocus() }
         
-        try? data.write(to: urlOutputDirPath, options: .atomic)
+        draw(in: NSRect(origin: .zero, size: newSize),
+             from: NSRect(origin: .zero, size: size),
+             operation: .copy,
+             fraction: 1.0)
+        
+        return newImage
+    }
+    
+    /// Resize an image to a specific width and height. This function does NOT keep the aspect ratio of the original image.
+    ///
+    /// - Parameters:
+    ///   - width: New width
+    ///   - height: New height
+    /// - Returns: New resized image
+    func resize(width: Int, height: Int) -> NSImage {
+        let newSize = NSSize(width: width,
+                             height: height)
+        
+        let newImage = NSImage(size: newSize)
+        
+        newImage.lockFocus()
+        defer { newImage.unlockFocus() }
+        
+        draw(in: NSRect(origin: .zero, size: newSize),
+             from: NSRect(origin: .zero, size: size),
+             operation: .copy,
+             fraction: 1.0)
+        
+        return newImage
+    }
+       
+    /// Resize an image to a specific width keeping the aspect ratio of the original image.
+    ///
+    /// - Parameters:
+    ///   - width: New width
+    /// - Returns: New resized image
+    func resize(width: Int) -> NSImage {
+        let scaleFactor = CGFloat(width) / size.width
+        let newSize = NSSize(width: size.width * scaleFactor,
+                             height: size.height * scaleFactor)
+        
+        let newImage = NSImage(size: newSize)
+        
+        newImage.lockFocus()
+        defer { newImage.unlockFocus() }
+        
+        draw(in: NSRect(origin: .zero, size: newSize),
+             from: NSRect(origin: .zero, size: size),
+             operation: .copy,
+             fraction: 1.0)
+        
+        return newImage
+    }
+    
+    ///
+    /// - Parameters:
+    ///   - path: Image name with absolute path
+    func save(to path: URL, quality: Double) throws {
+        guard let tiffData = tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiffData),
+              let data = bitmap.representation(using: .jpeg, properties: [.compressionFactor: quality])
+        else { return }
+        
+        try data.write(to: path)
     }
 }

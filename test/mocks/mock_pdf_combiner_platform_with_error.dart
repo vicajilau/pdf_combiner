@@ -1,4 +1,7 @@
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/image_scale.dart';
+import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'mock_pdf_combiner_platform.dart';
@@ -31,16 +34,12 @@ class MockPdfCombinerPlatformWithError
   ///
   /// [inputPaths] A list of file paths to the images.
   /// [outputPath] The path where the created PDF should be saved.
-  /// [maxWidth] The maximum width for resizing the images (optional).
-  /// [maxHeight] The maximum height for resizing the images (optional).
-  /// [needImageCompressor] Whether to compress the images (optional).
+  /// [config] The configuration for the PDF creation.
   @override
   Future<String?> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? needImageCompressor,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
     return Future.value('error');
   }
@@ -59,10 +58,11 @@ class MockPdfCombinerPlatformWithError
   Future<List<String>?> createImageFromPDF({
     required String inputPath,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? createOneImage,
+    ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
-    throw Exception("Mocked Exception");
+    if (config.rescale == ImageScale.original) {
+      return Future.value(['error']);
+    }
+    return Future.value([]);
   }
 }

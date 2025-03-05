@@ -20,35 +20,46 @@
   </a>
 </p>
 
-A Flutter plugin for combining and manipulating PDF files. The plugin supports Android, iOS, Linux, MacOS and Web platforms and allows for merging multiple PDF files, creating PDFs from images, and extracting images from PDFs.
+## Overview
+
+**PDF Combiner** is a Flutter plugin designed for combining and manipulating PDF files. It supports multiple platforms including Android, iOS, Linux, macOS, and web, enabling users to:
+
+- Merge multiple PDF files.
+- Create PDFs from images.
+- Extract images from PDFs.
 
 ### Underlying Technologies
 
-- **Android**: Uses the [PDFBox](https://pdfbox.apache.org/) library from Apache.
+- **Android**: PDF manipulation is done natively using `android.graphics` with Kotlin, with no external dependencies.
 - **iOS and macOS**: PDF manipulation is done natively using Swift, with no external dependencies.
-- **Linux and Windows**: Utilizes [PDFium](https://pdfium.googlesource.com/pdfium/) from Google, a C++ library.
-- **Web**: Uses [PDFLib](https://pdf-lib.js.org/) in JavaScript for PDF manipulation.
+- **Linux and Windows**: Employs [PDFium](https://pdfium.googlesource.com/pdfium/) from Google, a C++ library.
+- **Web**: Implements [PDFLib](https://pdf-lib.js.org/) in JavaScript for PDF manipulation.
 
 ## Features
 
 ### Merge Multiple PDFs
 
-Combine multiple PDF files into a single document.
+Combine several PDF files into a single document.
 
 **Required Parameters:**
-- `inputPaths`: A list of strings representing the paths of the PDF files to be combined.
-- `outputPath`: A string representing the directory where the combined PDF should be saved.
+- `inputPaths`: A list of strings representing the paths of the PDF files to combine.
+- `outputPath`: A string representing the absolute path of the file where the combined PDF should be saved. In the case of web, this parameter is ignored.
 
 ```dart
+final filesPath = ["path/to/file1.pdf", "path/to/file2.pdf"];
+final outputPath = "path/to/output.pdf";
+
 MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
-  inputPaths: filesPath, 
-  outputPath: outputDirPath,
+  inputPaths: filesPath,
+  outputPath: outputPath,
 );
 
 if (response.status == PdfCombinerStatus.success) {
-  // response.response contains the output path as a String
-  // response.message contains a success message as a String
+  print("File saved to: ${response.response}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
 }
+
 ```
 
 ### Create PDF From Multiple Images
@@ -56,26 +67,52 @@ if (response.status == PdfCombinerStatus.success) {
 Convert a list of image files into a single PDF document.
 
 **Required Parameters:**
-- `inputPaths`: A list of strings representing the paths of the image files.
-- `outputPath`: A string representing the directory where the generated PDF should be saved.
+- `inputPaths`: A list of strings representing the image file paths.
+- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored.
 
-**Optional Parameters:**
-- `maxWidth` (default: 360): Maximum width for image compression.
-- `maxHeight` (default: 360): Maximum height for image compression.
-- `needImageCompressor` (default: true): Whether to compress the images.
+By default, images are added to the PDF without modifications. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
+final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
+final outputPath = "path/to/output.pdf";
+
 PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
   inputPaths: imagePaths,
   outputPath: outputPath,
-  maxWidth: 480, // Optional
-  maxHeight: 640, // Optional
-  needImageCompressor: false, // Optional
 );
 
 if (response.status == PdfCombinerStatus.success) {
-  // response.response contains the output path as a String
-  // response.message contains a success message as a String
+  print("File saved to: ${response.outputPath}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
+}
+```
+#### Custom Creation of PDF From Multiple Images
+
+The `PdfFromMultipleImageConfig` class is used to configure how images are processed before creating a PDF.
+
+**Parameters:**
+- `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
+- `keepAspectRatio` (default: `true`): Ensures that the aspect ratio of the images is preserved when scaling.
+
+Example Usage:
+```dart
+final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
+final outputPath = "path/to/output.pdf";
+
+PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
+  inputPaths: imagePaths,
+  outputPath: outputPath,
+  config: const PdfFromMultipleImageConfig(
+    rescale: ImageScale(width: 480, height: 640),
+    keepAspectRatio: true,
+  ),
+);
+
+if (response.status == PdfCombinerStatus.success) {
+  print("File saved to: ${response.outputPath}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
 }
 ```
 
@@ -85,28 +122,79 @@ Extract images from a PDF file.
 
 **Required Parameters:**
 - `inputPath`: A string representing the file path of the PDF to extract images from.
-- `outputPath`: A string representing the directory where the extracted images should be saved.
+- `outputDirPath`: A string representing the directory folder where the extracted images should be saved. In the case of web, this parameter is ignored.
 
-**Optional Parameters:**
-- `maxWidth` (default: 360): Maximum width for the extracted images.
-- `maxHeight` (default: 360): Maximum height for the extracted images.
-- `createOneImage` (default: true): Whether to create a single composite image from the PDF.
+By default, images are extracted in their original format. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
+final pdfFilePath = "path/to/input.pdf";
+final outputDirPath = "path/to/output";
+
 ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
   inputPath: pdfFilePath, 
-  outputPath: outputPath,
-  maxWidth: 720, // Optional
-  maxHeight: 1080, // Optional
-  createOneImage: false, // Optional
+  outputDirPath: outputDirPath,
 );
 
 if (response.status == PdfCombinerStatus.success) {
-  // response.response contains a list of output paths as List<String>
-  // response.message contains a success message as a String
+  print("Files generated: ${response.outputPaths}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
 }
 ```
 
+### Custom Creation of Images From PDF
+
+The `ImageFromPdfConfig` class is used to configure how images are processed before creating a list of images.
+
+**Parameters:**
+- `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
+- `compression` (default: `ImageCompression.none`): Sets the compression level for image, affecting file size quality and clarity.
+- `createOneImage` (default: `false`): If you want to create a single image with all pages of the PDF or if you want one image per page.
+
+Example Usage:
+```dart
+final pdfFilePath = "path/to/input.pdf";
+final outputDirPath = "path/to/output";
+
+ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
+  inputPaths: imagePaths,
+  outputPath: outputPath,
+  config: const ImageFromPdfConfig(
+    rescale: ImageScale(width: 480, height: 640),
+    compression: ImageCompression.custom(35),
+    createOneImage: true,
+  ),
+);
+```
+
+#### ImageCompression
+
+Represents the compression level of an image, affecting quality and file size.
+
+Predefined Compression Levels
+The `ImageCompression` class provides three predefined quality levels:
+
+- **`ImageCompression.none`** (0) → No compression, highest quality, largest file size. (The default).
+- **`ImageCompression.low`** (30) → Minimal compression, highest quality, larger file size.
+- **`ImageCompression.medium`** (60) → Balanced compression and image clarity.
+- **`ImageCompression.high`** (100) → High compression, lower quality, smaller file size.
+- **`ImageCompression.custom(int value)`** → Allows for custom quality levels between 1 and 100.
+
+Summary of Supported Cases
+
+| Compression Level | Value Range | Example Usage                 |
+|-------------------|-------------|-------------------------------|
+| **None**          | `0`         | `ImageCompression.none`       |
+| **Low**           | `30`        | `ImageCompression.low`        |
+| **Medium**        | `60`        | `ImageCompression.medium`     |
+| **High**          | `100`       | `ImageCompression.high`       |
+| **Custom**        | `1 - 100`   | `ImageCompression.custom(75)` |
+
+Example Usage:
+```dart
+final compression = ImageCompression.medium;
+print(compression.value); // Output: 60
+```
 ## Usage
 
 This plugin works with `file_picker` or `image_picker` for selecting files. Ensure you handle permissions using `permission_handler` before invoking the plugin.
