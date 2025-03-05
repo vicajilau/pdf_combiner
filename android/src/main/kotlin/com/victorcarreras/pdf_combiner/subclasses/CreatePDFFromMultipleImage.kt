@@ -2,7 +2,6 @@ package com.victorcarreras.pdf_combiner.subclasses
 
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
-import androidx.exifinterface.media.ExifInterface
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -175,32 +174,15 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
         bmp.run {
             recycle()
         }
-
-        val exif: ExifInterface
-        try {
-            exif = ExifInterface(imagePath)
-            val orientation = exif.getAttributeInt(
-                ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_UNDEFINED
-            )
-            val matrix = Matrix()
-            when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-                ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-                ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-            }
-            Bitmap.createBitmap(
-                scaledBitmap,
-                0,
-                0,
-                scaledBitmap.width,
-                scaledBitmap.height,
-                matrix,
-                true
-            ).also { scaledBitmap = it }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        scaledBitmap = Bitmap.createBitmap(
+            scaledBitmap,
+            0,
+            0,
+            scaledBitmap.width,
+            scaledBitmap.height,
+            null,
+            true
+        )
         return scaledBitmap
     }
 
