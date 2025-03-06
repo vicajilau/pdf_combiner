@@ -7,7 +7,8 @@ sealed class ImageCompression {
   ///
   /// Asserts that [value] is between 0 and 100.
   const ImageCompression._(this.value)
-      : assert(value >= 0 && value <= 100, 'Quality must be between 0 and 100.');
+      : assert(
+            value >= 0 && value <= 100, 'Quality must be between 0 and 100.');
 
   /// No compression, with highest quality and largest file size.
   static const none = _FixedImageCompression(0);
