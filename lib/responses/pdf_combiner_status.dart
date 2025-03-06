@@ -5,7 +5,6 @@
 /// - Creating an image from a PDF.
 /// - Creating a PDF from multiple images.
 enum PdfCombinerStatus {
-
   /// Indicates that the operation completed successfully.
   success,
 
