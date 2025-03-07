@@ -52,7 +52,7 @@ class PdfCombinerPlugin : FlutterPlugin, MethodCallHandler {
                         )
                     )
                 } else {
-                    result.error("INVALID_ARGUMENTS", "paths or outputDirPath cannot be null", null)
+                    result.error("INVALID_ARGUMENTS", "paths, outputDirPath, width, height, keepAspectRatio cannot be null", null)
                 }
             }
 
