@@ -177,7 +177,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   }
 
   void changeLoading(bool isLoading) => setState(() {
-        isLoading = !isLoading;
+        this.isLoading = isLoading;
       });
 
   Future<void> _createPdfFromImages() async {
