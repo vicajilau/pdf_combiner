@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
@@ -8,7 +9,6 @@ import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
-import 'communication/pdf_combiner_platform_interface.dart';
 import 'isolates/merge_pdfs_isolate.dart';
 import 'isolates/pdf_from_multiple_images_isolate.dart';
 import 'models/image_from_pdf_config.dart';
@@ -192,11 +192,10 @@ class PdfCombiner {
             message: PdfCombinerMessages.errorMessagePDF(inputPath),
           );
         } else {
-          final response = await PdfCombinerPlatform.instance
-              .createImageFromPDF(
-                  inputPath: inputPath,
-                  outputPath: outputDirPath,
-                  config: config);
+          final response = await ImagesFromPdfIsolate.createImageFromPDF(
+              inputPath: inputPath,
+              outputDirectory: outputDirPath,
+              config: config);
 
           if (response != null && response.isNotEmpty) {
             if (response.first.contains(outputDirPath) ||
