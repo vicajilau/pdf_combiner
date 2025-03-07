@@ -28,7 +28,7 @@ class ImagesFromPdfIsolate {
   }) async {
     return await compute(_createImageFromPdf, {
       'inputPath': inputPath,
-      'outputPath': outputDirectory,
+      'outputDirectory': outputDirectory,
       'config': config,
       'token': kIsWeb ? null : RootIsolateToken.instance!,
     });
