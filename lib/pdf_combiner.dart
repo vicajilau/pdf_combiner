@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:isolate';
 
-import 'package:flutter/services.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
@@ -11,6 +9,7 @@ import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
+import 'isolates/merge_pdfs_isolate.dart';
 import 'isolates/pdf_from_multiple_images_isolate.dart';
 import 'models/image_from_pdf_config.dart';
 
@@ -57,12 +56,8 @@ class PdfCombiner {
               status: PdfCombinerStatus.error,
               message: PdfCombinerMessages.errorMessagePDF(path));
         } else {
-          final token = RootIsolateToken.instance!;
-          BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-          final String? response = await Isolate.run(
-            () => PdfCombinerPlatform.instance.mergeMultiplePDFs(
-                inputPaths: inputPaths, outputPath: outputPath),
-          );
+          final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
+              inputPaths: inputPaths, outputPath: outputPath);
 
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
@@ -197,16 +192,11 @@ class PdfCombiner {
             message: PdfCombinerMessages.errorMessagePDF(inputPath),
           );
         } else {
-          final response = await Isolate.run(
-            () async {
-              final token = RootIsolateToken.instance!;
-              BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-              return await PdfCombinerPlatform.instance.createImageFromPDF(
+          final response = await PdfCombinerPlatform.instance
+              .createImageFromPDF(
                   inputPath: inputPath,
                   outputPath: outputDirPath,
                   config: config);
-            },
-          );
 
           if (response != null && response.isNotEmpty) {
             if (response.first.contains(outputDirPath) ||
