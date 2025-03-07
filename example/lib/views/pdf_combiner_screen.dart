@@ -158,7 +158,9 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   // Function to pick PDF files from the device
   void _restart() {
     _viewModel.restart();
-    setState(() {});
+    setState(() {
+      changeLoading(false);
+    });
     _showSnackbarSafely('App restarted!');
   }
 
