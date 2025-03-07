@@ -19,6 +19,9 @@ import 'models/image_from_pdf_config.dart';
 /// the `PdfCombinerPlatform` interface. This class exposes a method to combine PDFs
 /// and handles errors that may occur during the process.
 class PdfCombiner {
+  /// A boolean flag to indicate whether mocking is enabled.
+  /// When set to true, isolates will not be executed, allowing tests to pass
+  /// without performing actual PDF merging operations.
   static bool isMock = false;
 
   /// Combines multiple PDF files into a single PDF.
