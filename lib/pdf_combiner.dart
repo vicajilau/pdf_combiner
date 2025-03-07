@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:isolate';
 
+import 'package:flutter/services.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
@@ -9,6 +11,7 @@ import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
+import 'isolates/pdf_from_multiple_images_isolate.dart';
 import 'models/image_from_pdf_config.dart';
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
@@ -54,9 +57,12 @@ class PdfCombiner {
               status: PdfCombinerStatus.error,
               message: PdfCombinerMessages.errorMessagePDF(path));
         } else {
-          final String? response = await PdfCombinerPlatform.instance
-              .mergeMultiplePDFs(
-                  inputPaths: inputPaths, outputPath: outputPath);
+          final token = RootIsolateToken.instance!;
+          BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+          final String? response = await Isolate.run(
+            () => PdfCombinerPlatform.instance.mergeMultiplePDFs(
+                inputPaths: inputPaths, outputPath: outputPath),
+          );
 
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
@@ -121,7 +127,7 @@ class PdfCombiner {
           );
         } else {
           final String? response =
-              await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
+              await PdfFromMultipleImagesIsolate.createPDFFromMultipleImages(
             inputPaths: inputPaths,
             outputPath: outputPath,
             config: config,
@@ -191,11 +197,15 @@ class PdfCombiner {
             message: PdfCombinerMessages.errorMessagePDF(inputPath),
           );
         } else {
-          final response =
-              await PdfCombinerPlatform.instance.createImageFromPDF(
-            inputPath: inputPath,
-            outputPath: outputDirPath,
-            config: config,
+          final response = await Isolate.run(
+            () async {
+              final token = RootIsolateToken.instance!;
+              BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+              return await PdfCombinerPlatform.instance.createImageFromPDF(
+                  inputPath: inputPath,
+                  outputPath: outputDirPath,
+                  config: config);
+            },
           );
 
           if (response != null && response.isNotEmpty) {

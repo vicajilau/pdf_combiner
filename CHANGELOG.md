@@ -1,3 +1,7 @@
+## 4.0.1
+### General
+* Now pdf_combiner is running using isolates for all platforms
+
 ## 4.0.0
 ### General
 * Errors are being recovered from native and sent through the message.
