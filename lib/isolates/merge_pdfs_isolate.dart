@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../communication/pdf_combiner_platform_interface.dart';
@@ -12,13 +13,21 @@ class MergePdfsIsolate {
   }) async {
     final ReceivePort receivePort = ReceivePort();
 
-    await Isolate.spawn(_combinePDFs, {
-      'sendPort': receivePort.sendPort,
-      'inputPaths': inputPaths,
-      'outputPath': outputPath,
-      'token': RootIsolateToken.instance!,
-    });
-
+    if (kIsWeb) {
+      await compute(_combinePDFs, {
+        'sendPort': receivePort.sendPort,
+        'inputPaths': inputPaths,
+        'outputPath': outputPath,
+        'token': RootIsolateToken.instance!,
+      });
+    } else {
+      await Isolate.spawn(_combinePDFs, {
+        'sendPort': receivePort.sendPort,
+        'inputPaths': inputPaths,
+        'outputPath': outputPath,
+        'token': RootIsolateToken.instance!,
+      });
+    }
     return await receivePort.first as String?;
   }
 

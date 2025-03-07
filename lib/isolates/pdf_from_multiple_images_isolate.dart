@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../communication/pdf_combiner_platform_interface.dart';
@@ -14,13 +15,23 @@ class PdfFromMultipleImagesIsolate {
   }) async {
     final ReceivePort receivePort = ReceivePort();
 
-    await Isolate.spawn(_pdfFromMultipleImages, {
-      'sendPort': receivePort.sendPort,
-      'inputPaths': inputPaths,
-      'outputPath': outputPath,
-      'config': config,
-      'token': RootIsolateToken.instance!,
-    });
+    if (kIsWeb) {
+      compute(_pdfFromMultipleImages, {
+        'sendPort': receivePort.sendPort,
+        'inputPaths': inputPaths,
+        'outputPath': outputPath,
+        'config': config,
+        'token': RootIsolateToken.instance!,
+      });
+    } else {
+      await Isolate.spawn(_pdfFromMultipleImages, {
+        'sendPort': receivePort.sendPort,
+        'inputPaths': inputPaths,
+        'outputPath': outputPath,
+        'config': config,
+        'token': RootIsolateToken.instance!,
+      });
+    }
 
     return await receivePort.first as String?;
   }
