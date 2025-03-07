@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf_combiner/pdf_combiner.dart';
 
 import '../communication/pdf_combiner_platform_interface.dart';
 import '../models/pdf_from_multiple_image_config.dart';
@@ -26,6 +27,13 @@ class PdfFromMultipleImagesIsolate {
     required String outputPath,
     required PdfFromMultipleImageConfig config,
   }) async {
+    if (PdfCombiner.isMock) {
+      return await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
+        inputPaths: inputPaths,
+        outputPath: outputPath,
+        config: config,
+      );
+    }
     return await compute(_pdfFromMultipleImages, {
       'inputPaths': inputPaths,
       'outputPath': outputPath,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf_combiner/pdf_combiner.dart';
 
 import '../communication/pdf_combiner_platform_interface.dart';
 
@@ -23,6 +24,12 @@ class MergePdfsIsolate {
     required List<String> inputPaths,
     required String outputPath,
   }) async {
+    if (PdfCombiner.isMock) {
+      return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
+        inputPaths: inputPaths,
+        outputPath: outputPath,
+      );
+    }
     return await compute(_combinePDFs, {
       'inputPaths': inputPaths,
       'outputPath': outputPath,
