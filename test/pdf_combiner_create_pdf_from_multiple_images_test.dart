@@ -9,6 +9,7 @@ import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
 
 void main() {
   group('PdfCombiner  Create PDF From Multiple Images Unit Tests', () {
+    PdfCombiner.isMock = true;
     // Test for error handling when file not exist in the createPDFFromMultipleImages method.
     test('createPDFFromMultipleImages - Error handling (empty inputPaths)',
         () async {

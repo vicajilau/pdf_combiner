@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
@@ -8,7 +9,8 @@ import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
-import 'communication/pdf_combiner_platform_interface.dart';
+import 'isolates/merge_pdfs_isolate.dart';
+import 'isolates/pdf_from_multiple_images_isolate.dart';
 import 'models/image_from_pdf_config.dart';
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
@@ -17,6 +19,11 @@ import 'models/image_from_pdf_config.dart';
 /// the `PdfCombinerPlatform` interface. This class exposes a method to combine PDFs
 /// and handles errors that may occur during the process.
 class PdfCombiner {
+  /// A boolean flag to indicate whether mocking is enabled.
+  /// When set to true, isolates will not be executed, allowing tests to pass
+  /// without performing actual PDF merging operations.
+  static bool isMock = false;
+
   /// Combines multiple PDF files into a single PDF.
   ///
   /// This method takes a list of file paths (`inputPaths`) representing the PDFs to be combined,
@@ -54,9 +61,8 @@ class PdfCombiner {
               status: PdfCombinerStatus.error,
               message: PdfCombinerMessages.errorMessagePDF(path));
         } else {
-          final String? response = await PdfCombinerPlatform.instance
-              .mergeMultiplePDFs(
-                  inputPaths: inputPaths, outputPath: outputPath);
+          final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
+              inputPaths: inputPaths, outputPath: outputPath);
 
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
@@ -121,7 +127,7 @@ class PdfCombiner {
           );
         } else {
           final String? response =
-              await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
+              await PdfFromMultipleImagesIsolate.createPDFFromMultipleImages(
             inputPaths: inputPaths,
             outputPath: outputPath,
             config: config,
@@ -191,12 +197,10 @@ class PdfCombiner {
             message: PdfCombinerMessages.errorMessagePDF(inputPath),
           );
         } else {
-          final response =
-              await PdfCombinerPlatform.instance.createImageFromPDF(
-            inputPath: inputPath,
-            outputPath: outputDirPath,
-            config: config,
-          );
+          final response = await ImagesFromPdfIsolate.createImageFromPDF(
+              inputPath: inputPath,
+              outputDirectory: outputDirPath,
+              config: config);
 
           if (response != null && response.isNotEmpty) {
             if (response.first.contains(outputDirPath) ||
