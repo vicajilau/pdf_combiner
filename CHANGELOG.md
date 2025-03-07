@@ -1,6 +1,6 @@
 ## 4.0.1
 ### General
-* Now pdf_combiner is running using isolates for all platforms
+* Refactored `pdf_combiner` to use `isolates` (or `compute` on the web) for native calls, reducing potential UI freezes (UI thread blocking).
 
 ## 4.0.0
 ### General
