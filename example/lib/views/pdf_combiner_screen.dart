@@ -165,40 +165,43 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   // Function to combine selected PDF files into a single output file
   Future<void> _combinePdfs() async {
     try {
-      changeLoading();
+      changeLoading(true);
       await _viewModel.combinePdfs();
-      changeLoading();
+      changeLoading(false);
       _showSnackbarSafely(
           'PDFs combined successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
   }
 
-  void changeLoading() => setState(() {
+  void changeLoading(bool isLoading) => setState(() {
         isLoading = !isLoading;
       });
 
   Future<void> _createPdfFromImages() async {
     try {
-      changeLoading();
+      changeLoading(true);
       await _viewModel.createPDFFromImages();
-      changeLoading();
+      changeLoading(false);
       _showSnackbarSafely(
           'PDF created successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
   }
 
   Future<void> _createImagesFromPDF() async {
     try {
-      changeLoading();
+      changeLoading(true);
       await _viewModel.createImagesFromPDF();
-      changeLoading();
+      changeLoading(false);
       _showSnackbarSafely(
           'Images created successfully: ${_viewModel.outputFiles}');
     } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
   }
