@@ -24,24 +24,21 @@ class MergePdfsIsolate {
     required List<String> inputPaths,
     required String outputPath,
   }) async {
-    final ReceivePort receivePort = ReceivePort();
-
     if (kIsWeb) {
-      await compute(_combinePDFs, {
-        'sendPort': receivePort.sendPort,
+      return await compute(_combinePDFsWeb, {
         'inputPaths': inputPaths,
         'outputPath': outputPath,
-        'token': RootIsolateToken.instance!,
       });
     } else {
+      final ReceivePort receivePort = ReceivePort();
       await Isolate.spawn(_combinePDFs, {
         'sendPort': receivePort.sendPort,
         'inputPaths': inputPaths,
         'outputPath': outputPath,
         'token': RootIsolateToken.instance!,
       });
+      return await receivePort.first as String?;
     }
-    return await receivePort.first as String?;
   }
 
   /// Background process that merges multiple PDFs.
@@ -68,5 +65,20 @@ class MergePdfsIsolate {
     );
 
     sendPort.send(response);
+  }
+
+  /// Background process that merges multiple PDFs for web.
+  ///
+  /// - `params`: A map containing:
+  ///   - `inputPaths`: The list of input PDF file paths.
+  ///   - `outputPath`: The path where the merged PDF should be saved.
+  static Future<String?> _combinePDFsWeb(Map<String, dynamic> params) async {
+    final List<String> inputPaths = params['inputPaths'];
+    final String outputPath = params['outputPath'];
+
+    return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
+      inputPaths: inputPaths,
+      outputPath: outputPath,
+    );
   }
 }

@@ -27,27 +27,23 @@ class ImagesFromPdfIsolate {
     required String outputDirectory,
     required ImageFromPdfConfig config,
   }) async {
-    final ReceivePort receivePort = ReceivePort();
-
     if (kIsWeb) {
-      compute(_createImageFromPDF, {
-        'sendPort': receivePort.sendPort,
+      return await compute(_createImageFromPdfWeb, {
         'inputPath': inputPath,
         'outputPath': outputDirectory,
         'config': config,
-        'token': RootIsolateToken.instance!,
       });
     } else {
-      await Isolate.spawn(_createImageFromPDF, {
+      final ReceivePort receivePort = ReceivePort();
+      await Isolate.spawn(_createImageFromPdf, {
         'sendPort': receivePort.sendPort,
         'inputPath': inputPath,
         'outputPath': outputDirectory,
         'config': config,
         'token': RootIsolateToken.instance!,
       });
+      return await receivePort.first as List<String>?;
     }
-
-    return await receivePort.first as List<String>?;
   }
 
   /// Background process that extracts images from a PDF file.
@@ -60,7 +56,7 @@ class ImagesFromPdfIsolate {
   ///   - `outputDirectory`: The path where images should be saved.
   ///   - `config`: The configuration for extraction.
   ///   - `token`: The isolate token for Flutter's binary messenger.
-  static Future<void> _createImageFromPDF(Map<String, dynamic> params) async {
+  static Future<void> _createImageFromPdf(Map<String, dynamic> params) async {
     final SendPort sendPort = params['sendPort'];
     final String inputPath = params['inputPath'];
     final String outputDirectory = params['outputDirectory'];
@@ -76,5 +72,24 @@ class ImagesFromPdfIsolate {
     );
 
     sendPort.send(response);
+  }
+
+  /// Background process that extracts images from a PDF file for web.
+  ///
+  /// - `params`: A map containing:
+  ///   - `inputPath`: The path of the input PDF file.
+  ///   - `outputDirectory`: The path where images should be saved.
+  ///   - `config`: The configuration for extraction.
+  static Future<List<String>?> _createImageFromPdfWeb(
+      Map<String, dynamic> params) async {
+    final String inputPath = params['inputPath'];
+    final String outputDirectory = params['outputDirectory'];
+    final ImageFromPdfConfig config = params['config'];
+
+    return await PdfCombinerPlatform.instance.createImageFromPDF(
+      inputPath: inputPath,
+      outputPath: outputDirectory,
+      config: config,
+    );
   }
 }

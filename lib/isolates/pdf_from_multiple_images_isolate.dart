@@ -27,17 +27,14 @@ class PdfFromMultipleImagesIsolate {
     required String outputPath,
     required PdfFromMultipleImageConfig config,
   }) async {
-    final ReceivePort receivePort = ReceivePort();
-
     if (kIsWeb) {
-      compute(_pdfFromMultipleImages, {
-        'sendPort': receivePort.sendPort,
+      return await compute(_pdfFromMultipleImagesWeb, {
         'inputPaths': inputPaths,
         'outputPath': outputPath,
         'config': config,
-        'token': RootIsolateToken.instance!,
       });
     } else {
+      final ReceivePort receivePort = ReceivePort();
       await Isolate.spawn(_pdfFromMultipleImages, {
         'sendPort': receivePort.sendPort,
         'inputPaths': inputPaths,
@@ -45,9 +42,8 @@ class PdfFromMultipleImagesIsolate {
         'config': config,
         'token': RootIsolateToken.instance!,
       });
+      return await receivePort.first as String?;
     }
-
-    return await receivePort.first as String?;
   }
 
   /// Background process that creates a PDF from multiple images.
@@ -78,5 +74,24 @@ class PdfFromMultipleImagesIsolate {
     );
 
     sendPort.send(response);
+  }
+
+  /// Background process that creates a PDF from multiple images for Web.
+  ///
+  /// - `params`: A map containing:
+  ///   - `inputPaths`: The list of input image file paths.
+  ///   - `outputPath`: The path where the generated PDF should be saved.
+  ///   - `config`: Configuration settings for PDF generation.
+  static Future<String?> _pdfFromMultipleImagesWeb(
+      Map<String, dynamic> params) async {
+    final List<String> inputPaths = params['inputPaths'];
+    final String outputPath = params['outputPath'];
+    final PdfFromMultipleImageConfig config = params['config'];
+
+    return await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
+      inputPaths: inputPaths,
+      outputPath: outputPath,
+      config: config,
+    );
   }
 }
