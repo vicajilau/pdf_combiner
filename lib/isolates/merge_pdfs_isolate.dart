@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -24,57 +23,27 @@ class MergePdfsIsolate {
     required List<String> inputPaths,
     required String outputPath,
   }) async {
-    if (kIsWeb) {
-      return await compute(_combinePDFsWeb, {
-        'inputPaths': inputPaths,
-        'outputPath': outputPath,
-      });
-    } else {
-      final ReceivePort receivePort = ReceivePort();
-      await Isolate.spawn(_combinePDFs, {
-        'sendPort': receivePort.sendPort,
-        'inputPaths': inputPaths,
-        'outputPath': outputPath,
-        'token': RootIsolateToken.instance!,
-      });
-      return await receivePort.first as String?;
-    }
+    return await compute(_combinePDFs, {
+      'inputPaths': inputPaths,
+      'outputPath': outputPath,
+      'token': kIsWeb ? null : RootIsolateToken.instance!,
+    });
   }
 
   /// Background process that merges multiple PDFs.
   ///
-  /// This function runs in an isolate and communicates back using a [SendPort].
-  ///
-  /// - `params`: A map containing:
-  ///   - `sendPort`: The port to send the result back to the main isolate.
-  ///   - `inputPaths`: The list of input PDF file paths.
-  ///   - `outputPath`: The path where the merged PDF should be saved.
-  ///   - `token`: The isolate token for Flutter's binary messenger.
-  static Future<void> _combinePDFs(Map<String, dynamic> params) async {
-    final SendPort sendPort = params['sendPort'];
-    final List<String> inputPaths = params['inputPaths'];
-    final String outputPath = params['outputPath'];
-    final RootIsolateToken token = params['token'];
-
-    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-
-    final String? response =
-        await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-      inputPaths: inputPaths,
-      outputPath: outputPath,
-    );
-
-    sendPort.send(response);
-  }
-
-  /// Background process that merges multiple PDFs for web.
-  ///
   /// - `params`: A map containing:
   ///   - `inputPaths`: The list of input PDF file paths.
   ///   - `outputPath`: The path where the merged PDF should be saved.
-  static Future<String?> _combinePDFsWeb(Map<String, dynamic> params) async {
+  ///   - `token`: The isolate token for Flutter's binary messenger or `null` for web.
+  static Future<String?> _combinePDFs(Map<String, dynamic> params) async {
     final List<String> inputPaths = params['inputPaths'];
     final String outputPath = params['outputPath'];
+    final RootIsolateToken? token = params['token'];
+
+    if (token != null) {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+    }
 
     return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
       inputPaths: inputPaths,
