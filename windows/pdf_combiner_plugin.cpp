@@ -46,20 +46,23 @@ PdfCombinerPlugin::~PdfCombinerPlugin() {
 void PdfCombinerPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  if (method_call.method_name().compare("getPlatformVersion") == 0) {
-    std::ostringstream version_stream;
-    version_stream << "Windows ";
-    if (IsWindows10OrGreater()) {
-      version_stream << "10+";
-    } else if (IsWindows8OrGreater()) {
-      version_stream << "8";
-    } else if (IsWindows7OrGreater()) {
-      version_stream << "7";
+    const flutter::EncodableValue* dart_arguments = method_call.arguments();
+    auto args = std::get_if<flutter::EncodableMap>(dart_arguments);
+    if (!args) {
+        // args is nullptr
+        result->Error("INVALID_ARGUMENTS", "Expected a map of arguments.");
+        return;
     }
-    result->Success(flutter::EncodableValue(version_stream.str()));
+  if (method_call.method_name() == "mergeMultiplePDF") {
+      this->merge_multiple_pdfs(*args, std::move(result));
   } else {
-    result->NotImplemented();
+      result->NotImplemented();
   }
+}
+
+void PdfCombinerPlugin::merge_multiple_pdfs(const flutter::EncodableMap& args,
+                         std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    result->Success(flutter::EncodableValue("Success"));
 }
 
 }  // namespace pdf_combiner
