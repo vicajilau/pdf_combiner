@@ -16,6 +16,7 @@ void main() {
     late File testFile2;
     final String testFilePath1 = 'test_1.pdf';
     final String testFilePath2 = 'test_2.pdf';
+    PdfCombiner.isMock = true;
 
     setUp(() async {
       testFile1 = File(testFilePath1);
@@ -103,7 +104,8 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'File is not of PDF type or does not exist: path1');
+      expect(
+          result.message, 'File is not of PDF type or does not exist: path1');
     });
 
     // Test for an incorrect platform in the mergeMultiplePDF method.
@@ -140,7 +142,8 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'File is not of PDF type or does not exist: path1.pdf');
+      expect(result.message,
+          'File is not of PDF type or does not exist: path1.pdf');
     });
 
     // Test for error processing when combining multiple PDFs using PdfCombiner.
@@ -197,7 +200,7 @@ void main() {
     test('combine - Error in processing', () async {
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
-      MockPdfCombinerPlatformWithError();
+          MockPdfCombinerPlatformWithError();
 
       // Replace the platform instance with the error mock implementation.
       PdfCombinerPlatform.instance = fakePlatformWithError;

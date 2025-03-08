@@ -1,3 +1,8 @@
+## 4.0.1
+### General
+* Refactored `pdf_combiner` to use `compute` for native calls (`MethodChannel`), reducing potential UI freezes (UI thread blocking).
+* `isMock` has been added to `PdfCombiner` for testing purposes, when set to true, isolates will not be executed using main Isolate.
+
 ## 4.0.0
 ### General
 * Errors are being recovered from native and sent through the message.

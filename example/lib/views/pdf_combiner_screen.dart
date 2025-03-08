@@ -13,6 +13,7 @@ class PdfCombinerScreen extends StatefulWidget {
 
 class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   final PdfCombinerViewModel _viewModel = PdfCombinerViewModel();
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -33,113 +34,117 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          spacing: 20,
-          children: [
-            // Output Files Section
-            if (_viewModel.outputFiles.isNotEmpty)
-              Column(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                spacing: 20,
                 children: [
+                  // Output Files Section
+                  if (_viewModel.outputFiles.isNotEmpty)
+                    Column(
+                      children: [
+                        const Text(
+                          'OUTPUT FILES',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _viewModel.outputFiles.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              title: Text(
+                                p.basename(_viewModel.outputFiles[index]),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onTap: () => _openOutputFile(index),
+                              subtitle: Text(_viewModel.outputFiles[index]),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.copy),
+                                onPressed: () => _copyOutputToClipboard(index),
+                              ),
+                            );
+                          },
+                        ),
+                        const Divider(),
+                      ],
+                    ),
                   const Text(
-                    'OUTPUT FILES',
+                    'INPUT FILES',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _viewModel.outputFiles.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(
-                          p.basename(_viewModel.outputFiles[index]),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        onTap: () => _openOutputFile(index),
-                        subtitle: Text(_viewModel.outputFiles[index]),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.copy),
-                          onPressed: () => _copyOutputToClipboard(index),
-                        ),
-                      );
-                    },
+                  // Input Files Section
+                  Expanded(
+                    child: ReorderableListView.builder(
+                      itemCount: _viewModel.selectedFiles.length,
+                      onReorder: _onReorderFiles,
+                      itemBuilder: (context, index) {
+                        return Dismissible(
+                          key: ValueKey(_viewModel.selectedFiles[index]),
+                          direction: DismissDirection.horizontal,
+                          onDismissed: (direction) {
+                            final path =
+                                p.basename(_viewModel.selectedFiles[index]);
+                            setState(() {
+                              _viewModel.removeFileAt(index);
+                            });
+                            _showSnackbarSafely('File $path removed.');
+                          },
+                          background: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.only(left: 16),
+                            child:
+                                const Icon(Icons.delete, color: Colors.white),
+                          ),
+                          child: ListTile(
+                            title: Text(
+                              p.basename(_viewModel.selectedFiles[index]),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () async => await _openInputFile(index),
+                            subtitle: Text(_viewModel.selectedFiles[index]),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  const Divider(),
+                  // Buttons Section
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 10,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _viewModel.selectedFiles.isNotEmpty
+                              ? _combinePdfs
+                              : null,
+                          child: const Text('Combine PDFs'),
+                        ),
+                        ElevatedButton(
+                          onPressed: _viewModel.selectedFiles.isNotEmpty
+                              ? _createPdfFromImages
+                              : null,
+                          child: const Text('PDF from images'),
+                        ),
+                        ElevatedButton(
+                          onPressed: _viewModel.selectedFiles.isNotEmpty
+                              ? _createImagesFromPDF
+                              : null,
+                          child: const Text('Images from PDF'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
-            const Text(
-              'INPUT FILES',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            // Input Files Section
-            Expanded(
-              child: ReorderableListView.builder(
-                itemCount: _viewModel.selectedFiles.length,
-                onReorder: _onReorderFiles,
-                itemBuilder: (context, index) {
-                  return Dismissible(
-                    key: ValueKey(_viewModel.selectedFiles[index]),
-                    direction: DismissDirection.horizontal,
-                    onDismissed: (direction) {
-                      final path = p.basename(_viewModel.selectedFiles[index]);
-                      setState(() {
-                        _viewModel.removeFileAt(index);
-                      });
-                      _showSnackbarSafely('File $path removed.');
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: 16),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        p.basename(_viewModel.selectedFiles[index]),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      onTap: () async => await _openInputFile(index),
-                      subtitle: Text(_viewModel.selectedFiles[index]),
-                    ),
-                  );
-                },
-              ),
-            ),
-            // Buttons Section
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 10,
-                children: [
-                  ElevatedButton(
-                    onPressed: _viewModel.selectedFiles.isNotEmpty
-                        ? _combinePdfs
-                        : null,
-                    child: const Text('Combine PDFs'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _viewModel.selectedFiles.isNotEmpty
-                        ? _createPdfFromImages
-                        : null,
-                    child: const Text('PDF from images'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _viewModel.selectedFiles.isNotEmpty
-                        ? _createImagesFromPDF
-                        : null,
-                    child: const Text('Images from PDF'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
       ),
     );
   }
@@ -153,40 +158,52 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   // Function to pick PDF files from the device
   void _restart() {
     _viewModel.restart();
-    setState(() {});
+    setState(() {
+      changeLoading(false);
+    });
     _showSnackbarSafely('App restarted!');
   }
 
   // Function to combine selected PDF files into a single output file
   Future<void> _combinePdfs() async {
     try {
+      changeLoading(true);
       await _viewModel.combinePdfs();
-      setState(() {});
+      changeLoading(false);
       _showSnackbarSafely(
           'PDFs combined successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
   }
 
+  void changeLoading(bool isLoading) => setState(() {
+        this.isLoading = isLoading;
+      });
+
   Future<void> _createPdfFromImages() async {
     try {
+      changeLoading(true);
       await _viewModel.createPDFFromImages();
-      setState(() {});
+      changeLoading(false);
       _showSnackbarSafely(
           'PDF created successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
   }
 
   Future<void> _createImagesFromPDF() async {
     try {
+      changeLoading(true);
       await _viewModel.createImagesFromPDF();
-      setState(() {});
+      changeLoading(false);
       _showSnackbarSafely(
           'Images created successfully: ${_viewModel.outputFiles}');
     } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
   }

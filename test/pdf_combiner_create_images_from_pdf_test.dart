@@ -11,6 +11,7 @@ import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
 
 void main() {
   group('PdfCombiner Create Images From PDF Unit Tests', () {
+    PdfCombiner.isMock = true;
     // Test for error handling when you try to send a file that its not a pdf in createImageFromPDF
     test('createImageFromPDF - Error handling (File is not a pdf)', () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
