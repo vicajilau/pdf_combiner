@@ -39,27 +39,32 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
                 val fileOutputStream = FileOutputStream(file)
                 val pdfDocument = PdfDocument()
                 val i = 0
+                val width = config.rescale.maxWidth
+                val height = config.rescale.maxHeight
                 for (item in inputPaths) {
-
-                    val bitmap = compressImage(
-                        item, config.rescale.maxWidth, config.rescale.maxHeight,
-                        config.keepAspectRatio
-                    )
+                    var bitmap: Bitmap? = null
+                    if (width == 0 && height == 0) {
+                        bitmap = BitmapFactory.decodeFile(item)
+                    } else {
+                        bitmap = rescaleImage(
+                            item, width, height,
+                            config.keepAspectRatio
+                        )
+                    }
                     if (bitmap != null) {
-                        val scaledBitmap = scaleBitmap(bitmap, config.rescale.maxWidth)
                         val pageInfo =
                             PdfDocument.PageInfo.Builder(
-                                scaledBitmap.width,
-                                scaledBitmap.height,
+                                bitmap.width,
+                                bitmap.height,
                                 i + 1
                             ).create()
                         val page = pdfDocument.startPage(pageInfo)
                         val canvas = page.canvas
                         val paint = Paint()
                         canvas.drawPaint(paint)
-                        canvas.drawBitmap(scaledBitmap, 0f, 0f, paint)
+                        canvas.drawBitmap(bitmap, 0f, 0f, paint)
                         pdfDocument.finishPage(page)
-                        scaledBitmap.recycle()
+                        bitmap.recycle()
                         pdfDocument.writeTo(fileOutputStream)
                         status = "success"
                     } else {
@@ -93,99 +98,33 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
         return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true)
     }
 
-    private fun compressImage(
+    // Rescale image maintaining proportions
+    private fun rescaleImage(
         imagePath: String,
-        maxWidthGet: Int,
-        maxHeightGet: Int,
+        width: Int,
+        height: Int,
         keepAspectRatio: Boolean
     ): Bitmap? {
+        val originalBitmap = BitmapFactory.decodeFile(imagePath) ?: return null
 
-        val maxHeight = maxWidthGet.toFloat()
-        val maxWidth = maxHeightGet.toFloat()
+        return if (keepAspectRatio) {
+            val aspectRatio = originalBitmap.width.toFloat() / originalBitmap.height.toFloat()
+            val targetWidth: Int
+            val targetHeight: Int
 
-        var scaledBitmap: Bitmap?
-
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-
-        var bmp: Bitmap? = BitmapFactory.decodeFile(imagePath, options)
-
-        var actualHeight = options.outHeight
-        var actualWidth = options.outWidth
-
-        var imgRatio = actualWidth.toFloat() / actualHeight.toFloat()
-        val maxRatio = maxWidth / maxHeight
-
-        if (keepAspectRatio && actualHeight > maxHeight) {
-            if (imgRatio < maxRatio) {
-                imgRatio = maxHeight / actualHeight
-                actualWidth = (imgRatio * actualWidth).toInt()
-                actualHeight = maxHeight.toInt()
-            } else if (imgRatio > maxRatio) {
-                imgRatio = maxWidth / actualWidth
-                actualHeight = (imgRatio * actualHeight).toInt()
-                actualWidth = maxWidth.toInt()
+            if (originalBitmap.width > originalBitmap.height) {
+                targetWidth = width
+                targetHeight = (width / aspectRatio).toInt()
             } else {
-                actualHeight = maxHeight.toInt()
-                actualWidth = maxWidth.toInt()
-
+                targetHeight = height
+                targetWidth = (height * aspectRatio).toInt()
             }
+
+            Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
+        } else {
+            Bitmap.createScaledBitmap(originalBitmap, width, height, true)
         }
-
-        calculateInSampleSize(options, actualWidth, actualHeight).also { options.inSampleSize = it }
-        false.also { options.inJustDecodeBounds = false }
-        false.also { options.inDither = false }
-        true.also { options.inPurgeable = true }
-        true.also { options.inInputShareable = true }
-        ByteArray(16 * 1024).also { options.inTempStorage = it }
-
-        try {
-            bmp = BitmapFactory.decodeFile(imagePath, options)
-        } catch (exception: OutOfMemoryError) {
-            exception.printStackTrace()
-            return null
-        }
-
-        try {
-            scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.RGB_565)
-        } catch (exception: OutOfMemoryError) {
-            exception.printStackTrace()
-            return null
-        }
-
-        val ratioX = actualWidth / options.outWidth.toFloat()
-        val ratioY = actualHeight / options.outHeight.toFloat()
-        val middleX = actualWidth / 2.0f
-        val middleY = actualHeight / 2.0f
-
-        val scaleMatrix = Matrix()
-        scaleMatrix.setScale(ratioX, ratioY, middleX, middleY)
-
-        Canvas(scaledBitmap).also {
-            it.setMatrix(scaleMatrix)
-            it.drawBitmap(
-                bmp,
-                middleX - bmp!!.width / 2,
-                middleY - bmp.height / 2,
-                Paint(Paint.FILTER_BITMAP_FLAG)
-            )
-        }
-
-        bmp.run {
-            recycle()
-        }
-        scaledBitmap = Bitmap.createBitmap(
-            scaledBitmap,
-            0,
-            0,
-            scaledBitmap.width,
-            scaledBitmap.height,
-            null,
-            true
-        )
-        return scaledBitmap
     }
-
 
     private fun calculateInSampleSize(
         options: BitmapFactory.Options,
