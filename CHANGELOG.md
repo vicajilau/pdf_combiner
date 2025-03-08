@@ -1,3 +1,11 @@
+## 4.1.0
+### General
+* Improved documentation.
+### Linux
+* Improved error management.
+### Windows
+* Added support with PDFium by Google with C++.
+
 ## 4.0.1
 ### General
 * Refactored `pdf_combiner` to use `compute` for native calls (`MethodChannel`), reducing potential UI freezes (UI thread blocking).

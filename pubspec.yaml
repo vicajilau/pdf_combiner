@@ -1,6 +1,6 @@
 name: pdf_combiner
 description: "It is a lightweight and efficient Flutter plugin designed to merge multiple PDF documents into a single file effortlessly."
-version: 4.0.1
+version: 4.1.0
 homepage: https://github.com/vicajilau/pdf_combiner
 
 environment:
@@ -45,15 +45,17 @@ flutter:
         pluginClass: PdfCombinerPlugin
       ios:
         pluginClass: PdfCombinerPlugin
-      web:
-        pluginClass: PdfCombinerWeb
-        fileName: pdf_combiner_web.dart
-      macos:
+      fuchsia:
         pluginClass: PdfCombinerPlugin
       linux:
         pluginClass: PdfCombinerPlugin
-      fuchsia:
+      macos:
         pluginClass: PdfCombinerPlugin
+      windows:
+        pluginClass: PdfCombinerPluginCApi
+      web:
+        pluginClass: PdfCombinerWeb
+        fileName: pdf_combiner_web.dart
     ffiPlugin: true
 
   # To add assets to your plugin package, add an assets section, like this:
