@@ -302,7 +302,7 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 FlMethodResponse* create_image_from_pdf(FlValue* args) {
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new(
-                "invalid_arguments", "Expected a map with inputPath and outputDirPath", nullptr));
+                "invalid_arguments", "Expected a map with inputPath, outputDirPath, width, height, compression and createOneImage keys", nullptr));
     }
 
     // Get params from the map
@@ -320,7 +320,7 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
     // Get height (String)
     FlValue* max_height_value = fl_value_lookup_string(args, "height");
     if (!max_height_value || fl_value_get_type(max_height_value) != FL_VALUE_TYPE_INT) {
-        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "maxHeight must be an int", nullptr));
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "height must be an int", nullptr));
     }
 
     // Cast height to C-int

@@ -106,7 +106,7 @@ class PdfCombinerViewModel {
         outputDirPath: outputFilePath,
         config: ImageFromPdfConfig(
           rescale: ImageScale(width: 480, height: 640),
-          createOneImage: true,
+          createOneImage: false,
         ),
       );
 
