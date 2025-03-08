@@ -19,6 +19,7 @@
 #include "include/pdfium/fpdf_ppo.h"
 
 #include "include/pdf_combiner/my_file_write.h"
+#include "include/pdf_combiner/save_bitmap_to_png.h"
 
 namespace pdf_combiner {
 
@@ -59,6 +60,8 @@ void PdfCombinerPlugin::HandleMethodCall(
     }
   if (method_call.method_name() == "mergeMultiplePDF") {
       this->merge_multiple_pdfs(*args, std::move(result));
+  } else if (method_call.method_name() == "createPDFFromMultipleImage") {
+      this->create_pdf_from_multiple_image(*args, std::move(result));
   } else {
       result->NotImplemented();
   }
@@ -140,6 +143,12 @@ void PdfCombinerPlugin::merge_multiple_pdfs(
     FPDF_CloseDocument(new_doc);
 
     result->Success(flutter::EncodableValue(output_path));
+}
+
+void PdfCombinerPlugin::create_pdf_from_multiple_image(
+    const flutter::EncodableMap& args,
+    std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    result->Success(flutter::EncodableValue("Success"));
 }
 
 }  // namespace pdf_combiner

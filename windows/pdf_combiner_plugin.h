@@ -29,6 +29,9 @@ class PdfCombinerPlugin : public flutter::Plugin {
   void merge_multiple_pdfs(const flutter::EncodableMap& args,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
 
+  void create_pdf_from_multiple_image(const flutter::EncodableMap& args,
+      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
+
 };
 
 }  // namespace pdf_combiner
