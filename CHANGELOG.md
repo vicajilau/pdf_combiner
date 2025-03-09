@@ -1,6 +1,7 @@
 ## 4.1.2
 ### General
-* Drag & Drop Capability added on example project.
+* Drag & Drop Capability added on example project. 
+* Added `generatePDFFromDocuments` method to create a PDF from a mix of PDFs and images in any order.
 
 ## 4.1.1
 ### Android

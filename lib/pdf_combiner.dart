@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
+import 'package:pdf_combiner/responses/generate_pdf_from_documents_response.dart';
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
@@ -23,6 +24,89 @@ class PdfCombiner {
   /// When set to true, isolates will not be executed, allowing tests to pass
   /// without performing actual PDF merging operations.
   static bool isMock = false;
+
+  /// Combines multiple files into a single PDF. The input files can be either PDFs or images.
+  ///
+  /// This method takes a list of file paths (`inputPaths`) and an output file path (`outputPath`).
+  /// It first verifies that the provided paths are valid and then processes the input files.
+  /// - If an input file is an image, it is converted to a temporary PDF.
+  /// - If an input file is a PDF, it remains unchanged.
+  /// - If an input file is neither a PDF nor an image, the process stops with an error.
+  ///
+  /// The final result is a merged PDF that includes all the input files.
+  ///
+  /// ### Parameters:
+  /// - [inputPaths] A list of file paths to be combined into a single PDF.
+  /// - [outputPath] The path where the final merged PDF will be saved.
+  ///
+  /// ### Returns:
+  /// - A [GeneratePdfFromDocumentsResponse] object containing the operation status and message.
+  ///
+  /// ### Errors:
+  /// - Returns an error if `inputPaths` is empty.
+  /// - Returns an error if `outputPath` is empty.
+  /// - Returns an error if any input file is neither a PDF nor an image.
+  /// - Returns an error if the image-to-PDF conversion fails.
+  /// - Returns an error if the merging process fails.
+  static Future<GeneratePdfFromDocumentsResponse> generatePDFFromDocuments({
+    required List<String> inputPaths,
+    required String outputPath,
+  }) async {
+    if (inputPaths.isEmpty) {
+      return GeneratePdfFromDocumentsResponse(
+        status: PdfCombinerStatus.error,
+        message: PdfCombinerMessages.emptyParameterMessage("inputPaths"),
+      );
+    } else if (outputPath.trim().isEmpty) {
+      return GeneratePdfFromDocumentsResponse(
+        status: PdfCombinerStatus.error,
+        message: PdfCombinerMessages.emptyParameterMessage("outputPath"),
+      );
+    } else {
+      final List<String> mutablePaths = List.from(inputPaths);
+      for (int i = 0; i < mutablePaths.length; i++) {
+        final path = mutablePaths[i];
+        final isPDF = await DocumentUtils.isPDF(path);
+        final isImage = await DocumentUtils.isImage(path);
+        if (!isPDF && !isImage) {
+          return GeneratePdfFromDocumentsResponse(
+            status: PdfCombinerStatus.error,
+            message: PdfCombinerMessages.errorMessageMixed(path),
+          );
+        } else {
+          if (isImage) {
+            final response = await PdfCombiner.createPDFFromMultipleImages(
+                inputPaths: [path], outputPath: "document_$i.pdf");
+            if (response.status == PdfCombinerStatus.success) {
+              mutablePaths[i] = response.outputPath;
+            } else {
+              return GeneratePdfFromDocumentsResponse(
+                status: PdfCombinerStatus.error,
+                message:
+                    response.message ?? "Error creating PDF from image: $path",
+              );
+            }
+          }
+        }
+      }
+      final response = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: mutablePaths,
+        outputPath: outputPath,
+      );
+      if (response.status == PdfCombinerStatus.success) {
+        return GeneratePdfFromDocumentsResponse(
+          status: PdfCombinerStatus.success,
+          message: PdfCombinerMessages.successMessage,
+          outputPath: response.outputPath,
+        );
+      } else {
+        return GeneratePdfFromDocumentsResponse(
+          status: PdfCombinerStatus.error,
+          message: response.message,
+        );
+      }
+    }
+  }
 
   /// Combines multiple PDF files into a single PDF.
   ///

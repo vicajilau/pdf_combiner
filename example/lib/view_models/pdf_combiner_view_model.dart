@@ -16,7 +16,7 @@ class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
   List<String> outputFiles = []; // Path for the combined output file
 
-  // Function to pick PDF files from the device (old method)
+  /// Function to pick PDF files from the device (old method)
   Future<void> pickFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -36,25 +36,25 @@ class PdfCombinerViewModel {
     }
   }
 
-  // Function to pick PDF files from the device
+  /// Function to pick PDF files from the device
   Future<void> addFilesDragAndDrop(List<DropItem> files) async {
     selectedFiles += files.map((file) => file.path).toList();
     outputFiles = [];
   }
 
-  // Function to pick PDF files from the device
+  /// Function to pick PDF files from the device
   Future<void> _addFiles(List<File> files) async {
     selectedFiles += files.map((file) => file.path).toList();
     outputFiles = [];
   }
 
-  // Function to restart the selected files
+  /// Function to restart the selected files
   void restart() {
     selectedFiles = [];
     outputFiles = [];
   }
 
-  // Function to combine selected PDF files into a single output file
+  /// Function to combine selected PDF files into a single output file
   Future<void> combinePdfs() async {
     if (selectedFiles.length < 2) {
       throw Exception('You need to select more than one document.');
@@ -81,7 +81,7 @@ class PdfCombinerViewModel {
     }
   }
 
-  // Function to create a PDF file from a list of images
+  /// Function to create a PDF file from a list of images
   Future<void> createPDFFromImages() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     String outputFilePath = "combined_output.pdf";
@@ -108,7 +108,30 @@ class PdfCombinerViewModel {
     }
   }
 
-  // Function to create a PDF file from a list of images
+  /// Function to create a PDF file from a list of documents
+  Future<void> createPDFFromDocuments() async {
+    if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
+    String outputFilePath = "combined_output.pdf";
+    try {
+      final directory = await _getOutputDirectory();
+      outputFilePath = '${directory?.path}/combined_output.pdf';
+      final response = await PdfCombiner.generatePDFFromDocuments(
+        inputPaths: selectedFiles,
+        outputPath: outputFilePath,
+      );
+
+      switch (response.status) {
+        case PdfCombinerStatus.success:
+          outputFiles = [response.outputPath];
+        case PdfCombinerStatus.error:
+          throw Exception('Error creating PDF: ${response.message}.');
+      }
+    } catch (e) {
+      throw Exception('Error creating PDF: ${e.toString()}.');
+    }
+  }
+
+  /// Function to create a PDF file from a list of images
   Future<void> createImagesFromPDF() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     if (selectedFiles.length > 1) {
@@ -136,7 +159,7 @@ class PdfCombinerViewModel {
     }
   }
 
-  // Function to get the appropriate directory for saving the output file
+  /// Function to get the appropriate directory for saving the output file
   Future<Directory?> _getOutputDirectory() async {
     if (PlatformDetail.isIOS || PlatformDetail.isDesktop) {
       return await getApplicationDocumentsDirectory(); // For iOS & Desktop, return the documents directory
@@ -150,7 +173,7 @@ class PdfCombinerViewModel {
     }
   }
 
-  // Function to copy the output file path to the clipboard
+  /// Function to copy the output file path to the clipboard
   Future<void> copyOutputToClipboard(int index) async {
     if (outputFiles.isNotEmpty) {
       await Clipboard.setData(ClipboardData(
@@ -158,7 +181,7 @@ class PdfCombinerViewModel {
     }
   }
 
-  // Function to copy the selected files' paths to the clipboard
+  /// Function to copy the selected files' paths to the clipboard
   Future<void> copySelectedFilesToClipboard(int index) async {
     if (selectedFiles.isNotEmpty) {
       await Clipboard.setData(ClipboardData(
@@ -166,7 +189,7 @@ class PdfCombinerViewModel {
     }
   }
 
-  // Function to remove the selected files
+  /// Function to remove the selected files
   void removeFileAt(int index) {
     selectedFiles.removeAt(index);
   }

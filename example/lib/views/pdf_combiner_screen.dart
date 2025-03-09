@@ -131,6 +131,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                         children: [
                           ElevatedButton(
                             onPressed: _viewModel.selectedFiles.isNotEmpty
+                                ? _createPdfFromMix
+                                : null,
+                            child: const Text('Create PDF'),
+                          ),
+                          ElevatedButton(
+                            onPressed: _viewModel.selectedFiles.isNotEmpty
                                 ? _combinePdfs
                                 : null,
                             child: const Text('Combine PDFs'),
@@ -190,6 +196,19 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   void changeLoading(bool isLoading) => setState(() {
         this.isLoading = isLoading;
       });
+
+  Future<void> _createPdfFromMix() async {
+    try {
+      changeLoading(true);
+      await _viewModel.createPDFFromDocuments();
+      changeLoading(false);
+      _showSnackbarSafely(
+          'PDF created successfully: ${_viewModel.outputFiles.first}');
+    } catch (e) {
+      changeLoading(false);
+      _showSnackbarSafely(e.toString());
+    }
+  }
 
   Future<void> _createPdfFromImages() async {
     try {
