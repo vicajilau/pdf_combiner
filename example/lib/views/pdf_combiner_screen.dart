@@ -1,7 +1,10 @@
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
+import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
+import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
 import '../view_models/pdf_combiner_view_model.dart';
 
@@ -62,6 +65,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                             itemCount: _viewModel.outputFiles.length,
                             itemBuilder: (context, index) {
                               return ListTile(
+                                leading: FileTypeIcon(
+                                    filePath: _viewModel.outputFiles[index]),
                                 title: Text(
                                   p.basename(_viewModel.outputFiles[index]),
                                   overflow: TextOverflow.ellipsis,
@@ -110,13 +115,34 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                               child:
                                   const Icon(Icons.delete, color: Colors.white),
                             ),
-                            child: ListTile(
-                              title: Text(
-                                p.basename(_viewModel.selectedFiles[index]),
-                                overflow: TextOverflow.ellipsis,
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              onTap: () async => await _openInputFile(index),
-                              subtitle: Text(_viewModel.selectedFiles[index]),
+                              child: ListTile(
+                                leading: FileTypeIcon(
+                                    filePath: _viewModel.selectedFiles[index]),
+                                title: Text(
+                                  p.basename(_viewModel.selectedFiles[index]),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                onTap: () async => await _openInputFile(index),
+                                subtitle: FutureBuilder(
+                                    future:
+                                        FileMagicNumber.getBytesFromPathOrBlob(
+                                            _viewModel.selectedFiles[index]),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const Text("Loading size...");
+                                      } else if (snapshot.hasError) {
+                                        return const Icon(Icons.error);
+                                      } else {
+                                        return Text(snapshot.data?.size() ??
+                                            "Unknown Size");
+                                      }
+                                    }),
+                              ),
                             ),
                           );
                         },
