@@ -115,53 +115,52 @@ void main() {
 
     // Test for successfully combining multiple PDFs using PdfCombiner.
     test('generatePDFFromDocuments File does not exist (PdfCombiner)',
-            () async {
-          MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+        () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
-          // Replace the platform instance with the mock implementation.
-          PdfCombinerPlatform.instance = fakePlatform;
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
 
-          // Call the method and check the response.
-          final result = await PdfCombiner.generatePDFFromDocuments(
-            inputPaths: [
-              'example/assets/document_1.pdf',
-              'example/assets/image_1.jpeg'
-            ],
-            outputPath: 'output/path.pdf',
-          );
-          // Verify the result matches the expected mock values.
-          expect(result.status, PdfCombinerStatus.error);
-          expect(result.outputPath, "");
-          expect(result.message,
-              'File is not of PDF type or does not exist: document_1.pdf');
-          expect(result.toString(),
-              'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
-        });
+      // Call the method and check the response.
+      final result = await PdfCombiner.generatePDFFromDocuments(
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/image_1.jpeg'
+        ],
+        outputPath: 'output/path.pdf',
+      );
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message,
+          'File is not of PDF type or does not exist: document_1.pdf');
+      expect(result.toString(),
+          'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
 
     // Test for successfully combining multiple PDFs using PdfCombiner.
-    test('generatePDFFromDocuments File PDF issue (PdfCombiner)',
-            () async {
-          MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+    test('generatePDFFromDocuments File PDF issue (PdfCombiner)', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
-          // Replace the platform instance with the mock implementation.
-          PdfCombinerPlatform.instance = fakePlatform;
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
 
-          // Call the method and check the response.
-          final result = await PdfCombiner.generatePDFFromDocuments(
-            inputPaths: [
-              'example/assets/image_1.jpeg',
-              'example/assets/image_2.png'
-            ],
-            outputPath: 'output/path.pdf',
-          );
-          // Verify the result matches the expected mock values.
-          expect(result.status, PdfCombinerStatus.error);
-          expect(result.outputPath, "");
-          expect(result.message,
-              'File is not of PDF type or does not exist: document_1.pdf');
-          expect(result.toString(),
-              'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
-        });
+      // Call the method and check the response.
+      final result = await PdfCombiner.generatePDFFromDocuments(
+        inputPaths: [
+          'example/assets/image_1.jpeg',
+          'example/assets/image_2.png'
+        ],
+        outputPath: 'output/path.pdf',
+      );
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message,
+          'File is not of PDF type or does not exist: document_1.pdf');
+      expect(result.toString(),
+          'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
 
     // Test for empty outputPath in combining multiple PDFs using PdfCombiner.
     test('generatePDFFromDocuments Empty outputPath (PdfCombiner)', () async {
@@ -300,7 +299,7 @@ void main() {
     });
 
     // Test for error setting a different type of file in the mergeMultiplePDF method.
-    test('combine - Error in processing', () async {
+    test('combine - Error createPDFFromMultipleImages', () async {
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
           MockPdfCombinerPlatformWithError();
@@ -311,8 +310,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
-          'example/assets/document_1.pdf',
-          'example/assets/document_2.pdf'
+          'example/assets/image_1.jpeg',
         ],
         outputPath: 'output/path',
       );
