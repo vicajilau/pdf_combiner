@@ -154,13 +154,13 @@ packages:
     source: hosted
     version: "7.0.1"
   file_magic_number:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: file_magic_number
-      sha256: "61a2e850c0821c1cc86b51650769d251d9851af162b24fb037303d863446a112"
+      sha256: "5a6ae4bea934b7bde961bb06947743fdb84ca46e60ebc3ca574b848cf24382fd"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   file_picker:
     dependency: "direct main"
     description:
@@ -485,7 +485,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "4.1.1"
+    version: "4.2.0"
   permission_handler:
     dependency: "direct main"
     description:

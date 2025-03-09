@@ -37,6 +37,30 @@
 
 ## Features
 
+### Create PDF From Multiple Documents
+
+Convert a list of image and PDF files into a single PDF document.
+
+**Required Parameters:**
+- `inputPaths`: A list of strings representing the image and PDF file paths.
+- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored.
+
+```dart
+final imagePaths = ["path/to/image1.jpg", "path/to/document1.pdf", "path/to/image2.png"];
+final outputPath = "path/to/output.pdf";
+
+GeneratePdfFromDocumentsResponse response = await PdfCombiner.generatePDFFromDocuments(
+  inputPaths: imagePaths,
+  outputPath: outputPath,
+);
+
+if (response.status == PdfCombinerStatus.success) {
+  print("File saved to: ${response.outputPath}");
+} else if (response.status == PdfCombinerStatus.error) {
+  print("Error: ${response.message}");
+}
+```
+
 ### Merge Multiple PDFs
 
 Combine several PDF files into a single document.
@@ -87,6 +111,7 @@ if (response.status == PdfCombinerStatus.success) {
   print("Error: ${response.message}");
 }
 ```
+
 #### Custom Creation of PDF From Multiple Images
 
 The `PdfFromMultipleImageConfig` class is used to configure how images are processed before creating a PDF.

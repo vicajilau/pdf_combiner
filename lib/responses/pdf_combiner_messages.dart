@@ -9,4 +9,6 @@ class PdfCombinerMessages {
       "File is not of PDF type or does not exist: $path";
   static String errorMessageImage(String path) =>
       "File is not an image or does not exist: $path";
+  static String errorMessageMixed(String path) =>
+      "The file is neither a PDF document nor an image or does not exist: $path";
 }
