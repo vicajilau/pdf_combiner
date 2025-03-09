@@ -104,11 +104,59 @@ void main() {
         ],
         outputPath: 'output/path.pdf',
       );
-      print("Resultado: $result");
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
-      expect(result.message, 'File is not of PDF type or does not exist: document_1.pdf');
+      expect(result.message,
+          'File is not of PDF type or does not exist: document_1.pdf');
+      expect(result.toString(),
+          'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
+
+    // Test for successfully combining multiple PDFs using PdfCombiner.
+    test('generatePDFFromDocuments File does not exist (PdfCombiner)',
+            () async {
+          MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+          // Replace the platform instance with the mock implementation.
+          PdfCombinerPlatform.instance = fakePlatform;
+
+          // Call the method and check the response.
+          final result = await PdfCombiner.generatePDFFromDocuments(
+            inputPaths: [
+              'example/assets/image_1.jpeg',
+              'example/assets/image_2.png'
+            ],
+            outputPath: 'output/path.pdf',
+          );
+          // Verify the result matches the expected mock values.
+          expect(result.status, PdfCombinerStatus.error);
+          expect(result.outputPath, "");
+          expect(result.message,
+              'File is not of PDF type or does not exist: document_1.pdf');
+          expect(result.toString(),
+              'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+        });
+
+    // Test for empty outputPath in combining multiple PDFs using PdfCombiner.
+    test('generatePDFFromDocuments Empty outputPath (PdfCombiner)', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.generatePDFFromDocuments(
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/image_1.jpeg'
+        ],
+        outputPath: '',
+      );
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message, 'The parameter (outputPath) cannot be empty');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
@@ -152,8 +200,8 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
-      expect(
-          result.message, 'The file is neither a PDF document nor an image or does not exist: path1');
+      expect(result.message,
+          'The file is neither a PDF document nor an image or does not exist: path1');
     });
 
     // Test for error handling when file does not exist in the mergeMultiplePDF method.
