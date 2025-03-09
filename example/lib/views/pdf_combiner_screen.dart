@@ -64,19 +64,38 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                             shrinkWrap: true,
                             itemCount: _viewModel.outputFiles.length,
                             itemBuilder: (context, index) {
-                              return ListTile(
-                                leading: FileTypeIcon(
-                                    filePath: _viewModel.outputFiles[index]),
-                                title: Text(
-                                  p.basename(_viewModel.outputFiles[index]),
-                                  overflow: TextOverflow.ellipsis,
+                              return Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                onTap: () => _openOutputFile(index),
-                                subtitle: Text(_viewModel.outputFiles[index]),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.copy),
-                                  onPressed: () =>
-                                      _copyOutputToClipboard(index),
+                                child: ListTile(
+                                  leading: FileTypeIcon(
+                                      filePath: _viewModel.outputFiles[index]),
+                                  title: Text(
+                                    p.basename(_viewModel.outputFiles[index]),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  onTap: () => _openOutputFile(index),
+                                  subtitle: FutureBuilder(
+                                      future: FileMagicNumber
+                                          .getBytesFromPathOrBlob(
+                                              _viewModel.selectedFiles[index]),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return const Text("Loading size...");
+                                        } else if (snapshot.hasError) {
+                                          return const Icon(Icons.error);
+                                        } else {
+                                          return Text(snapshot.data?.size() ??
+                                              "Unknown Size");
+                                        }
+                                      }),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.copy),
+                                    onPressed: () =>
+                                        _copyOutputToClipboard(index),
+                                  ),
                                 ),
                               );
                             },
