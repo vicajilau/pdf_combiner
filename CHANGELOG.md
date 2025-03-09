@@ -1,3 +1,7 @@
+## 4.1.2
+### General
+* Drag & Drop Capability added on example project.
+
 ## 4.1.1
 ### Android
 * Fixed `createPDFFromMultipleImages` without configuration. [#35](https://github.com/vicajilau/pdf_combiner/issues/35)

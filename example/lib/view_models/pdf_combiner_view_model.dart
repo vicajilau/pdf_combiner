@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -27,9 +28,24 @@ class PdfCombinerViewModel {
       for (var element in result.files) {
         debugPrint("${element.name}, ");
       }
-      selectedFiles += result.files.map((file) => file.path!).toList();
-      outputFiles = [];
+      final files = result.files
+          .where((file) => file.path != null)
+          .map((file) => File(file.path!))
+          .toList();
+      _addFiles(files);
     }
+  }
+
+  // Function to pick PDF files from the device
+  Future<void> addFilesDragAndDrop(List<DropItem> files) async {
+    selectedFiles += files.map((file) => file.path).toList();
+    outputFiles = [];
+  }
+
+  // Function to pick PDF files from the device
+  Future<void> _addFiles(List<File> files) async {
+    selectedFiles += files.map((file) => file.path).toList();
+    outputFiles = [];
   }
 
   // Function to restart the selected files
