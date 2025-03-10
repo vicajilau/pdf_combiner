@@ -46,164 +46,179 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                     _viewModel.addFilesDragAndDrop(details.files);
                   });
                 },
-                child: Column(
-                  spacing: 20,
-                  children: [
-                    // Output Files Section
-                    if (_viewModel.outputFiles.isNotEmpty)
-                      Column(
+                child: (_viewModel.isEmpty())
+                    ? Center(
+                        child: Image.asset('assets/files/home.png'),
+                      )
+                    : Column(
+                        spacing: 20,
                         children: [
+                          // Output Files Section
+                          if (_viewModel.outputFiles.isNotEmpty)
+                            Column(
+                              children: [
+                                const Text(
+                                  'OUTPUT FILES',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: _viewModel.outputFiles.length,
+                                  itemBuilder: (context, index) {
+                                    return Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: ListTile(
+                                        leading: FileTypeIcon(
+                                            filePath:
+                                                _viewModel.outputFiles[index]),
+                                        title: Text(
+                                          p.basename(
+                                              _viewModel.outputFiles[index]),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        onTap: () => _openOutputFile(index),
+                                        subtitle: FutureBuilder(
+                                            future: FileMagicNumber
+                                                .getBytesFromPathOrBlob(
+                                                    _viewModel
+                                                        .selectedFiles[index]),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return const Text(
+                                                    "Loading size...");
+                                              } else if (snapshot.hasError) {
+                                                return const Icon(Icons.error);
+                                              } else {
+                                                return Text(
+                                                    snapshot.data?.size() ??
+                                                        "Unknown Size");
+                                              }
+                                            }),
+                                        trailing: IconButton(
+                                          icon: const Icon(Icons.copy),
+                                          onPressed: () =>
+                                              _copyOutputToClipboard(index),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const Divider(),
+                              ],
+                            ),
                           const Text(
-                            'OUTPUT FILES',
+                            'INPUT FILES',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
                           ),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: _viewModel.outputFiles.length,
-                            itemBuilder: (context, index) {
-                              return Card(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: ListTile(
-                                  leading: FileTypeIcon(
-                                      filePath: _viewModel.outputFiles[index]),
-                                  title: Text(
-                                    p.basename(_viewModel.outputFiles[index]),
-                                    overflow: TextOverflow.ellipsis,
+                          // Input Files Section
+                          Expanded(
+                            child: ReorderableListView.builder(
+                              itemCount: _viewModel.selectedFiles.length,
+                              onReorder: _onReorderFiles,
+                              itemBuilder: (context, index) {
+                                return Dismissible(
+                                  key:
+                                      ValueKey(_viewModel.selectedFiles[index]),
+                                  direction: DismissDirection.horizontal,
+                                  onDismissed: (direction) {
+                                    final path = p.basename(
+                                        _viewModel.selectedFiles[index]);
+                                    setState(() {
+                                      _viewModel.removeFileAt(index);
+                                    });
+                                    _showSnackbarSafely('File $path removed.');
+                                  },
+                                  background: Container(
+                                    color: Colors.red,
+                                    alignment: Alignment.centerLeft,
+                                    padding: const EdgeInsets.only(left: 16),
+                                    child: const Icon(Icons.delete,
+                                        color: Colors.white),
                                   ),
-                                  onTap: () => _openOutputFile(index),
-                                  subtitle: FutureBuilder(
-                                      future: FileMagicNumber
-                                          .getBytesFromPathOrBlob(
+                                  child: Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: ListTile(
+                                      leading: FileTypeIcon(
+                                          filePath:
                                               _viewModel.selectedFiles[index]),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState ==
-                                            ConnectionState.waiting) {
-                                          return const Text("Loading size...");
-                                        } else if (snapshot.hasError) {
-                                          return const Icon(Icons.error);
-                                        } else {
-                                          return Text(snapshot.data?.size() ??
-                                              "Unknown Size");
-                                        }
-                                      }),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.copy),
-                                    onPressed: () =>
-                                        _copyOutputToClipboard(index),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          const Divider(),
-                        ],
-                      ),
-                    const Text(
-                      'INPUT FILES',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    // Input Files Section
-                    Expanded(
-                      child: ReorderableListView.builder(
-                        itemCount: _viewModel.selectedFiles.length,
-                        onReorder: _onReorderFiles,
-                        itemBuilder: (context, index) {
-                          return Dismissible(
-                            key: ValueKey(_viewModel.selectedFiles[index]),
-                            direction: DismissDirection.horizontal,
-                            onDismissed: (direction) {
-                              final path =
-                                  p.basename(_viewModel.selectedFiles[index]);
-                              setState(() {
-                                _viewModel.removeFileAt(index);
-                              });
-                              _showSnackbarSafely('File $path removed.');
-                            },
-                            background: Container(
-                              color: Colors.red,
-                              alignment: Alignment.centerLeft,
-                              padding: const EdgeInsets.only(left: 16),
-                              child:
-                                  const Icon(Icons.delete, color: Colors.white),
-                            ),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: ListTile(
-                                leading: FileTypeIcon(
-                                    filePath: _viewModel.selectedFiles[index]),
-                                title: Text(
-                                  p.basename(_viewModel.selectedFiles[index]),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onTap: () async => await _openInputFile(index),
-                                subtitle: FutureBuilder(
-                                    future:
-                                        FileMagicNumber.getBytesFromPathOrBlob(
+                                      title: Text(
+                                        p.basename(
                                             _viewModel.selectedFiles[index]),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return const Text("Loading size...");
-                                      } else if (snapshot.hasError) {
-                                        return const Icon(Icons.error);
-                                      } else {
-                                        return Text(snapshot.data?.size() ??
-                                            "Unknown Size");
-                                      }
-                                    }),
-                              ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      onTap: () async =>
+                                          await _openInputFile(index),
+                                      subtitle: FutureBuilder(
+                                          future: FileMagicNumber
+                                              .getBytesFromPathOrBlob(_viewModel
+                                                  .selectedFiles[index]),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState ==
+                                                ConnectionState.waiting) {
+                                              return const Text(
+                                                  "Loading size...");
+                                            } else if (snapshot.hasError) {
+                                              return const Icon(Icons.error);
+                                            } else {
+                                              return Text(
+                                                  snapshot.data?.size() ??
+                                                      "Unknown Size");
+                                            }
+                                          }),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                    // Buttons Section
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        spacing: 10,
-                        children: [
-                          ElevatedButton(
-                            onPressed: _viewModel.selectedFiles.isNotEmpty
-                                ? _createPdfFromMix
-                                : null,
-                            child: const Text('Create PDF'),
                           ),
-                          ElevatedButton(
-                            onPressed: _viewModel.selectedFiles.isNotEmpty
-                                ? _combinePdfs
-                                : null,
-                            child: const Text('Combine PDFs'),
+                          // Buttons Section
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              spacing: 10,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: _viewModel.selectedFiles.isNotEmpty
+                                      ? _createPdfFromMix
+                                      : null,
+                                  child: const Text('Create PDF'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: _viewModel.selectedFiles.isNotEmpty
+                                      ? _combinePdfs
+                                      : null,
+                                  child: const Text('Combine PDFs'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: _viewModel.selectedFiles.isNotEmpty
+                                      ? _createPdfFromImages
+                                      : null,
+                                  child: const Text('PDF from images'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: _viewModel.selectedFiles.isNotEmpty
+                                      ? _createImagesFromPDF
+                                      : null,
+                                  child: const Text('Images from PDF'),
+                                ),
+                              ],
+                            ),
                           ),
-                          ElevatedButton(
-                            onPressed: _viewModel.selectedFiles.isNotEmpty
-                                ? _createPdfFromImages
-                                : null,
-                            child: const Text('PDF from images'),
-                          ),
-                          ElevatedButton(
-                            onPressed: _viewModel.selectedFiles.isNotEmpty
-                                ? _createImagesFromPDF
-                                : null,
-                            child: const Text('Images from PDF'),
-                          ),
+                          const SizedBox(height: 20),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
               ),
       ),
     );

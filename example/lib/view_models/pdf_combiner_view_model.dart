@@ -42,6 +42,9 @@ class PdfCombinerViewModel {
     outputFiles = [];
   }
 
+  /// Function to check if the selected files list is empty
+  bool isEmpty() => selectedFiles.isEmpty;
+
   /// Function to pick PDF files from the device
   Future<void> _addFiles(List<File> files) async {
     selectedFiles += files.map((file) => file.path).toList();
