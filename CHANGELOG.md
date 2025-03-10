@@ -4,8 +4,6 @@
 * Added more coverage.
 * Improved UI for example project.
 * Fixed an issue where`createPDFFromMultipleImages` was not using the `outputPath` param for the file name.
-### Android
-* `createPDFFromMultipleImages` did not work without passing a configuration. [#35](https://github.com/vicajilau/pdf_combiner/issues/35)
 ### Web
 * `createPDFFromMultipleImages` did not work without passing a configuration. [#37](https://github.com/vicajilau/pdf_combiner/issues/37)
 
