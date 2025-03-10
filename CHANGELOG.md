@@ -1,8 +1,13 @@
-## X.Y.Z
+## 4.2.1
 ### General
 * Improved documentation.
 * Added more coverage.
 * Improved UI for example project.
+* Fixed an issue where`createPDFFromMultipleImages` was not using the `outputPath` param for the file name.
+### Android
+* `createPDFFromMultipleImages` did not work without passing a configuration.
+### Web
+* `createPDFFromMultipleImages` did not work without passing a configuration.
 
 ## 4.2.0
 ### General
