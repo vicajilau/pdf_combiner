@@ -76,7 +76,7 @@ class PdfCombiner {
         } else {
           if (isImage) {
             final response = await PdfCombiner.createPDFFromMultipleImages(
-                inputPaths: [path], outputPath: "document_$i.pdf");
+                inputPaths: [path], outputPath: outputPath);
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
             } else {
