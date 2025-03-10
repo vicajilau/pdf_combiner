@@ -24,6 +24,7 @@
 
 **PDF Combiner** is a Flutter plugin designed for combining and manipulating PDF files. It supports multiple platforms including Android, iOS, Linux, macOS, Windows and web, enabling users to:
 
+- Combine any number of PDFs and images, in any order, into a single PDF.
 - Merge multiple PDF files.
 - Create PDFs from images.
 - Extract images from PDFs.
@@ -39,7 +40,7 @@
 
 ### Create PDF From Multiple Documents
 
-Convert a list of image and PDF files into a single PDF document.
+Combine any number of PDFs and images, in any order, into a single PDF document.
 
 **Required Parameters:**
 - `inputPaths`: A list of strings representing the image and PDF file paths.

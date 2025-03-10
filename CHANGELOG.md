@@ -1,3 +1,9 @@
+## X.Y.Z
+### General
+* Improved documentation.
+* Added more coverage.
+* Improved UI for example project.
+
 ## 4.2.0
 ### General
 * Drag & Drop Capability added on example project. 

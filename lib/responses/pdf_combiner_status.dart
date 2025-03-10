@@ -1,6 +1,7 @@
 /// Represents the status of operations related to PDF and image processing.
 ///
-/// This enum is used generically across three main functions:
+/// This enum is used generically across four main functions:
+/// - Combining multiple files into a single PDF.
 /// - Merging multiple PDFs.
 /// - Creating an image from a PDF.
 /// - Creating a PDF from multiple images.
