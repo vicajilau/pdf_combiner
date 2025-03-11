@@ -27,6 +27,12 @@ class PdfCombinerMessages {
   static String errorMessageImage(String path) =>
       "File is not an image or does not exist: $path";
 
+  /// Returns an error message when the outputPath does not have the expected .pdf format.
+  ///
+  /// - [path] The file path that does not meet the expected format.
+  static String errorMessageInvalidOutputPath(String path) =>
+      "The outputPath must have a .pdf format: $path";
+
   /// Returns an error message when a file is neither a PDF nor an image, or does not exist.
   ///
   /// - [path] The file path of the invalid or non-existent file.

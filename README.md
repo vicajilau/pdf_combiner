@@ -44,7 +44,7 @@ Combine any number of PDFs and images, in any order, into a single PDF document.
 
 **Required Parameters:**
 - `inputPaths`: A list of strings representing the image and PDF file paths.
-- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored.
+- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
 ```dart
 final imagePaths = ["path/to/image1.jpg", "path/to/document1.pdf", "path/to/image2.png"];
@@ -68,7 +68,7 @@ Combine several PDF files into a single document.
 
 **Required Parameters:**
 - `inputPaths`: A list of strings representing the paths of the PDF files to combine.
-- `outputPath`: A string representing the absolute path of the file where the combined PDF should be saved. In the case of web, this parameter is ignored.
+- `outputPath`: A string representing the absolute path of the file where the combined PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
 ```dart
 final filesPath = ["path/to/file1.pdf", "path/to/file2.pdf"];
@@ -93,7 +93,7 @@ Convert a list of image files into a single PDF document.
 
 **Required Parameters:**
 - `inputPaths`: A list of strings representing the image file paths.
-- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored.
+- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
 By default, images are added to the PDF without modifications. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 

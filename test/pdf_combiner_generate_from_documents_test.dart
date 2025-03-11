@@ -14,7 +14,7 @@ import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
 void main() {
   group('PdfCombiner Generate From Document Unit Tests', () {
     late File testFile1;
-    final String testFilePath1 = 'output_path.pdf';
+    final String testFilePath1 = 'document_0.pdf';
     PdfCombiner.isMock = true;
 
     setUp(() async {
@@ -78,19 +78,18 @@ void main() {
           'example/assets/image_1.jpeg',
           'example/assets/document_1.pdf',
         ],
-        outputPath: 'output_path.pdf',
+        outputPath: 'path.pdf',
       );
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.outputPath, "output_path.pdf");
+      expect(result.outputPath, "path.pdf");
       expect(result.message, 'Processed successfully');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
 
-    // Test for successfully combining multiple PDFs using PdfCombiner.
-    test('generatePDFFromDocuments File does not exist (PdfCombiner)',
-        () async {
+    // Test for error with wrong outputPath in combining multiple PDFs using PdfCombiner.
+    test('error with wrong outputPath (PdfCombiner)', () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
       // Replace the platform instance with the mock implementation.
@@ -99,16 +98,15 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
+          'example/assets/image_1.jpeg',
           'example/assets/document_1.pdf',
-          'example/assets/image_1.jpeg'
         ],
-        outputPath: 'output-path.pdf',
+        outputPath: 'path.jpg',
       );
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
-      expect(result.message,
-          'File is not of PDF type or does not exist: output-path.pdf');
+      expect(result.message, 'The outputPath must have a .pdf format: path.jpg');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
@@ -127,13 +125,38 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/image_1.jpeg'
         ],
-        outputPath: 'output-path.pdf',
+        outputPath: 'path.pdf',
       );
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
       expect(result.message,
-          'File is not of PDF type or does not exist: output-path.pdf');
+          'File is not of PDF type or does not exist: ./document_1.pdf');
+      expect(result.toString(),
+          'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
+
+    // Test for successfully combining multiple PDFs using PdfCombiner.
+    test('generatePDFFromDocuments File does not exist (PdfCombiner)',
+        () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.generatePDFFromDocuments(
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/image_1.jpeg'
+        ],
+        outputPath: 'path.pdf',
+      );
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message,
+          'File is not of PDF type or does not exist: ./document_1.pdf');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
@@ -151,13 +174,13 @@ void main() {
           'example/assets/image_1.jpeg',
           'example/assets/image_2.png'
         ],
-        outputPath: 'output-path.pdf',
+        outputPath: 'path.pdf',
       );
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
       expect(result.message,
-          'File is not of PDF type or does not exist: output-path.pdf');
+          'File is not of PDF type or does not exist: ./document_1.pdf');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
@@ -197,7 +220,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -218,7 +241,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: ['path1', 'path2'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -238,7 +261,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: ['path1.pdf', 'path2.pdf'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -262,7 +285,7 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
@@ -287,7 +310,7 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
@@ -312,7 +335,7 @@ void main() {
         inputPaths: [
           'example/assets/image_1.jpeg',
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
