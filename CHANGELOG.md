@@ -1,6 +1,6 @@
 ## 4.2.3
 ### General
-* Fixed `CreatePDFFromImages` and `generatePDFFromDocuments`: Resolved an issue where the application show a message error when generating PDFs from image files related to the width of the image that appears its undefined.[#43](https://github.com/vicajilau/pdf_combiner/issues/43)
+* Fixed `createPDFFromImages` and `generatePDFFromDocuments`: Resolved an issue where the application show a message error when generating PDFs from image files related to the width of the image that appears its undefined.[#43](https://github.com/vicajilau/pdf_combiner/issues/43)
 
 ## 4.2.2
 ### General
