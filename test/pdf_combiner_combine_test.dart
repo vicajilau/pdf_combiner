@@ -98,7 +98,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: ['path1', 'path2'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -119,7 +119,7 @@ void main() {
 
       final result = await fakePlatformWithError.mergeMultiplePDFs(
         inputPaths: ['path1', 'path2'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -136,7 +136,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: ['path1.pdf', 'path2.pdf'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -160,7 +160,7 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
@@ -185,7 +185,7 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
@@ -211,7 +211,7 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.

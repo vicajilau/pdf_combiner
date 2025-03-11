@@ -21,7 +21,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: [],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -41,7 +41,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: ['path1.jpg', 'path2.jpg'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -62,7 +62,7 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: ['assets/document_1.pdf', 'path2.jpg'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -87,7 +87,7 @@ void main() {
           'example/assets/image_1.jpeg',
           'example/assets/image_2.png'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -134,7 +134,7 @@ void main() {
     // Call the method and check the response.
     final result = await PdfCombiner.createPDFFromMultipleImages(
       inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
-      outputPath: 'output/path',
+      outputPath: 'output/path.pdf',
     );
 
     // Verify the result matches the expected mock values.
@@ -156,7 +156,7 @@ void main() {
     // Call the method and check the response.
     final result = await PdfCombiner.createPDFFromMultipleImages(
       inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
-      outputPath: 'output/path',
+      outputPath: 'output/path.pdf',
     );
 
     // Verify the result matches the expected mock values.
@@ -178,7 +178,7 @@ void main() {
     // Call the method and check the response.
     final result = await PdfCombiner.createPDFFromMultipleImages(
       inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
-      outputPath: 'output/path',
+      outputPath: 'output/path.pdf',
     );
 
     // Verify the result matches the expected mock values.
