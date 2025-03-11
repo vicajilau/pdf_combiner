@@ -1,3 +1,7 @@
+## 4.2.3
+### General
+* Fixed `Image-to-PDF` and `createPDF`: Resolved an issue where the application show a message error when generating PDFs from image files related to the width of the image that appears its undefined.[#43](https://github.com/vicajilau/pdf_combiner/issues/43)
+
 ## 4.2.2
 ### General
 * Fixed `createPDF` When selecting the option to create a PDF with two or more images, the process fails, and no PDF is generated. [#40](https://github.com/vicajilau/pdf_combiner/issues/40)
