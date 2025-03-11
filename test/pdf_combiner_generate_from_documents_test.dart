@@ -14,7 +14,7 @@ import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
 void main() {
   group('PdfCombiner Generate From Document Unit Tests', () {
     late File testFile1;
-    final String testFilePath1 = 'output_path.pdf';
+    final String testFilePath1 = 'document_0.pdf';
     PdfCombiner.isMock = true;
 
     setUp(() async {
@@ -78,11 +78,11 @@ void main() {
           'example/assets/image_1.jpeg',
           'example/assets/document_1.pdf',
         ],
-        outputPath: 'output_path.pdf',
+        outputPath: 'path.pdf',
       );
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.outputPath, "output_path.pdf");
+      expect(result.outputPath, "path.pdf");
       expect(result.message, 'Processed successfully');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
@@ -102,13 +102,13 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/image_1.jpeg'
         ],
-        outputPath: 'output-path.pdf',
+        outputPath: 'path.pdf',
       );
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
       expect(result.message,
-          'File is not of PDF type or does not exist: output-path.pdf');
+          'File is not of PDF type or does not exist: ./document_1.pdf');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
@@ -127,13 +127,13 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/image_1.jpeg'
         ],
-        outputPath: 'output-path.pdf',
+        outputPath: 'path.pdf',
       );
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
       expect(result.message,
-          'File is not of PDF type or does not exist: output-path.pdf');
+          'File is not of PDF type or does not exist: ./document_1.pdf');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
@@ -151,13 +151,13 @@ void main() {
           'example/assets/image_1.jpeg',
           'example/assets/image_2.png'
         ],
-        outputPath: 'output-path.pdf',
+        outputPath: 'path.pdf',
       );
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
       expect(result.message,
-          'File is not of PDF type or does not exist: output-path.pdf');
+          'File is not of PDF type or does not exist: ./document_1.pdf');
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });

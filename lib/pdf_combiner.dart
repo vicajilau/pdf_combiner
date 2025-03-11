@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:path/path.dart' as path;
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/generate_pdf_from_documents_response.dart';
@@ -64,6 +65,8 @@ class PdfCombiner {
       );
     } else {
       final List<String> mutablePaths = List.from(inputPaths);
+      String dirname = path.dirname(outputPath);
+      print("mi path es: $dirname");
       for (int i = 0; i < mutablePaths.length; i++) {
         final path = mutablePaths[i];
         final isPDF = await DocumentUtils.isPDF(path);
@@ -76,7 +79,7 @@ class PdfCombiner {
         } else {
           if (isImage) {
             final response = await PdfCombiner.createPDFFromMultipleImages(
-                inputPaths: [path], outputPath: outputPath);
+                inputPaths: [path], outputPath: "$dirname/document_$i.pdf");
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
             } else {

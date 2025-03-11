@@ -104,10 +104,10 @@ class PdfCombinerViewModel {
         case PdfCombinerStatus.success:
           outputFiles = [response.outputPath];
         case PdfCombinerStatus.error:
-          throw Exception('Error creating PDF: ${response.message}.');
+          throw Exception('${response.message}');
       }
     } catch (e) {
-      throw Exception('Error creating PDF: ${e.toString()}.');
+      throw Exception(e.toString());
     }
   }
 
@@ -127,10 +127,10 @@ class PdfCombinerViewModel {
         case PdfCombinerStatus.success:
           outputFiles = [response.outputPath];
         case PdfCombinerStatus.error:
-          throw Exception('Error creating PDF: ${response.message}.');
+          throw Exception(response.message);
       }
     } catch (e) {
-      throw Exception('Error creating PDF: ${e.toString()}.');
+      throw Exception(e.toString());
     }
   }
 
@@ -155,7 +155,7 @@ class PdfCombinerViewModel {
       if (response.status == PdfCombinerStatus.success) {
         outputFiles = response.outputPaths;
       } else {
-        throw Exception('${response.message}.');
+        throw Exception('${response.message}');
       }
     } catch (e) {
       rethrow;
