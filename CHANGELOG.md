@@ -1,8 +1,11 @@
-## X.Y.Z
+## 4.2.1
 ### General
 * Improved documentation.
 * Added more coverage.
 * Improved UI for example project.
+* Fixed an issue where`createPDFFromMultipleImages` was not using the `outputPath` param for the file name.
+### Web
+* `createPDFFromMultipleImages` did not work without passing a configuration. [#37](https://github.com/vicajilau/pdf_combiner/issues/37)
 
 ## 4.2.0
 ### General
