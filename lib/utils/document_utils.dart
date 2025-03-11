@@ -19,6 +19,9 @@ class DocumentUtils {
       return false;
     }
   }
+  static Future<bool> hasPDFExtension(String filePath) async {
+      return filePath.endsWith(".pdf");
+  }
 
   /// Determines whether the given file path corresponds to an image file.
   ///

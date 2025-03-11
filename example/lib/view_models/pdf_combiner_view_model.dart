@@ -114,10 +114,9 @@ class PdfCombinerViewModel {
   /// Function to create a PDF file from a list of documents
   Future<void> createPDFFromDocuments() async {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
-    String outputFilePath = "combined_output.pdf";
     try {
       final directory = await _getOutputDirectory();
-      outputFilePath = '${directory?.path}/combined_output.pdf';
+      String outputFilePath = '${directory?.path}/combined_output.jpg';
       final response = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
