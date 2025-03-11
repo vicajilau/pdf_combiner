@@ -66,18 +66,18 @@ class PdfCombiner {
     } else {
       final List<String> mutablePaths = List.from(inputPaths);
       String dirname = path.dirname(outputPath);
-      print("mi path es: $dirname");
       for (int i = 0; i < mutablePaths.length; i++) {
         final path = mutablePaths[i];
         final isPDF = await DocumentUtils.isPDF(path);
         final isImage = await DocumentUtils.isImage(path);
-        final outputPathIsPDF = await DocumentUtils.hasPDFExtension(outputPath);
-        if(!outputPathIsPDF){
+        final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+        if (!outputPathIsPDF) {
           return GeneratePdfFromDocumentsResponse(
             status: PdfCombinerStatus.error,
-            message: PdfCombinerMessages.errorMessageMixedOutputPath(outputPath),
+            message:
+                PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath),
           );
-        }else if (!isPDF && !isImage) {
+        } else if (!isPDF && !isImage) {
           return GeneratePdfFromDocumentsResponse(
             status: PdfCombinerStatus.error,
             message: PdfCombinerMessages.errorMessageMixed(path),
@@ -149,13 +149,14 @@ class PdfCombiner {
           i++;
         }
 
-        final outputPathIsPDF = await DocumentUtils.hasPDFExtension(outputPath);
-        if(!outputPathIsPDF){
+        final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+        if (!outputPathIsPDF) {
           return MergeMultiplePDFResponse(
             status: PdfCombinerStatus.error,
-            message: PdfCombinerMessages.errorMessageMixedOutputPath(outputPath),
+            message:
+                PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath),
           );
-        }else if (!success) {
+        } else if (!success) {
           return MergeMultiplePDFResponse(
               status: PdfCombinerStatus.error,
               message: PdfCombinerMessages.errorMessagePDF(path));
@@ -202,13 +203,13 @@ class PdfCombiner {
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
-    final outputPathIsPDF = await DocumentUtils.hasPDFExtension(outputPath);
-    if(!outputPathIsPDF){
+    final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+    if (!outputPathIsPDF) {
       return PdfFromMultipleImageResponse(
         status: PdfCombinerStatus.error,
-        message: PdfCombinerMessages.errorMessageMixedOutputPath(outputPath),
+        message: PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath),
       );
-    }else if (inputPaths.isEmpty) {
+    } else if (inputPaths.isEmpty) {
       return PdfFromMultipleImageResponse(
         status: PdfCombinerStatus.error,
         message: PdfCombinerMessages.emptyParameterMessage("inputPaths"),
