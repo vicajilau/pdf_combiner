@@ -485,7 +485,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "4.2.1"
+    version: "4.2.2"
   permission_handler:
     dependency: "direct main"
     description:
