@@ -86,7 +86,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                             future: FileMagicNumber
                                                 .getBytesFromPathOrBlob(
                                                     _viewModel
-                                                        .selectedFiles[index]),
+                                                        .outputFiles[index]),
                                             builder: (context, snapshot) {
                                               if (snapshot.connectionState ==
                                                   ConnectionState.waiting) {
