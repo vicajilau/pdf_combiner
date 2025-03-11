@@ -116,7 +116,7 @@ class PdfCombinerViewModel {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     try {
       final directory = await _getOutputDirectory();
-      String outputFilePath = '${directory?.path}/combined_output.jpg';
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
       final response = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
