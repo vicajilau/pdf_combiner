@@ -123,6 +123,30 @@ void main() {
     });
   });
 
+  // Test for error handling when you try to send a file that its not a pdf in createPDFFromMultipleImages
+  test('createPDFFromMultipleImages wrong outputPath', () async {
+    MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+    // Replace the platform instance with the mock implementation.
+    PdfCombinerPlatform.instance = fakePlatform;
+
+    final outputPath = 'output/path/pdf_output.jpeg';
+
+    // Call the method and check the response.
+    final result = await PdfCombiner.createPDFFromMultipleImages(
+      inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
+      outputPath: outputPath,
+    );
+
+    // Verify the error result matches the expected values.
+    expect(result.status, PdfCombinerStatus.error);
+    expect(result.outputPath, "");
+    expect(result.message,
+        'The outputPath must have a .pdf format: output/path/pdf_output.jpeg');
+    expect(result.toString(),
+        'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+  });
+
   // Test for error processing when creating pdf from multiple images using PdfCombiner.
   test('createPDFFromMultipleImages - Mocked Exception', () async {
     MockPdfCombinerPlatformWithException fakePlatform =
