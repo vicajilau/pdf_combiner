@@ -1,3 +1,11 @@
+## 4.2.5
+### General
+* Downgrade of path to increase Flutter support. [#46](https://github.com/vicajilau/pdf_combiner/issues/46)
+
+## 4.2.4
+### General
+* Improved Dart support starting from version 3.4. [#46](https://github.com/vicajilau/pdf_combiner/issues/46)
+
 ## 4.2.3
 ### General
 * Fixed `createPDFFromImages` and `generatePDFFromDocuments`: Resolved an issue where the application show a message error when generating PDFs from image files related to the width of the image that appears its undefined.[#43](https://github.com/vicajilau/pdf_combiner/issues/43)
