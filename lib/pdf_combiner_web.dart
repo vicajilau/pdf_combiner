@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:js_interop';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:pdf_combiner/web/list_to_js_array_extension.dart';
 import 'package:pdf_combiner/web/pdf_combiner_web_bindings.dart';
 import 'package:web/web.dart';
 
 import 'communication/pdf_combiner_platform_interface.dart';
+import 'models/image_from_pdf_config.dart';
+import 'models/pdf_from_multiple_image_config.dart';
 
 /// Web implementation of the PdfCombinerPlatform.
 /// This class handles the interaction between the Flutter app and JavaScript functions
@@ -46,13 +49,18 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     document.head?.appendChild(pdfCombinerScript);
   }
 
-  /// Merges multiple PDFs into one PDF.
+  /// Merges multiple PDF files into a single PDF.
   ///
-  /// Takes a list of input file paths and an output path, and returns the path of the
-  /// merged PDF as a string.
+  /// This method sends a request to the native platform to merge the PDF files
+  /// specified in the `paths` parameter and saves the result in the `outputPath`.
   ///
-  /// [inputPaths] - List of paths to the input PDF files.
-  /// [outputPath] - The path where the merged PDF will be saved.
+  /// Parameters:
+  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
+  /// - `outputPath`: The directory path where the merged PDF should be saved.
+  ///
+  /// Returns:
+  /// - A `Future<String?>` representing the result of the operation. If the operation
+  ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String> mergeMultiplePDFs({
     required List<String> inputPaths,
@@ -64,51 +72,63 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     return result.toDart;
   }
 
-  /// Creates a single PDF from multiple images.
+  /// Creates a PDF from multiple image files.
   ///
-  /// Takes a list of input image file paths and an output path, and returns the path
-  /// to the generated PDF.
+  /// This method sends a request to the native platform to create a PDF from the
+  /// images specified in the `inputPaths` parameter. The resulting PDF is saved in the
+  /// `outputPath` directory.
   ///
-  /// [inputPaths] - List of paths to the input image files.
-  /// [outputPath] - The path where the created PDF will be saved.
-  /// [maxWidth] - Optional maximum width of the images in the output PDF (default is 360).
-  /// [maxHeight] - Optional maximum height of the images in the output PDF (default is 360).
-  /// [needImageCompressor] - Optional flag to indicate whether to compress the images.
+  /// Parameters:
+  /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
+  /// - `outputPath`: The directory path where the created PDF should be saved.
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `keepAspectRatio`: Indicates whether to maintain the aspect ratio of the images (default is `true`).
+  ///
+  /// Returns:
+  /// - A `Future<String?>` representing the result of the operation. If the operation
+  ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
-    int? maxWidth,
-    int? maxHeight,
-    bool? needImageCompressor,
+    PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
     final JSString result =
-        (await createPdfFromImages(jsInputPaths).toDart) as JSString;
+        (await createPdfFromImages(jsInputPaths, config.jsify()).toDart)
+            as JSString;
     return result.toDart;
   }
 
-  /// Creates an image or multiple images from a PDF file.
+  /// Creates images from a PDF file.
   ///
-  /// Converts a PDF to either a single image or multiple images based on the `createOneImage` flag.
+  /// This method sends a request to the native platform to extract images from the
+  /// PDF file specified in the `path` parameter and saves the images in the `outputDirPath` directory.
   ///
-  /// [inputPath] - The path to the input PDF file.
-  /// [outputPath] - The output path where the image(s) will be saved.
-  /// [maxWidth] - Optional maximum width of the image(s) (default is 360).
-  /// [maxHeight] - Optional maximum height of the image(s) (default is 360).
-  /// [createOneImage] - A flag indicating whether to create one image (true) or multiple images (false).
+  /// Parameters:
+  /// - `inputPath`: The file path of the PDF from which images will be extracted.
+  /// - `outputPath`: The directory path where the images should be saved.
+  /// - `config`: A configuration object that specifies how to process the images.
+  ///   - `rescale`: The scaling configuration for the images (default is the original image).
+  ///   - `compression`: The image compression level for compression, affecting file size quality and clarity (default is [ImageCompression.none]).
+  ///   - `createOneImage`: Indicates whether to create a single image or separate images for each page (default is `true`).
+  ///
+  /// Returns:
+  /// - A `Future<List<String>?>` representing a list of image file paths. If the operation
+  ///   is successful, it returns a list of file paths to the extracted images; otherwise, it returns `null`.
   @override
   Future<List<String>> createImageFromPDF({
     required String inputPath,
     required String outputPath,
-    int maxWidth = 360,
-    int maxHeight = 360,
-    bool createOneImage = true,
+    ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
     final JSString jsInputPath = inputPath.toJS;
-    final JSArray<JSString> result = createOneImage
-        ? (await pdfToImage(jsInputPath).toDart) as JSArray<JSString>
-        : (await convertPdfToImages(jsInputPath).toDart) as JSArray<JSString>;
+    final JSArray<JSString> result = config.createOneImage
+        ? (await pdfToImage(jsInputPath, config.jsify()).toDart)
+            as JSArray<JSString>
+        : (await convertPdfToImages(jsInputPath, config.jsify()).toDart)
+            as JSArray<JSString>;
     return result.toList();
   }
 }

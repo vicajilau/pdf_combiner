@@ -1,5 +1,6 @@
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:file_magic_number/file_magic_number_type.dart';
+import 'package:path/path.dart' as p;
 
 /// Utility class for handling document-related checks in a file system environment.
 ///
@@ -19,6 +20,11 @@ class DocumentUtils {
       return false;
     }
   }
+
+  /// Checks if the given file path has a PDF extension.
+  /// Returns `true` if the file has a `.pdf` extension, otherwise `false`.
+  static bool hasPDFExtension(String filePath) =>
+      p.extension(filePath) == ".pdf";
 
   /// Determines whether the given file path corresponds to an image file.
   ///

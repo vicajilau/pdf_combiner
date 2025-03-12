@@ -10,16 +10,17 @@ external JSPromise combinePDFs(JSArray<JSString> inputPaths);
 /// This external function calls the `createPdfFromImages` JavaScript function, passing a `JSArray<JSString>` of input image file paths.
 /// It returns a `JSPromise` which resolves to the path of the created PDF.
 @JS('createPdfFromImages')
-external JSPromise createPdfFromImages(JSArray<JSString> inputPaths);
+external JSPromise createPdfFromImages(
+    JSArray<JSString> inputPaths, JSAny? config);
 
 /// **JavaScript binding to convert a PDF to a single image**
 /// This external function calls the `pdfToImage` JavaScript function, passing a `JSString` input path of the PDF file.
 /// It returns a `JSPromise` which resolves to the resulting image.
 @JS('pdfToImage')
-external JSPromise pdfToImage(JSString inputPath);
+external JSPromise pdfToImage(JSString inputPath, JSAny? config);
 
 /// **JavaScript binding to convert a PDF to multiple images**
 /// This external function calls the `convertPdfToImages` JavaScript function, passing a `JSString` input path of the PDF file.
 /// It returns a `JSPromise` which resolves to the resulting images.
 @JS('convertPdfToImages')
-external JSPromise convertPdfToImages(JSString inputPath);
+external JSPromise convertPdfToImages(JSString inputPath, JSAny? config);

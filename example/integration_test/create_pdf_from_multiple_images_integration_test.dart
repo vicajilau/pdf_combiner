@@ -25,7 +25,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, '${TestFileHelper.basePath}/merged_output.pdf');
+      expect(result.outputPath, '${TestFileHelper.basePath}/merged_output.pdf');
       expect(result.message, 'Processed successfully');
     });
 
@@ -36,7 +36,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
+      expect(result.outputPath, null);
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
     });
 
@@ -54,7 +54,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
+      expect(result.outputPath, null);
       expect(result.message, startsWith('File is not an image or does not exist:'));
     });
 
@@ -70,7 +70,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
+      expect(result.outputPath, null);
       expect(result.message,
           'File is not an image or does not exist: ${TestFileHelper.basePath}/document_1.pdf');
     });

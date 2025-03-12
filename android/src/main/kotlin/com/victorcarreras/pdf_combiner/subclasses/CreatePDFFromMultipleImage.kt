@@ -2,70 +2,86 @@ package com.victorcarreras.pdf_combiner.subclasses
 
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
-import androidx.exifinterface.media.ExifInterface
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.math.roundToInt
 
+class ImageScale(
+    val maxWidth: Int,
+    val maxHeight: Int,
+)
+
+class CompressionLevel(val value: Int)
+class PdfFromMultipleImageConfig(val rescale: ImageScale, val keepAspectRatio: Boolean)
+
+
 class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
 
     private var result: MethodChannel.Result = getResult
 
-
     @OptIn(DelicateCoroutinesApi::class)
     fun create(
-        paths: List<String>,
-        outputDirPath: String,
-        needImageCompressor: Boolean,
-        maxWidth: Int,
-        maxHeight: Int
+        inputPaths: List<String>,
+        outputPath: String,
+        config: PdfFromMultipleImageConfig,
     ) {
         var status = ""
 
         val pdfFromMultipleImage = GlobalScope.launch(Dispatchers.IO) {
             try {
-                val file = File(outputDirPath)
+                val file = File(outputPath)
                 val fileOutputStream = FileOutputStream(file)
                 val pdfDocument = PdfDocument()
                 val i = 0
-                for (item in paths) {
-
-                    var bitmap = if (needImageCompressor) {
-                        compressImage(item, maxWidth, maxHeight)
+                val width = config.rescale.maxWidth
+                val height = config.rescale.maxHeight
+                for (item in inputPaths) {
+                    var bitmap: Bitmap? = null
+                    if (width == 0 && height == 0) {
+                        bitmap = BitmapFactory.decodeFile(item)
                     } else {
-                        BitmapFactory.decodeFile(item)
+                        bitmap = rescaleImage(
+                            item, width, height,
+                            config.keepAspectRatio
+                        )
+                    }
+                    if (bitmap != null) {
+                        val pageInfo =
+                            PdfDocument.PageInfo.Builder(
+                                bitmap.width,
+                                bitmap.height,
+                                i + 1
+                            ).create()
+                        val page = pdfDocument.startPage(pageInfo)
+                        val canvas = page.canvas
+                        val paint = Paint()
+                        canvas.drawPaint(paint)
+                        canvas.drawBitmap(bitmap, 0f, 0f, paint)
+                        pdfDocument.finishPage(page)
+                        bitmap.recycle()
+                        pdfDocument.writeTo(fileOutputStream)
+                        status = "success"
+                    } else {
+                        status = "error"
                     }
 
-                    val pageInfo =
-                        PdfDocument.PageInfo.Builder(bitmap!!.width, bitmap.height, i + 1).create()
-                    val page = pdfDocument.startPage(pageInfo)
-                    val canvas = page.canvas
-                    val paint = Paint()
-                    canvas.drawPaint(paint)
-                    canvas.drawBitmap(bitmap, 0f, 0f, paint)
-                    pdfDocument.finishPage(page)
-                    bitmap.recycle()
                 }
-                pdfDocument.writeTo(fileOutputStream)
                 pdfDocument.close()
-                status = "success"
             } catch (e: IOException) {
                 e.printStackTrace()
                 status = "error"
-
             }
         }
 
         pdfFromMultipleImage.invokeOnCompletion {
             if (status == "success")
-                status = outputDirPath
+                status = outputPath
             else if (status == "error")
                 status = "error"
 
@@ -75,113 +91,40 @@ class CreatePDFFromMultipleImage(getResult: MethodChannel.Result) {
         }
     }
 
-    private fun compressImage(imagePath: String, maxWidthGet: Int, maxHeightGet: Int): Bitmap? {
-
-        val maxHeight = maxWidthGet.toFloat()
-        val maxWidth = maxHeightGet.toFloat()
-
-        var scaledBitmap: Bitmap?
-
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-
-        var bmp: Bitmap? = BitmapFactory.decodeFile(imagePath, options)
-
-        var actualHeight = options.outHeight
-        var actualWidth = options.outWidth
-
-        var imgRatio = actualWidth.toFloat() / actualHeight.toFloat()
-        val maxRatio = maxWidth / maxHeight
-
-        if (actualHeight > maxHeight || actualWidth > maxWidth) {
-            if (imgRatio < maxRatio) {
-                imgRatio = maxHeight / actualHeight
-                actualWidth = (imgRatio * actualWidth).toInt()
-                actualHeight = maxHeight.toInt()
-            } else if (imgRatio > maxRatio) {
-                imgRatio = maxWidth / actualWidth
-                actualHeight = (imgRatio * actualHeight).toInt()
-                actualWidth = maxWidth.toInt()
-            } else {
-                actualHeight = maxHeight.toInt()
-                actualWidth = maxWidth.toInt()
-
-            }
-        }
-
-        calculateInSampleSize(options, actualWidth, actualHeight).also { options.inSampleSize = it }
-        false.also { options.inJustDecodeBounds = false }
-        false.also { options.inDither = false }
-        true.also { options.inPurgeable = true }
-        true.also { options.inInputShareable = true }
-        ByteArray(16 * 1024).also { options.inTempStorage = it }
-
-        try {
-            bmp = BitmapFactory.decodeFile(imagePath, options)
-            val baos = ByteArrayOutputStream()
-            bmp.compress(Bitmap.CompressFormat.JPEG, 10, baos)
-        } catch (exception: OutOfMemoryError) {
-            exception.printStackTrace()
-            return null
-        }
-
-        try {
-            scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.RGB_565)
-        } catch (exception: OutOfMemoryError) {
-            exception.printStackTrace()
-            return null
-        }
-
-        val ratioX = actualWidth / options.outWidth.toFloat()
-        val ratioY = actualHeight / options.outHeight.toFloat()
-        val middleX = actualWidth / 2.0f
-        val middleY = actualHeight / 2.0f
-
-        val scaleMatrix = Matrix()
-        scaleMatrix.setScale(ratioX, ratioY, middleX, middleY)
-
-        Canvas(scaledBitmap).also {
-            it.setMatrix(scaleMatrix)
-            it.drawBitmap(
-                bmp,
-                middleX - bmp!!.width / 2,
-                middleY - bmp.height / 2,
-                Paint(Paint.FILTER_BITMAP_FLAG)
-            )
-        }
-
-        bmp.run {
-            recycle()
-        }
-
-        val exif: ExifInterface
-        try {
-            exif = ExifInterface(imagePath)
-            val orientation = exif.getAttributeInt(
-                ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_UNDEFINED
-            )
-            val matrix = Matrix()
-            when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-                ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-                ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-            }
-            Bitmap.createBitmap(
-                scaledBitmap,
-                0,
-                0,
-                scaledBitmap.width,
-                scaledBitmap.height,
-                matrix,
-                true
-            ).also { scaledBitmap = it }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return scaledBitmap
+    // Scale image maintaining proportions
+    private fun scaleBitmap(bitmap: Bitmap, targetWidth: Int): Bitmap {
+        val scaleFactor = targetWidth.toFloat() / bitmap.width
+        val targetHeight = (bitmap.height * scaleFactor).toInt()
+        return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true)
     }
 
+    // Rescale image maintaining proportions
+    private fun rescaleImage(
+        imagePath: String,
+        width: Int,
+        height: Int,
+        keepAspectRatio: Boolean
+    ): Bitmap? {
+        val originalBitmap = BitmapFactory.decodeFile(imagePath) ?: return null
+
+        return if (keepAspectRatio) {
+            val aspectRatio = originalBitmap.width.toFloat() / originalBitmap.height.toFloat()
+            val targetWidth: Int
+            val targetHeight: Int
+
+            if (originalBitmap.width > originalBitmap.height) {
+                targetWidth = width
+                targetHeight = (width / aspectRatio).toInt()
+            } else {
+                targetHeight = height
+                targetWidth = (height * aspectRatio).toInt()
+            }
+
+            Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
+        } else {
+            Bitmap.createScaledBitmap(originalBitmap, width, height, true)
+        }
+    }
 
     private fun calculateInSampleSize(
         options: BitmapFactory.Options,

@@ -16,6 +16,7 @@ void main() {
     late File testFile2;
     final String testFilePath1 = 'test_1.pdf';
     final String testFilePath2 = 'test_2.pdf';
+    PdfCombiner.isMock = true;
 
     setUp(() async {
       testFile1 = File(testFilePath1);
@@ -53,15 +54,37 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.response, 'Merged PDF');
+      expect(result.outputPath, "output/path.pdf");
       expect(result.message, 'Processed successfully');
       expect(result.toString(),
-          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
+
+    // Test for wrong outputPath in combining multiple PDFs using PdfCombiner.
+    test('mergeMultiplePDFs wrong outputPath', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/document_2.pdf'
+        ],
+        outputPath: 'output/path.jpeg',
+      );
+
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message,
+          'The outputPath must have a .pdf format: output/path.jpeg');
+      expect(result.toString(),
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
 
     // Test for error setting a different type of file in the mergeMultiplePDF method.
@@ -80,7 +103,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.response, null);
+      expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
     });
@@ -97,13 +120,14 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: ['path1', 'path2'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
-      expect(result.response, null);
+      expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'File is not of PDF type or does not exist: path1');
+      expect(
+          result.message, 'File is not of PDF type or does not exist: path1');
     });
 
     // Test for an incorrect platform in the mergeMultiplePDF method.
@@ -117,7 +141,7 @@ void main() {
 
       final result = await fakePlatformWithError.mergeMultiplePDFs(
         inputPaths: ['path1', 'path2'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
@@ -134,13 +158,14 @@ void main() {
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: ['path1.pdf', 'path2.pdf'],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the error result matches the expected values.
-      expect(result.response, null);
+      expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'File is not of PDF type or does not exist: path1.pdf');
+      expect(result.message,
+          'File is not of PDF type or does not exist: path1.pdf');
     });
 
     // Test for error processing when combining multiple PDFs using PdfCombiner.
@@ -157,15 +182,15 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
-      expect(result.message, 'Error in processing');
+      expect(result.outputPath, "");
+      expect(result.message, 'error');
       expect(result.toString(),
-          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
 
     // Test for error processing when combining multiple PDFs using PdfCombiner.
@@ -182,15 +207,41 @@ void main() {
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
-        outputPath: 'output/path',
+        outputPath: 'output/path.pdf',
       );
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.response, null);
+      expect(result.outputPath, "");
       expect(result.message, 'Exception: Mocked Exception');
       expect(result.toString(),
-          'MergeMultiplePDFResponse{response: ${result.response}, message: ${result.message}, status: ${result.status} }');
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
+
+    // Test for error setting a different type of file in the mergeMultiplePDF method.
+    test('combine - Error in processing', () async {
+      // Create a mock platform that simulates an error during PDF merging.
+      MockPdfCombinerPlatformWithError fakePlatformWithError =
+          MockPdfCombinerPlatformWithError();
+
+      // Replace the platform instance with the error mock implementation.
+      PdfCombinerPlatform.instance = fakePlatformWithError;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: [
+          'example/assets/document_1.pdf',
+          'example/assets/document_2.pdf'
+        ],
+        outputPath: 'output/path.pdf',
+      );
+
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message, "error");
+      expect(result.toString(),
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
   });
 }

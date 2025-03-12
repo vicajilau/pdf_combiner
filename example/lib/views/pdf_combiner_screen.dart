@@ -1,6 +1,10 @@
+import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
+import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
+import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
 import '../view_models/pdf_combiner_view_model.dart';
 
@@ -13,6 +17,7 @@ class PdfCombinerScreen extends StatefulWidget {
 
 class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   final PdfCombinerViewModel _viewModel = PdfCombinerViewModel();
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -21,130 +26,200 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         title: const Text('PDF Combiner Example'),
         actions: [
           IconButton(
-            onPressed: () => _restart(),
+            onPressed: _restart,
             icon: const Icon(Icons.restart_alt),
             tooltip: "Restart app",
           ),
           IconButton(
-            onPressed: () => _pickFiles(),
+            onPressed: _pickFiles,
             icon: const Icon(Icons.add),
             tooltip: "Add new files",
           ),
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Output Files Section
-            if (_viewModel.outputFiles.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Output Files:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _viewModel.outputFiles.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(
-                          p.basename(_viewModel.outputFiles[index]),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.copy),
-                              onPressed: () => _copyOutputToClipboard(index),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.open_in_new),
-                              onPressed: () => _openOutputFile(index),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  const Divider(),
-                ],
-              ),
-            // Input Files Section
-            Expanded(
-              child: ReorderableListView.builder(
-                itemCount: _viewModel.selectedFiles.length,
-                onReorder: _onReorderFiles,
-                itemBuilder: (context, index) {
-                  return Dismissible(
-                    key: ValueKey(_viewModel.selectedFiles[index]),
-                    direction: DismissDirection.horizontal,
-                    onDismissed: (direction) {
-                      setState(() {
-                        _viewModel.removeFileAt(index);
-                      });
-                      _showSnackbarSafely(
-                          'File ${p.basename(_viewModel.selectedFiles[index])} removed.');
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: 16),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        p.basename(_viewModel.selectedFiles[index]),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.copy),
-                        onPressed: () => _copySelectedFilesToClipboard(index),
-                      ),
-                    ),
-                  );
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : DropTarget(
+                onDragDone: (details) {
+                  setState(() {
+                    _viewModel.addFilesDragAndDrop(details.files);
+                  });
                 },
+                child: (_viewModel.isEmpty())
+                    ? Center(
+                        child: Image.asset('assets/files/home.png'),
+                      )
+                    : Column(
+                        spacing: 20,
+                        children: [
+                          // Output Files Section
+                          if (_viewModel.outputFiles.isNotEmpty)
+                            Column(
+                              children: [
+                                const Text(
+                                  'OUTPUT FILES',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: _viewModel.outputFiles.length,
+                                  itemBuilder: (context, index) {
+                                    return Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: ListTile(
+                                        leading: FileTypeIcon(
+                                            filePath:
+                                                _viewModel.outputFiles[index]),
+                                        title: Text(
+                                          p.basename(
+                                              _viewModel.outputFiles[index]),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        onTap: () => _openOutputFile(index),
+                                        subtitle: FutureBuilder(
+                                            future: FileMagicNumber
+                                                .getBytesFromPathOrBlob(
+                                                    _viewModel
+                                                        .outputFiles[index]),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return const Text(
+                                                    "Loading size...");
+                                              } else if (snapshot.hasError) {
+                                                return const Icon(Icons.error);
+                                              } else {
+                                                return Text(
+                                                    snapshot.data?.size() ??
+                                                        "Unknown Size");
+                                              }
+                                            }),
+                                        trailing: IconButton(
+                                          icon: const Icon(Icons.copy),
+                                          onPressed: () =>
+                                              _copyOutputToClipboard(index),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const Divider(),
+                              ],
+                            ),
+                          const Text(
+                            'INPUT FILES',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          // Input Files Section
+                          Expanded(
+                            child: ReorderableListView.builder(
+                              itemCount: _viewModel.selectedFiles.length,
+                              onReorder: _onReorderFiles,
+                              itemBuilder: (context, index) {
+                                return Dismissible(
+                                  key:
+                                      ValueKey(_viewModel.selectedFiles[index]),
+                                  direction: DismissDirection.horizontal,
+                                  onDismissed: (direction) {
+                                    final path = p.basename(
+                                        _viewModel.selectedFiles[index]);
+                                    setState(() {
+                                      _viewModel.removeFileAt(index);
+                                    });
+                                    _showSnackbarSafely('File $path removed.');
+                                  },
+                                  background: Container(
+                                    color: Colors.red,
+                                    alignment: Alignment.centerLeft,
+                                    padding: const EdgeInsets.only(left: 16),
+                                    child: const Icon(Icons.delete,
+                                        color: Colors.white),
+                                  ),
+                                  child: Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: ListTile(
+                                      leading: FileTypeIcon(
+                                          filePath:
+                                              _viewModel.selectedFiles[index]),
+                                      title: Text(
+                                        p.basename(
+                                            _viewModel.selectedFiles[index]),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      onTap: () async =>
+                                          await _openInputFile(index),
+                                      subtitle: FutureBuilder(
+                                          future: FileMagicNumber
+                                              .getBytesFromPathOrBlob(_viewModel
+                                                  .selectedFiles[index]),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState ==
+                                                ConnectionState.waiting) {
+                                              return const Text(
+                                                  "Loading size...");
+                                            } else if (snapshot.hasError) {
+                                              return const Icon(Icons.error);
+                                            } else {
+                                              return Text(
+                                                  snapshot.data?.size() ??
+                                                      "Unknown Size");
+                                            }
+                                          }),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          // Buttons Section
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              spacing: 10,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: _viewModel.selectedFiles.isNotEmpty
+                                      ? _createPdfFromMix
+                                      : null,
+                                  child: const Text('Create PDF'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: _viewModel.selectedFiles.isNotEmpty
+                                      ? _combinePdfs
+                                      : null,
+                                  child: const Text('Combine PDFs'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: _viewModel.selectedFiles.isNotEmpty
+                                      ? _createPdfFromImages
+                                      : null,
+                                  child: const Text('PDF from images'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: _viewModel.selectedFiles.isNotEmpty
+                                      ? _createImagesFromPDF
+                                      : null,
+                                  child: const Text('Images from PDF'),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // Buttons Section
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 10,
-                children: [
-                  ElevatedButton(
-                    onPressed: _viewModel.selectedFiles.isNotEmpty
-                        ? _combinePdfs
-                        : null,
-                    child: const Text('Combine PDFs'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _viewModel.selectedFiles.isNotEmpty
-                        ? _createPdfFromImages
-                        : null,
-                    child: const Text('PDF from images'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _viewModel.selectedFiles.isNotEmpty
-                        ? _createImagesFromPDF
-                        : null,
-                    child: const Text('Images from PDF'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
       ),
     );
   }
@@ -158,46 +233,67 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   // Function to pick PDF files from the device
   void _restart() {
     _viewModel.restart();
-    setState(() {});
+    setState(() {
+      changeLoading(false);
+    });
+    _showSnackbarSafely('App restarted!');
   }
 
   // Function to combine selected PDF files into a single output file
   Future<void> _combinePdfs() async {
     try {
+      changeLoading(true);
       await _viewModel.combinePdfs();
-      setState(() {});
+      changeLoading(false);
       _showSnackbarSafely(
           'PDFs combined successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
+      changeLoading(false);
+      _showSnackbarSafely(e.toString());
+    }
+  }
+
+  void changeLoading(bool isLoading) => setState(() {
+        this.isLoading = isLoading;
+      });
+
+  Future<void> _createPdfFromMix() async {
+    try {
+      changeLoading(true);
+      await _viewModel.createPDFFromDocuments();
+      changeLoading(false);
+      _showSnackbarSafely(
+          'PDF created successfully: ${_viewModel.outputFiles.first}');
+    } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
   }
 
   Future<void> _createPdfFromImages() async {
     try {
+      changeLoading(true);
       await _viewModel.createPDFFromImages();
-      setState(() {});
+      changeLoading(false);
       _showSnackbarSafely(
           'PDF created successfully: ${_viewModel.outputFiles.first}');
     } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
   }
 
   Future<void> _createImagesFromPDF() async {
     try {
+      changeLoading(true);
       await _viewModel.createImagesFromPDF();
-      setState(() {});
+      changeLoading(false);
       _showSnackbarSafely(
           'Images created successfully: ${_viewModel.outputFiles}');
     } catch (e) {
+      changeLoading(false);
       _showSnackbarSafely(e.toString());
     }
-  }
-
-  Future<void> _copySelectedFilesToClipboard(int index) async {
-    await _viewModel.copySelectedFilesToClipboard(index);
-    _showSnackbarSafely('Selected file copied to clipboard');
   }
 
   Future<void> _copyOutputToClipboard(int index) async {
@@ -208,6 +304,15 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   Future<void> _openOutputFile(int index) async {
     if (index < _viewModel.outputFiles.length) {
       final result = await OpenFile.open(_viewModel.outputFiles[index]);
+      if (result.type != ResultType.done) {
+        _showSnackbarSafely('Failed to open file. Error: ${result.message}');
+      }
+    }
+  }
+
+  Future<void> _openInputFile(int index) async {
+    if (index < _viewModel.selectedFiles.length) {
+      final result = await OpenFile.open(_viewModel.selectedFiles[index]);
       if (result.type != ResultType.done) {
         _showSnackbarSafely('Failed to open file. Error: ${result.message}');
       }

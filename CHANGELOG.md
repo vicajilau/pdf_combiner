@@ -1,4 +1,60 @@
-## 3.2.1
+## 4.2.3
+### General
+* Fixed `createPDFFromImages` and `generatePDFFromDocuments`: Resolved an issue where the application show a message error when generating PDFs from image files related to the width of the image that appears its undefined.[#43](https://github.com/vicajilau/pdf_combiner/issues/43)
+
+## 4.2.2
+### General
+* Fixed `generatePDFFromDocuments` When selecting the option to create a PDF with two or more images, the process fails, and no PDF is generated. [#40](https://github.com/vicajilau/pdf_combiner/issues/40)
+* Updated error message for invalid `outputPath` to clarify that it must have a `.pdf` format on `generatePDFFromDocuments`, `mergeMultiplePDFs` and `createPDFFromMultipleImages`.
+
+## 4.2.1
+### General
+* Improved documentation.
+* Added more coverage.
+* Improved UI for example project.
+### Web
+* `createPDFFromMultipleImages` did not work without passing a configuration. [#37](https://github.com/vicajilau/pdf_combiner/issues/37)
+
+## 4.2.0
+### General
+* Drag & Drop Capability added on example project. 
+* Added `generatePDFFromDocuments` method to create a PDF from a mix of PDFs and images in any order.
+* Improved UI for example project.
+
+## 4.1.1
+### Android
+* Fixed `createPDFFromMultipleImages` without configuration. [#35](https://github.com/vicajilau/pdf_combiner/issues/35)
+
+## 4.1.0
+### General
+* Improved documentation.
+### Linux
+* Improved error management.
+### Windows
+* Added support with PDFium by Google with C++.
+
+## 4.0.1
+### General
+* Refactored `pdf_combiner` to use `compute` for native calls (`MethodChannel`), reducing potential UI freezes (UI thread blocking).
+* `isMock` has been added to `PdfCombiner` for testing purposes, when set to true, isolates will not be executed using main Isolate.
+
+## 4.0.0
+### General
+* Errors are being recovered from native and sent through the message.
+* New optional parameter `config` of type `PdfFromMultipleImageConfig` to the method `createPDFFromMultipleImages`.
+* New optional parameter `config` of type `ImageFromPdfConfig` to the method `createImageFromPDF`.
+* **BREAKING CHANGE:** `maxWidth`, `maxHeight` and `needImageCompressor` has been inserted inside of `config` property on `createPDFFromMultipleImages`method.
+* **BREAKING CHANGE:** `maxWidth`, `maxHeight` and `createOneImage` has been inserted inside of `config` property on `createImageFromPDF`method.
+* **BREAKING CHANGE:** `outputPath` parameter has been renamed by `outputDirPath` in `createImageFromPDF` method.
+* **BREAKING CHANGE:** `createOneImage` is false by default in `createImageFromPDF` method.
+### Android
+* `Apache PDFBox` has been replaced by native code with `android.graphics`implementation.
+
+## 3.4.0
+### Linux
+* Added support with PDFium by Google with C++.
+
+## 3.3.0
 ### Web
 * Removed the need for manually importing JavaScript files and modifying `index.html`. [#21](https://github.com/vicajilau/pdf_combiner/issues/21).
 
