@@ -17,7 +17,7 @@ void main() {
     testWidgets('Test creating images from PDF file', (tester) async {
       final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();
-      final outputPath = await helper.getOutputFilePath('image_final.jpeg');
+      final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: inputPaths[0],
@@ -25,8 +25,8 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.success);
-      expect(result.outputPaths, ['${TestFileHelper.basePath}/image_final.jpeg']);
-      expect(result.message, 'Processed successfully');
+      expect(result.outputPaths, ['${TestFileHelper.basePath}/image_1.png']);
+      expect(result.message, null);
     });
 
     testWidgets('Test creating with non-existing file', (tester) async {
@@ -41,7 +41,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPaths, null);
+      expect(result.outputPaths, []);
       expect(result.message,
           'File is not of PDF type or does not exist: ${inputPaths[0]}');
     });
@@ -57,7 +57,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPaths, null);
+      expect(result.outputPaths, []);
       expect(result.message,
           'File is not of PDF type or does not exist: ${inputPaths[0]}');
     });
@@ -65,21 +65,21 @@ void main() {
     testWidgets('Test creating only one image from a PDF', (tester) async {
       final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();
-      final outputPath = await helper.getOutputFilePath('image_final.jpeg');
+      final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
           inputPath: inputPaths[0], outputDirPath: outputPath);
 
       expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPaths.length, 1);
-      expect(result.outputPaths, ['${TestFileHelper.basePath}/image_final.jpeg']);
-      expect(result.message, 'Processed successfully');
+      expect(result.outputPaths, ['${TestFileHelper.basePath}/image_1.png']);
+      expect(result.message, null);
     });
 
     testWidgets('Test creating four images from a PDF', (tester) async {
       final helper = TestFileHelper(['assets/document_3.pdf']);
       final inputPaths = await helper.prepareInputFiles();
-      final outputPath = await helper.getOutputFilePath('image_final.jpeg');
+      final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
           inputPath: inputPaths[0],
@@ -88,7 +88,7 @@ void main() {
 
       expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPaths.length, 4);
-      expect(result.message, 'Processed successfully');
+      expect(result.message, null);
     });
   });
 }

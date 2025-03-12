@@ -30,8 +30,7 @@ void main() {
     });
 
     testWidgets('Test merging single PDF file', (tester) async {
-      final helper =
-      TestFileHelper(['assets/document_1.pdf']);
+      final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
@@ -55,7 +54,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
     });
 
@@ -73,8 +72,9 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
-      expect(result.message, startsWith('File is not of PDF type or does not exist:'));
+      expect(result.outputPath, "");
+      expect(result.message,
+          startsWith('File is not of PDF type or does not exist:'));
     });
 
     testWidgets('Test merging with non-supported file', (tester) async {
@@ -89,8 +89,9 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
-      expect(result.message, startsWith('File is not of PDF type or does not exist:'));
+      expect(result.outputPath, "");
+      expect(result.message,
+          startsWith('File is not of PDF type or does not exist:'));
     });
   });
 }
