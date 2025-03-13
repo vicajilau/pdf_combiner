@@ -47,8 +47,19 @@ jobs:
 
       - name: AVD Install
         run: |
-          sdkmanager "system-images;android-35;google_apis;x86_64"
+          yes | sdkmanager "system-images;android-35;google_apis;x86_64"
           echo no | avdmanager create avd -n testEmulator -k "system-images;android-35;google_apis;x86_64"
+
+      - name: Start AVD
+        run: |
+          $HOME/android-sdk/emulator/emulator -avd testEmulator -no-window -no-audio &
+          adb wait-for-device
+          bootcompleted=""
+          until [ "$bootcompleted" == "1" ]; do
+            sleep 5
+            bootcompleted=$(adb shell getprop sys.boot_completed | tr -d '\r\n')
+          done
+          echo "Initialized Emulator"
 
       - name: Run create_image_from_pdf_integration_test Integration Tests
         run: |
