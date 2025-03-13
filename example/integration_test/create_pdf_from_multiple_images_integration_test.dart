@@ -55,7 +55,8 @@ void main() {
 
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
-      expect(result.message, startsWith('File is not an image or does not exist:'));
+      expect(result.message,
+          startsWith('File is not an image or does not exist:'));
     });
 
     testWidgets('Test creating pdf with non-supported file', (tester) async {
