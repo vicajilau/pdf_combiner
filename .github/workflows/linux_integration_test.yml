@@ -1,4 +1,4 @@
-name: Integration Test - Linux
+name: ⭐Integration Test ⭐Linux
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install Linux Dependencies
         run: |
           sudo apt-get update -y && sudo apt-get upgrade -y
           sudo apt-get install -y curl git unzip xz-utils zip libglu1-mesa
@@ -21,7 +21,7 @@ jobs:
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v4
 
-      - name: Install dependencies
+      - name: Install Flutter Dependencies
         run: flutter pub get
 
       - name: Run integration tests
