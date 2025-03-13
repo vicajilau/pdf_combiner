@@ -33,10 +33,34 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run integration tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          script: |
-            cd example
-            flutter test integration_test
+      - name: Download Android Command Line Tools
+        run: |
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          unzip -q cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
+          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+
+      - name: Set up Android SDK environment
+        run: |
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+
+      - name: AVD Install
+        run: |
+          sdkmanager "system-images;android-35;google_apis;x86_64"
+          echo no | avdmanager create avd -n testEmulator -k "system-images;android-35;google_apis;x86_64"
+
+      - name: Run create_image_from_pdf_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/create_image_from_pdf_integration_test.dart -d testEmulator
+
+      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart -d testEmulator
+
+      - name: Run merge_multiple_pdfs_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/merge_multiple_pdfs_integration_test.dart -d testEmulator
