@@ -18,6 +18,12 @@ jobs:
           sudo apt-get install -y curl git unzip xz-utils zip libglu1-mesa
           sudo apt-get install -y clang cmake git ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
 
+      - name: Start virtual display
+        run: Xvfb :99 -screen 0 1600x1200x16 &
+
+      - name: Set DISPLAY variable
+        run: echo "DISPLAY=:99" >> $GITHUB_ENV
+
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v4
 
