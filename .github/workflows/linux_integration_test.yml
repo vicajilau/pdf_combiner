@@ -6,7 +6,7 @@ on:
       - '**.md'
 
 jobs:
-  android-integration-test:
+  linux-integration-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
       - name: Install Flutter Dependencies
         run: flutter pub get
 
-      - name: Run integration tests
+      - name: Run Integration Tests
         run: |
           cd example
           flutter test integration_test -d linux
