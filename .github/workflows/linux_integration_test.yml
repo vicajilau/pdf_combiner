@@ -12,14 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: 17
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y && sudo apt-get upgrade -y
+          sudo apt-get install -y curl git unzip xz-utils zip libglu1-mesa
+          sudo apt-get install -y clang cmake git ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
 
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v4
@@ -28,4 +25,6 @@ jobs:
         run: flutter pub get
 
       - name: Run integration tests
-        run: cd example && flutter test integration_test -d linux
+        run: |
+          cd example
+          flutter test integration_test -d linux
