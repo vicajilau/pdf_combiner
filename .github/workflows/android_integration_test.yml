@@ -1,0 +1,36 @@
+name: ⭐Integration Test ⭐
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  Android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v4
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          script: |
+            cd example
+            flutter test integration_test
