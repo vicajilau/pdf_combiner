@@ -13,6 +13,20 @@ void main() {
   });
 
   group('mergeMultiplePDFs Integration Tests', () {
+
+    testWidgets('Test verificate if pdfs input its inside of output path', (tester) async {
+      final helper = TestFileHelper(['assets/document_1.pdf', 'assets/document_2.pdf']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath('merged_output.pdf');
+
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: inputPaths,
+        outputPath: outputPath,
+      );
+
+      expect(await helper.verifyPDFUint8List([result.outputPath], inputPaths), true);
+    });
+
     testWidgets('Test merging two PDFs', (tester) async {
       final helper =
           TestFileHelper(['assets/document_1.pdf', 'assets/document_2.pdf']);
@@ -30,8 +44,7 @@ void main() {
     });
 
     testWidgets('Test merging single PDF file', (tester) async {
-      final helper =
-      TestFileHelper(['assets/document_1.pdf']);
+      final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
@@ -55,7 +68,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
     });
 
@@ -73,8 +86,9 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
-      expect(result.message, startsWith('File is not of PDF type or does not exist:'));
+      expect(result.outputPath, "");
+      expect(result.message,
+          startsWith('File is not of PDF type or does not exist:'));
     });
 
     testWidgets('Test merging with non-supported file', (tester) async {
@@ -89,8 +103,9 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
-      expect(result.message, startsWith('File is not of PDF type or does not exist:'));
+      expect(result.outputPath, "");
+      expect(result.message,
+          startsWith('File is not of PDF type or does not exist:'));
     });
   });
 }

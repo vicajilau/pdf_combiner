@@ -1,9 +1,9 @@
-name: Dart Analyze + Unit Test
+name: Dart Analyze 🚀 Unit Tests 🧪
 
 on: push
 
 jobs:
-  analyze-unit-test:
+  Testing:
     runs-on: ${{ matrix.os }}
 
     strategy:

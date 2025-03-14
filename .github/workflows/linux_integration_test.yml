@@ -1,0 +1,46 @@
+name: ⭐ Integration Test ⭐ Linux
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  Testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux Dependencies
+        run: |
+          sudo apt-get update -y && sudo apt-get upgrade -y
+          sudo apt-get install -y curl git unzip xz-utils zip libglu1-mesa
+          sudo apt-get install -y clang cmake git ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+
+      - name: Start virtual display
+        run: Xvfb :99 -screen 0 1600x1200x16 &
+
+      - name: Set DISPLAY variable
+        run: echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v4
+
+      - name: Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: Run create_image_from_pdf_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/create_image_from_pdf_integration_test.dart -d linux
+
+      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart -d linux
+
+      - name: Run merge_multiple_pdfs_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/merge_multiple_pdfs_integration_test.dart -d linux
