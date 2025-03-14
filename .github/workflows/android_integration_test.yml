@@ -44,12 +44,6 @@ jobs:
           echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
 
-      - name: Android Licenses
-        run: yes | flutter doctor --android-licenses
-
-      - name: Run flutter doctor
-        run: flutter doctor
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -60,6 +54,9 @@ jobs:
       - name: AVD Install
         run: |
           echo no | avdmanager create avd -n testEmulator -k "system-images;android-35;google_apis;x86_64"
+
+      - name: Android Licenses
+        run: yes | flutter doctor --android-licenses
 
       - name: Start AVD
         run: |
