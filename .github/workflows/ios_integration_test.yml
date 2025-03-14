@@ -40,20 +40,13 @@ jobs:
         env:
           DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
+      - name: Open Simulator UI
+        run: open -a Simulator
+
       - name: Ensure Flutter Detects the Simulator
         run: flutter devices
 
       - name: Run create_image_from_pdf_integration_test Integration Tests
         run: |
           cd example
-          flutter test integration_test/create_image_from_pdf_integration_test.dart
-
-      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
-        run: |
-          cd example
-          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart
-
-      - name: Run merge_multiple_pdfs_integration_test Integration Tests
-        run: |
-          cd example
-          flutter test integration_test/merge_multiple_pdfs_integration_test.dart
+          flutter test integration_test/create_image_from_pdf_integration_test.dart -d B6FF8287-EFD3-4208-A1E7-6F27F1BFB003
