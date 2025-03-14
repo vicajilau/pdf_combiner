@@ -417,7 +417,7 @@ FlMethodResponse* create_image_from_pdf(FlValue* args) {
         }
 
         // Save the combined bitmap to a PNG file
-        std::string output_image_path = std::string(output_path) + "/combined_image.png";
+        std::string output_image_path = std::string(output_path) + "/image.png";
         if (!save_bitmap_to_png(combined_bitmap, output_image_path, compression)) {
             FPDFBitmap_Destroy(combined_bitmap);
             FPDF_CloseDocument(doc);

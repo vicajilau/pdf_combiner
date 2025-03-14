@@ -40,12 +40,19 @@ jobs:
           unzip -q cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
           mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
 
+      - name: Set up Android SDK environment
+        run: |
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+
       - name: AVD Install
         run: |
           yes | sdkmanager "system-images;android-35;google_apis;x86_64"
           echo no | avdmanager create avd -n testEmulator -k "system-images;android-35;google_apis;x86_64"
           sdkmanager "platform-tools"
           sdkmanager "build-tools;35.0.0"
+          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
 
       - name: Start AVD
         run: |
