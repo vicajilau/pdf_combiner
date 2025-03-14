@@ -38,6 +38,9 @@ jobs:
         env:
           DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
+      - name: Ensure Flutter Detects the Simulator
+        run: flutter devices
+
       - name: Run create_image_from_pdf_integration_test Integration Tests
         run: |
           cd example
