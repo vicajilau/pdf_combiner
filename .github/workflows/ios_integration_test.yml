@@ -28,9 +28,9 @@ jobs:
 
       - name: Start iOS Simulator
         run: |
-          UDID=$(xcrun simctl list devices available | grep "iPhone 16" | head -n 1 | awk -F'[()]' '{print $2}')
+          UDID=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -n 1 | awk -F'[()]' '{print $2}')
           if [ -z "$UDID" ]; then
-            echo "No available iPhone 16 simulator found."
+            echo "No available iPhone 16 Pro simulator found."
             exit 1
           fi
           echo "Using simulator: $UDID"
@@ -49,4 +49,14 @@ jobs:
       - name: Run create_image_from_pdf_integration_test Integration Tests
         run: |
           cd example
-          flutter test integration_test/create_image_from_pdf_integration_test.dart -d B6FF8287-EFD3-4208-A1E7-6F27F1BFB003
+          flutter test integration_test/create_image_from_pdf_integration_test.dart -d "iPhone 16 Pro"
+
+      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart -d "iPhone 16 Pro"
+
+      - name: Run merge_multiple_pdfs_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/merge_multiple_pdfs_integration_test.dart -d "iPhone 16 Pro"
