@@ -13,6 +13,20 @@ void main() {
   });
 
   group('mergeMultiplePDFs Integration Tests', () {
+
+    testWidgets('Test verificate if pdfs input its inside of output path', (tester) async {
+      final helper = TestFileHelper(['assets/document_1.pdf', 'assets/document_2.pdf']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath('merged_output.pdf');
+
+      final result = await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: inputPaths,
+        outputPath: outputPath,
+      );
+
+      expect(await helper.verifyPDFUint8List([result.outputPath], inputPaths), true);
+    });
+
     testWidgets('Test merging two PDFs', (tester) async {
       final helper =
           TestFileHelper(['assets/document_1.pdf', 'assets/document_2.pdf']);

@@ -13,6 +13,19 @@ void main() {
   });
 
   group('createPDFFromMultipleImages Integration Tests', () {
+
+    testWidgets('Test verificate if images input its inside of output path', (tester) async {
+      final helper = TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath('merged_output.pdf');
+
+      final result = await PdfCombiner.createPDFFromMultipleImages(
+        inputPaths: inputPaths,
+        outputPath: outputPath,
+      );
+
+      expect(await helper.verifyPDFUint8List([result.outputPath], inputPaths), true);
+    });
     testWidgets('Test creating pdf from two images', (tester) async {
       final helper =
           TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png']);
