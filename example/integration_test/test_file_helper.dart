@@ -78,22 +78,22 @@ class TestFileHelper {
     return await Future.wait(paths.map((path) => FileMagicNumber.getBytesFromPathOrBlob(path)));
   }
 
- bool _containsUint8List(Uint8List source, Uint8List pattern) {
+ bool _containsUint8List(Uint8List listOuthputh, Uint8List listInputh) {
     bool found = false;
-    for (int i= 0; i < source.length; i++) {
-      for (int j = 0; j < pattern.length; j++) {
-        if (source[i] == pattern[j]) {
+    int numBytes = 0;
+      for (int j = listInputh.indexOf(listOuthputh[numBytes]); j < listInputh.length; j++) {
+        if (listOuthputh[numBytes] == listInputh[j]) {
           found = true;
+          numBytes++;
           break;
         } else {
           found = false;
+          numBytes = 0;
         }
       }
-      if(found){
+      if(found && numBytes >= listInputh.length){
         found = true;
-        break;
       }
-    }
 
     return found;
   }
