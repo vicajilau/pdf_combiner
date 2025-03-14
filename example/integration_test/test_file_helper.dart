@@ -62,7 +62,14 @@ class TestFileHelper {
   Future<bool> verifyPDFUint8List(List<String> outputPaths,List<String> inputPaths) async {
     List<Uint8List> listInputhFiles = await getUint8List(inputPaths);
     List<Uint8List> listOutPuthFiles = await getUint8List(outputPaths);
-    var validator = await _containsUint8List(listOutPuthFiles, listInputhFiles);;
+    var validator;
+    for (int i= 0; i < outputPaths.length; i++) {
+      for (int j = 0; j < inputPaths.length; j++) {
+        validator = await _containsUint8List(listOutPuthFiles.first, listInputhFiles.first);
+      }
+    }
+
+
 
     return validator;
   }
@@ -71,16 +78,15 @@ class TestFileHelper {
     return await Future.wait(paths.map((path) => FileMagicNumber.getBytesFromPathOrBlob(path)));
   }
 
-// Función para buscar un Uint8List dentro de otro
-  Future<bool> _containsUint8List(List<Uint8List> source, List<Uint8List> pattern) async {
+ bool _containsUint8List(Uint8List source, Uint8List pattern) {
     bool found = false;
     for (int i= 0; i < source.length; i++) {
-      for (int j = 0; j < source.length; j++) {
-        if (source[i].contains(pattern[j])) {
+      for (int j = 0; j < pattern.length; j++) {
+        if (source[i] == pattern[j]) {
           found = true;
+          break;
         } else {
           found = false;
-          break;
         }
       }
       if(found){
