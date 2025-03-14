@@ -1,3 +1,7 @@
+
+import 'dart:typed_data';
+
+import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
@@ -14,6 +18,20 @@ void main() {
   });
 
   group('createImageFromPDF Integration Tests', () {
+
+    testWidgets('Test verificate if image input its inside of output path', (tester) async {
+      final helper = TestFileHelper(['assets/document_1.pdf']);
+      final inputPaths = await helper.prepareInputFiles();
+      final outputPath = await helper.getOutputFilePath();
+
+      final result = await PdfCombiner.createImageFromPDF(
+        inputPath: inputPaths[0],
+        outputDirPath: outputPath,
+      );
+
+      expect(await helper.verifyPDFUint8List(result.outputPaths, inputPaths), true);
+    });
+
     testWidgets('Test creating images from PDF file', (tester) async {
       final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();

@@ -1,5 +1,9 @@
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:file_magic_number/file_magic_number.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 
@@ -53,5 +57,38 @@ class TestFileHelper {
       return basePath;
     }
     return '$basePath/$outputFileName'; // Return the full output file path.
+  }
+
+  Future<bool> verifyPDFUint8List(List<String> outputPaths,List<String> inputPaths) async {
+    List<Uint8List> listInputhFiles = await getUint8List(inputPaths);
+    List<Uint8List> listOutPuthFiles = await getUint8List(outputPaths);
+    var validator = await _containsUint8List(listOutPuthFiles, listInputhFiles);;
+
+    return validator;
+  }
+
+  Future<List<Uint8List>> getUint8List(List<String> paths) async {
+    return await Future.wait(paths.map((path) => FileMagicNumber.getBytesFromPathOrBlob(path)));
+  }
+
+// Función para buscar un Uint8List dentro de otro
+  Future<bool> _containsUint8List(List<Uint8List> source, List<Uint8List> pattern) async {
+    bool found = false;
+    for (int i= 0; i < source.length; i++) {
+      for (int j = 0; j < source.length; j++) {
+        if (source[i].contains(pattern[j])) {
+          found = true;
+        } else {
+          found = false;
+          break;
+        }
+      }
+      if(found){
+        found = true;
+        break;
+      }
+    }
+
+    return found;
   }
 }
