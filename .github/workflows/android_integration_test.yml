@@ -53,9 +53,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Install Android SDK components
+        run: |
+          yes | sdkmanager "platform-tools" "platforms;android-35" "build-tools;34.0.0" "system-images;android-35;google_apis;x86_64"
+
       - name: AVD Install
         run: |
-          yes | sdkmanager "platform-tools" "build-tools;34.0.0" "system-images;android-35;google_apis;x86_64"
           echo no | avdmanager create avd -n testEmulator -k "system-images;android-35;google_apis;x86_64"
 
       - name: Start AVD
