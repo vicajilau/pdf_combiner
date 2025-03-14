@@ -30,59 +30,47 @@ jobs:
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v4
 
+      - name: Run flutter doctor
+        run: flutter doctor
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Download Android Command Line Tools
         run: |
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          unzip -q cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
-          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+          mkdir -p $HOME/android-sdk/cmdline-tools/latest
+          unzip -q cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools/latest
 
       - name: Set up Android SDK environment
         run: |
           echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
           echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+          echo "$HOME/android-sdk/build-tools/34.0.0" >> $GITHUB_PATH
 
       - name: AVD Install
         run: |
-          yes | sdkmanager "system-images;android-35;google_apis;x86_64"
+          yes | sdkmanager "platform-tools" "build-tools;34.0.0" "system-images;android-35;google_apis;x86_64"
           echo no | avdmanager create avd -n testEmulator -k "system-images;android-35;google_apis;x86_64"
-          sdkmanager "platform-tools"
-          sdkmanager "build-tools;35.0.0"
-          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
-          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
 
       - name: Start AVD
         run: |
           $HOME/android-sdk/emulator/emulator -avd testEmulator -no-window -no-audio &
           adb wait-for-device
-          bootcompleted=""
-          until [ "$bootcompleted" == "1" ]; do
+          until adb shell getprop sys.boot_completed | grep -m 1 "1"; do
             sleep 5
-            bootcompleted=$(adb shell getprop sys.boot_completed | tr -d '\r\n')
           done
+          adb devices
           echo "Initialized Emulator"
 
-      - name: Set up Android SDK environment
-        run: |
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
-          echo "$HOME/android-sdk/build-tools/35.0.0" >> $GITHUB_PATH
+      - name: Run flutter doctor
+        run: flutter doctor
 
-      - name: Run create_image_from_pdf_integration_test Integration Tests
+      - name: Run integration tests
         run: |
           cd example
-          flutter test integration_test/create_image_from_pdf_integration_test.dart -d emulator-5554
-
-      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
-        run: |
-          cd example
-          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart -d emulator-5554
-
-      - name: Run merge_multiple_pdfs_integration_test Integration Tests
-        run: |
-          cd example
-          flutter test integration_test/merge_multiple_pdfs_integration_test.dart -d emulator-5554
+          flutter test integration_test/create_image_from_pdf_integration_test.dart
+          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart
+          flutter test integration_test/merge_multiple_pdfs_integration_test.dart
