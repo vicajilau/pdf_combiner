@@ -35,6 +35,8 @@ jobs:
           fi
           echo "Using simulator: $UDID"
           xcrun simctl boot "$UDID"
+          echo "Wait for iOS Simulator to Boot Completely"
+          xcrun simctl bootstatus "$UDID" -b
         env:
           DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
