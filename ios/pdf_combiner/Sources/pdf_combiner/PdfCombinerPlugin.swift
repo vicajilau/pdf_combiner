@@ -182,9 +182,10 @@ private extension PdfCombinerPlugin {
             
             if !createOneImage {
                 if let fileURL = createFileName(path: outputDirPath, with: pageNumber),
-                   let data = resizedImage.jpegData(compressionQuality: compressionQuality) {
+                   let jpgData = resizedImage.jpegData(compressionQuality: compressionQuality),
+                   let pngData = UIImage(data: jpgData)?.pngData() {
                     do {
-                        try data.write(to: fileURL)
+                        try pngData.write(to: fileURL)
                         pdfImagesPath.append(fileURL.relativePath)
                     } catch { }
                 }
@@ -258,11 +259,11 @@ private extension PdfCombinerPlugin {
     func createFileName(path: String, with index: Int? = nil) -> URL? {
         var basePath = URL(fileURLWithPath: path)
         guard let index else {
-            basePath.appendPathComponent("image_final.jpeg")
+            basePath.appendPathComponent("image.png")
             return basePath
         }
         
-        let fileName = "image_final_\(index).jpeg"
+        let fileName = "image_\(index + 1).png"
         basePath.appendPathComponent(fileName)
         return basePath
     }

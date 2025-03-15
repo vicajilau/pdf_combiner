@@ -36,7 +36,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
     });
 
@@ -54,8 +54,9 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
-      expect(result.message, startsWith('File is not an image or does not exist:'));
+      expect(result.outputPath, "");
+      expect(result.message,
+          startsWith('File is not an image or does not exist:'));
     });
 
     testWidgets('Test creating pdf with non-supported file', (tester) async {
@@ -70,7 +71,7 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.message,
           'File is not an image or does not exist: ${TestFileHelper.basePath}/document_1.pdf');
     });

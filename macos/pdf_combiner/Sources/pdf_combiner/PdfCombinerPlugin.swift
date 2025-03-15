@@ -98,9 +98,9 @@ private extension PdfCombinerPlugin {
     func createPDFFromMultipleImage(args: Dictionary<String, Any>, completionHandler: @escaping (Result<String, PDFCombinerErrors>) -> Void) {
         guard let paths = args["paths"] as? [String],
               let outputDirPath = args["outputDirPath"] as? String,
-              var height = args["height"] as? Int,
-              var width = args["width"] as? Int,
-              var keepAspectRatio = args["keepAspectRatio"] as? Bool
+              let height = args["height"] as? Int,
+              let width = args["width"] as? Int,
+              let keepAspectRatio = args["keepAspectRatio"] as? Bool
         else {
             completionHandler(.failure(PDFCombinerErrors.wrongArguments(["paths", "outputDirPath", "height", "width", "keepAspectRatio"]))); return
         }
@@ -182,6 +182,9 @@ private extension PdfCombinerPlugin {
             context.saveGState()
             // context.translateBy(x: 0, y: renderSize.height)
             // context.scaleBy(x: 1, y: -1)
+            context.setFillColor(NSColor.white.cgColor)
+            context.fill(CGRect(origin: .zero,
+                                size: CGSize(width: renderSize.width, height: renderSize.height)))
             pdfPage.draw(with: .mediaBox, to: context)
             context.restoreGState()
             image.unlockFocus()
@@ -266,11 +269,11 @@ private extension PdfCombinerPlugin {
     func createFileName(path: String, with index: Int? = nil) -> URL? {
         var basePath = URL(fileURLWithPath: path)
         guard let index else {
-            basePath.appendPathComponent("image_final.jpeg")
+            basePath.appendPathComponent("image.png")
             return basePath
         }
         
-        let fileName = "image_final_\(index).jpeg"
+        let fileName = "image_\(index + 1).png"
         basePath.appendPathComponent(fileName)
         return basePath
     }

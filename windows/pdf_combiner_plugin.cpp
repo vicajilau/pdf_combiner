@@ -401,7 +401,7 @@ void PdfCombinerPlugin::create_image_from_pdf(
         }
 
         // Save the combined bitmap to a PNG file
-        std::string output_image_path = std::string(output_path) + "/combined_image.png";
+        std::string output_image_path = std::string(output_path) + "/image.png";
         if (!save_bitmap_to_png(combined_bitmap, output_image_path, compression)) {
             FPDFBitmap_Destroy(combined_bitmap);
             FPDF_CloseDocument(doc);
@@ -445,7 +445,7 @@ void PdfCombinerPlugin::create_image_from_pdf(
             FPDF_RenderPageBitmap(bitmap, page, 0, 0, (int)width, (int)height, 0, FPDF_ANNOT);
 
             // Save the bitmap to a PNG file
-            std::string output_image_path = std::string(output_path) + "/page_" + std::to_string(i) + ".png";
+            std::string output_image_path = std::string(output_path) + "/image_" + std::to_string(i+1) + ".png";
             if (!save_bitmap_to_png(bitmap, output_image_path, compression)) {
                 FPDF_ClosePage(page);
                 FPDF_CloseDocument(doc);

@@ -150,7 +150,7 @@ extension NSImage {
     func save(to path: URL, quality: Double) throws {
         guard let tiffData = tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: tiffData),
-              let data = bitmap.representation(using: .jpeg, properties: [.compressionFactor: quality])
+              let data = bitmap.representation(using: .png, properties: [.compressionFactor: quality])
         else { return }
         
         try data.write(to: path)

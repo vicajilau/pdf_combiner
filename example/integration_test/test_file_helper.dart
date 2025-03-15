@@ -45,10 +45,13 @@ class TestFileHelper {
 
   /// Generates a full output file path in the application document directory.
   ///
-  /// [outputFileName] The name of the output file to be generated (e.g., 'merged_output.pdf').
+  /// [outputFileName] The name of the output file to be generated (e.g., 'merged_output.pdf'). If not provided is empty
   ///
   /// Returns the full path where the output file will be saved.
-  Future<String> getOutputFilePath(String outputFileName) async {
+  Future<String> getOutputFilePath([String outputFileName = ""]) async {
+    if (outputFileName.isEmpty) {
+      return basePath;
+    }
     return '$basePath/$outputFileName'; // Return the full output file path.
   }
 }
