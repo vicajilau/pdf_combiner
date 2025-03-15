@@ -46,6 +46,18 @@ jobs:
       - name: Ensure Flutter Detects the Simulator
         run: flutter devices
 
+      - name: Wait for Simulator to be Fully Ready
+        run: |
+          echo "Waiting for simulator to be responsive..."
+          for i in {1..30}; do
+            if xcrun simctl list devices | grep "Booted" | grep "$UDID"; then
+              echo "Simulator is ready!"
+              break
+            fi
+            echo "Waiting..."
+            sleep 5
+          done
+
       - name: Run create_image_from_pdf_integration_test Integration Tests
         run: |
           cd example
