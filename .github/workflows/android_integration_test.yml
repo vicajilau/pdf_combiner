@@ -74,7 +74,17 @@ jobs:
       - name: Ensure Flutter Detects the Simulator
         run: flutter devices
 
-      - name: Run integration tests
+      - name: Run create_image_from_pdf_integration_test Integration Tests
         run: |
           cd example
-          flutter test integration_test -d emulator-5554
+          flutter test integration_test/create_image_from_pdf_integration_test.dart -d emulator-5554
+
+      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart -d emulator-5554
+
+      - name: Run merge_multiple_pdfs_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/merge_multiple_pdfs_integration_test.dart -d emulator-5554

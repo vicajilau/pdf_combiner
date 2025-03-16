@@ -57,8 +57,18 @@ jobs:
             echo "Waiting..."
             sleep 5
           done
-
+          
       - name: Run create_image_from_pdf_integration_test Integration Tests
         run: |
           cd example
-          flutter test integration_test -d "iPhone 16 Pro"
+          flutter test integration_test/create_image_from_pdf_integration_test.dart -d "iPhone 16 Pro"
+
+      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart -d "iPhone 16 Pro"
+
+      - name: Run merge_multiple_pdfs_integration_test Integration Tests
+        run: |
+          cd example
+          flutter test integration_test/merge_multiple_pdfs_integration_test.dart -d "iPhone 16 Pro"
