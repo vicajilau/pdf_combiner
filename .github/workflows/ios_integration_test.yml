@@ -35,20 +35,30 @@ jobs:
           fi
           echo "Using simulator: $UDID"
           xcrun simctl boot "$UDID"
+          echo "Wait for iOS Simulator to Boot Completely"
+          xcrun simctl bootstatus "$UDID" -b
         env:
           DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
-      - name: Run create_image_from_pdf_integration_test Integration Tests
-        run: |
-          cd example
-          flutter test integration_test/create_image_from_pdf_integration_test.dart -d "iPhone 16 Pro"
+      - name: Open Simulator UI
+        run: open -a Simulator
 
-      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
-        run: |
-          cd example
-          flutter test integration_test/create_pdf_from_multiple_images_integration_test.dart -d "iPhone 16 Pro"
+      - name: Ensure Flutter Detects the Simulator
+        run: flutter devices
 
-      - name: Run merge_multiple_pdfs_integration_test Integration Tests
+      - name: Wait for Simulator to be Fully Ready
+        run: |
+          echo "Waiting for simulator to be responsive..."
+          for i in {1..30}; do
+            if xcrun simctl list devices | grep "Booted" | grep "$UDID"; then
+              echo "Simulator is ready!"
+              break
+            fi
+            echo "Waiting..."
+            sleep 5
+          done
+          
+      - name: Run Integration Tests
         run: |
           cd example
-          flutter test integration_test/merge_multiple_pdfs_integration_test.dart -d "iPhone 16 Pro"
+          flutter test integration_test -d "iPhone 16 Pro"
