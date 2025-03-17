@@ -1,9 +1,6 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:file_magic_number/file_magic_number.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 

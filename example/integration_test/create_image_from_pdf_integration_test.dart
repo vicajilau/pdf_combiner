@@ -1,7 +1,6 @@
 
 import 'dart:typed_data';
 
-import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
