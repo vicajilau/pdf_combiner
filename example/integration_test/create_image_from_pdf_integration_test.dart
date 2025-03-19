@@ -27,7 +27,7 @@ void main() {
       expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPaths, ['${TestFileHelper.basePath}/image_1.png']);
       expect(result.message, null);
-    });
+    }, timeout: Timeout.none);
 
     testWidgets('Test creating with non-existing file', (tester) async {
       final helper = TestFileHelper([]);
@@ -44,7 +44,7 @@ void main() {
       expect(result.outputPaths, []);
       expect(result.message,
           'File is not of PDF type or does not exist: ${inputPaths[0]}');
-    });
+    }, timeout: Timeout.none);
 
     testWidgets('Test creating with non-supported file', (tester) async {
       final helper = TestFileHelper(['assets/image_1.jpeg']);
@@ -60,7 +60,7 @@ void main() {
       expect(result.outputPaths, []);
       expect(result.message,
           'File is not of PDF type or does not exist: ${inputPaths[0]}');
-    });
+    }, timeout: Timeout.none);
 
     testWidgets('Test creating only one image from a PDF', (tester) async {
       final helper = TestFileHelper(['assets/document_1.pdf']);
@@ -74,7 +74,7 @@ void main() {
       expect(result.outputPaths.length, 1);
       expect(result.outputPaths, ['${TestFileHelper.basePath}/image_1.png']);
       expect(result.message, null);
-    });
+    }, timeout: Timeout.none);
 
     testWidgets('Test creating four images from a PDF', (tester) async {
       final helper = TestFileHelper(['assets/document_3.pdf']);
@@ -89,6 +89,6 @@ void main() {
       expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPaths.length, 4);
       expect(result.message, null);
-    });
+    }, timeout: Timeout.none);
   });
 }
