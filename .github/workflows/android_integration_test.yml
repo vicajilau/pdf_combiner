@@ -1,4 +1,4 @@
-name: ⭐ Integration Test ⭐ Android
+name: ⭐ Integration Test ⭐
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '**.md'
 
 jobs:
-  Testing:
+  Android:
     runs-on: ubuntu-latest
 
     steps:

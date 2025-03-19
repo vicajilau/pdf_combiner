@@ -1,4 +1,4 @@
-name: ⭐ Integration Test ⭐ Windows
+name: ⭐ Integration Test ⭐
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '**.md'
 
 jobs:
-  Testing:
+  Windows:
     runs-on: windows-latest
 
     steps:

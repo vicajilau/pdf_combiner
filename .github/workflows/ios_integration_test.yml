@@ -1,4 +1,4 @@
-name: ⭐ Integration Test ⭐ iOS
+name: ⭐ Integration Test ⭐
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '**.md'
 
 jobs:
-  Testing:
+  iOS:
     runs-on: macos-latest
 
     steps:
