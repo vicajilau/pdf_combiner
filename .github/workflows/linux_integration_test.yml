@@ -1,4 +1,4 @@
-name: ⭐ Integration Test ⭐
+name: ⭐ Integration Test ⭐ Linux
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '**.md'
 
 jobs:
-  Linux:
+  Testing:
     runs-on: ubuntu-latest
 
     steps:
