@@ -1,0 +1,64 @@
+name: ⭐ Integration Test ⭐ iOS
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  Testing:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install MacOS Dependencies
+        run: |
+          sudo gem install cocoapods
+          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v4
+
+      - name: Enable Flutter for iOS
+        run: flutter config --enable-ios
+
+      - name: Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: Start iOS Simulator
+        run: |
+          UDID=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -n 1 | awk -F'[()]' '{print $2}')
+          if [ -z "$UDID" ]; then
+            echo "No available iPhone 16 Pro simulator found."
+            exit 1
+          fi
+          echo "Using simulator: $UDID"
+          xcrun simctl boot "$UDID"
+          echo "Wait for iOS Simulator to Boot Completely"
+          xcrun simctl bootstatus "$UDID" -b
+        env:
+          DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+
+      - name: Open Simulator UI
+        run: open -a Simulator
+
+      - name: Ensure Flutter Detects the Simulator
+        run: flutter devices
+
+      - name: Wait for Simulator to be Fully Ready
+        run: |
+          echo "Waiting for simulator to be responsive..."
+          for i in {1..30}; do
+            if xcrun simctl list devices | grep "Booted" | grep "$UDID"; then
+              echo "Simulator is ready!"
+              break
+            fi
+            echo "Waiting..."
+            sleep 5
+          done
+
+      - name: Run Integration Tests
+        run: |
+          cd example
+          flutter test integration_test -d "iPhone 16 Pro" --timeout=none --verbose

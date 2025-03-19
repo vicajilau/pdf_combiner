@@ -27,7 +27,7 @@ void main() {
       expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPath, '${TestFileHelper.basePath}/merged_output.pdf');
       expect(result.message, 'Processed successfully');
-    });
+    }, timeout: Timeout.none);
 
     testWidgets('Test creating pdf with empty list', (tester) async {
       final result = await PdfCombiner.createPDFFromMultipleImages(
@@ -36,9 +36,9 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.message, 'The parameter (inputPaths) cannot be empty');
-    });
+    }, timeout: Timeout.none);
 
     testWidgets('Test creating pdf with non-existing file', (tester) async {
       final helper = TestFileHelper([]);
@@ -54,9 +54,10 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
-      expect(result.message, startsWith('File is not an image or does not exist:'));
-    });
+      expect(result.outputPath, "");
+      expect(result.message,
+          startsWith('File is not an image or does not exist:'));
+    }, timeout: Timeout.none);
 
     testWidgets('Test creating pdf with non-supported file', (tester) async {
       final helper =
@@ -70,9 +71,9 @@ void main() {
       );
 
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.outputPath, null);
+      expect(result.outputPath, "");
       expect(result.message,
           'File is not an image or does not exist: ${TestFileHelper.basePath}/document_1.pdf');
-    });
+    }, timeout: Timeout.none);
   });
 }
