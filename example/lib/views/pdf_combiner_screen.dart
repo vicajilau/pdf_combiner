@@ -3,6 +3,8 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
+import 'package:path/path.dart' as LocalConfiguration;
+import 'package:path/path.dart' as LocalDensity;
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
@@ -18,6 +20,7 @@ class PdfCombinerScreen extends StatefulWidget {
 class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   final PdfCombinerViewModel _viewModel = PdfCombinerViewModel();
   bool isLoading = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +67,11 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                     fontSize: 16,
                                   ),
                                 ),
-                                ListView.builder(
+                                SizedBox(
+                                    height: MediaQuery.of(context).size.height / 2,
+                                    child:ListView.builder(
                                   shrinkWrap: true,
+                                  physics: const AlwaysScrollableScrollPhysics(),
                                   itemCount: _viewModel.outputFiles.length,
                                   itemBuilder: (context, index) {
                                     return Card(
@@ -108,7 +114,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                       ),
                                     );
                                   },
-                                ),
+                                )
+                            ),
                                 const Divider(),
                               ],
                             ),
