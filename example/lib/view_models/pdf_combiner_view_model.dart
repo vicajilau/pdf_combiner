@@ -62,9 +62,8 @@ class PdfCombinerViewModel {
     if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
 
     try {
-      String outputFilePath = "combined_output.pdf";
       final directory = await _getOutputDirectory();
-      outputFilePath = '${directory?.path}/combined_output.pdf';
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
 
       final response = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: selectedFiles,
