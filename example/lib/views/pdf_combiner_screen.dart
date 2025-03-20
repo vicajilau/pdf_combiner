@@ -66,7 +66,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                   ),
                                 ),
                                 SizedBox(
-                                    height: MediaQuery.of(context).size.height / 2,
+                                    height: MediaQuery.of(context).size.height / 3,
                                     child:ListView.builder(
                                   shrinkWrap: true,
                                   physics: const AlwaysScrollableScrollPhysics(),
