@@ -19,7 +19,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   final PdfCombinerViewModel _viewModel = PdfCombinerViewModel();
   bool isLoading = false;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,54 +65,59 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                   ),
                                 ),
                                 SizedBox(
-                                    height: MediaQuery.of(context).size.height / 3,
-                                    child:ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const AlwaysScrollableScrollPhysics(),
-                                  itemCount: _viewModel.outputFiles.length,
-                                  itemBuilder: (context, index) {
-                                    return Card(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: ListTile(
-                                        leading: FileTypeIcon(
-                                            filePath:
-                                                _viewModel.outputFiles[index]),
-                                        title: Text(
-                                          p.basename(
-                                              _viewModel.outputFiles[index]),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        onTap: () => _openOutputFile(index),
-                                        subtitle: FutureBuilder(
-                                            future: FileMagicNumber
-                                                .getBytesFromPathOrBlob(
-                                                    _viewModel
-                                                        .outputFiles[index]),
-                                            builder: (context, snapshot) {
-                                              if (snapshot.connectionState ==
-                                                  ConnectionState.waiting) {
-                                                return const Text(
-                                                    "Loading size...");
-                                              } else if (snapshot.hasError) {
-                                                return const Icon(Icons.error);
-                                              } else {
-                                                return Text(
-                                                    snapshot.data?.size() ??
-                                                        "Unknown Size");
-                                              }
-                                            }),
-                                        trailing: IconButton(
-                                          icon: const Icon(Icons.copy),
-                                          onPressed: () =>
-                                              _copyOutputToClipboard(index),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                )
-                            ),
+                                    height:
+                                        MediaQuery.of(context).size.height / 3,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      itemCount: _viewModel.outputFiles.length,
+                                      itemBuilder: (context, index) {
+                                        return Card(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                          child: ListTile(
+                                            leading: FileTypeIcon(
+                                                filePath: _viewModel
+                                                    .outputFiles[index]),
+                                            title: Text(
+                                              p.basename(_viewModel
+                                                  .outputFiles[index]),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            onTap: () => _openOutputFile(index),
+                                            subtitle: FutureBuilder(
+                                                future: FileMagicNumber
+                                                    .getBytesFromPathOrBlob(
+                                                        _viewModel.outputFiles[
+                                                            index]),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting) {
+                                                    return const Text(
+                                                        "Loading size...");
+                                                  } else if (snapshot
+                                                      .hasError) {
+                                                    return const Icon(
+                                                        Icons.error);
+                                                  } else {
+                                                    return Text(
+                                                        snapshot.data?.size() ??
+                                                            "Unknown Size");
+                                                  }
+                                                }),
+                                            trailing: IconButton(
+                                              icon: const Icon(Icons.copy),
+                                              onPressed: () =>
+                                                  _copyOutputToClipboard(index),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )),
                                 const Divider(),
                               ],
                             ),
