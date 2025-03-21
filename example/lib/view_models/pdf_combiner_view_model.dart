@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:platform_detail/platform_detail.dart';
 
@@ -56,32 +57,24 @@ class PdfCombinerViewModel {
   }
 
   /// Function to combine selected PDF files into a single output file
-  Future<void> combinePdfs() async {
+  Future<void> combinePdfs(PdfCombinerDelegate delegate) async {
     if (selectedFiles.length < 2) {
-      throw Exception('You need to select more than one document.');
+      delegate.onError
+          ?.call(Exception('You need to select more than one document.'));
     }
 
-    try {
-      final directory = await _getOutputDirectory();
-      String outputFilePath = '${directory?.path}/combined_output.pdf';
+    final directory = await _getOutputDirectory();
+    String outputFilePath = '${directory?.path}/combined_output.pdf';
 
-      final response = await _pdfCombiner.mergeMultiplePDFs(
-        inputPaths: selectedFiles,
-        outputPath: outputFilePath,
-      ); // Combine the PDFs
-
-      if (response.status == PdfCombinerStatus.success) {
-        outputFiles = [response.outputPath];
-      } else {
-        throw Exception('Error combining PDFs: ${response.message}.');
-      }
-    } catch (e) {
-      throw Exception('Error combining PDFs: ${e.toString()}.');
-    }
+    await _pdfCombiner.mergeMultiplePDFs(
+      inputPaths: selectedFiles,
+      outputPath: outputFilePath,
+      delegate: delegate,
+    ); // Combine the PDFs
   }
 
   /// Function to create a PDF file from a list of images
-  Future<void> createPDFFromImages() async {
+  Future<void> createPDFFromImages(PdfCombinerDelegate delegate) async {
     try {
       final directory = await _getOutputDirectory();
       String outputFilePath = '${directory?.path}/combined_output.pdf';
@@ -102,47 +95,28 @@ class PdfCombinerViewModel {
   }
 
   /// Function to create a PDF file from a list of documents
-  Future<void> createPDFFromDocuments() async {
-    try {
-      final directory = await _getOutputDirectory();
-      String outputFilePath = '${directory?.path}/combined_output.pdf';
-      final response = await _pdfCombiner.generatePDFFromDocuments(
-        inputPaths: selectedFiles,
-        outputPath: outputFilePath,
-      );
-
-      switch (response.status) {
-        case PdfCombinerStatus.success:
-          outputFiles = [response.outputPath];
-        case PdfCombinerStatus.error:
-          throw Exception(response.message);
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
+  Future<void> createPDFFromDocuments(PdfCombinerDelegate delegate) async {
+    final directory = await _getOutputDirectory();
+    String outputFilePath = '${directory?.path}/combined_output.pdf';
+    await _pdfCombiner.generatePDFFromDocuments(
+      inputPaths: selectedFiles,
+      outputPath: outputFilePath,
+      delegate: delegate,
+    );
   }
 
   /// Function to create a PDF file from a list of images
-  Future<void> createImagesFromPDF() async {
+  Future<void> createImagesFromPDF(PdfCombinerDelegate delegate) async {
     if (selectedFiles.length > 1) {
       throw Exception('Only you can select a single document.');
     }
-    try {
-      final directory = await _getOutputDirectory();
-      final outputFilePath = '${directory?.path}';
-      final response = await _pdfCombiner.createImageFromPDF(
-        inputPath: selectedFiles.first,
-        outputDirPath: outputFilePath,
-      );
-
-      if (response.status == PdfCombinerStatus.success) {
-        outputFiles = response.outputPaths;
-      } else {
-        throw Exception('${response.message}');
-      }
-    } catch (e) {
-      rethrow;
-    }
+    final directory = await _getOutputDirectory();
+    final outputFilePath = '${directory?.path}';
+    await _pdfCombiner.createImageFromPDF(
+      inputPath: selectedFiles.first,
+      outputDirPath: outputFilePath,
+      delegate: delegate,
+    );
   }
 
   /// Function to get the appropriate directory for saving the output file

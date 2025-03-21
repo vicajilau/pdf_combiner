@@ -3,6 +3,7 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
+import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
@@ -17,7 +18,31 @@ class PdfCombinerScreen extends StatefulWidget {
 
 class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   final PdfCombinerViewModel _viewModel = PdfCombinerViewModel();
-  bool isLoading = false;
+  double _progress = 0.0;
+  late PdfCombinerDelegate delegate;
+
+  @override
+  void initState() {
+    super.initState();
+    initDelegate();
+  }
+
+  void initDelegate() {
+    delegate = PdfCombinerDelegate(onProgress: (updatedValue) {
+      setState(() {
+        _progress = updatedValue;
+      });
+    }, onError: (error) {
+      _showSnackbarSafely(error.toString());
+    }, onSuccess: (paths) {
+      setState(() {
+        _viewModel.outputFiles = paths;
+      });
+      _showSnackbarSafely('File/s generated successfully: $paths');
+    });
+  }
+
+  bool isLoading() => _progress != 0.0 && _progress != 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +63,10 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         ],
       ),
       body: SafeArea(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+        child: isLoading()
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
             : DropTarget(
                 onDragDone: (details) {
                   setState(() {
@@ -247,66 +274,26 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   void _restart() {
     _viewModel.restart();
     setState(() {
-      changeLoading(false);
+      _progress = 0.0;
     });
     _showSnackbarSafely('App restarted!');
   }
 
   // Function to combine selected PDF files into a single output file
   Future<void> _combinePdfs() async {
-    try {
-      changeLoading(true);
-      await _viewModel.combinePdfs();
-      changeLoading(false);
-      _showSnackbarSafely(
-          'PDFs combined successfully: ${_viewModel.outputFiles.first}');
-    } catch (e) {
-      changeLoading(false);
-      _showSnackbarSafely(e.toString());
-    }
+    await _viewModel.combinePdfs(delegate);
   }
 
-  void changeLoading(bool isLoading) => setState(() {
-        this.isLoading = isLoading;
-      });
-
   Future<void> _createPdfFromMix() async {
-    try {
-      changeLoading(true);
-      await _viewModel.createPDFFromDocuments();
-      changeLoading(false);
-      _showSnackbarSafely(
-          'PDF created successfully: ${_viewModel.outputFiles.first}');
-    } catch (e) {
-      changeLoading(false);
-      _showSnackbarSafely(e.toString());
-    }
+    await _viewModel.createPDFFromDocuments(delegate);
   }
 
   Future<void> _createPdfFromImages() async {
-    try {
-      changeLoading(true);
-      await _viewModel.createPDFFromImages();
-      changeLoading(false);
-      _showSnackbarSafely(
-          'PDF created successfully: ${_viewModel.outputFiles.first}');
-    } catch (e) {
-      changeLoading(false);
-      _showSnackbarSafely(e.toString());
-    }
+    await _viewModel.createPDFFromImages(delegate);
   }
 
   Future<void> _createImagesFromPDF() async {
-    try {
-      changeLoading(true);
-      await _viewModel.createImagesFromPDF();
-      changeLoading(false);
-      _showSnackbarSafely(
-          'Images created successfully: ${_viewModel.outputFiles}');
-    } catch (e) {
-      changeLoading(false);
-      _showSnackbarSafely(e.toString());
-    }
+    await _viewModel.createImagesFromPDF(delegate);
   }
 
   Future<void> _copyOutputToClipboard(int index) async {
