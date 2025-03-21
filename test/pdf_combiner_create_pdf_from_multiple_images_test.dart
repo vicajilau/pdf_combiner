@@ -9,7 +9,9 @@ import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
 
 void main() {
   group('PdfCombiner  Create PDF From Multiple Images Unit Tests', () {
+    final pdfCombiner = PdfCombiner();
     PdfCombiner.isMock = true;
+
     // Test for error handling when file not exist in the createPDFFromMultipleImages method.
     test('createPDFFromMultipleImages - Error handling (empty inputPaths)',
         () async {
@@ -19,7 +21,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createPDFFromMultipleImages(
+      final result = await pdfCombiner.createPDFFromMultipleImages(
         inputPaths: [],
         outputPath: 'output/path.pdf',
       );
@@ -39,7 +41,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createPDFFromMultipleImages(
+      final result = await pdfCombiner.createPDFFromMultipleImages(
         inputPaths: ['path1.jpg', 'path2.jpg'],
         outputPath: 'output/path.pdf',
       );
@@ -60,7 +62,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createPDFFromMultipleImages(
+      final result = await pdfCombiner.createPDFFromMultipleImages(
         inputPaths: ['assets/document_1.pdf', 'path2.jpg'],
         outputPath: 'output/path.pdf',
       );
@@ -82,7 +84,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createPDFFromMultipleImages(
+      final result = await pdfCombiner.createPDFFromMultipleImages(
         inputPaths: [
           'example/assets/image_1.jpeg',
           'example/assets/image_2.png'
@@ -106,7 +108,7 @@ void main() {
       final outputPath = 'output/path/pdf_output.pdf';
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createPDFFromMultipleImages(
+      final result = await pdfCombiner.createPDFFromMultipleImages(
         inputPaths: [
           'example/assets/image_1.jpeg',
           'example/assets/image_2.png'
@@ -121,95 +123,107 @@ void main() {
       expect(result.toString(),
           'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
-  });
 
-  // Test for error handling when you try to send a file that its not a pdf in createPDFFromMultipleImages
-  test('createPDFFromMultipleImages wrong outputPath', () async {
-    MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+    // Test for error handling when you try to send a file that its not a pdf in createPDFFromMultipleImages
+    test('createPDFFromMultipleImages wrong outputPath', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
-    // Replace the platform instance with the mock implementation.
-    PdfCombinerPlatform.instance = fakePlatform;
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
 
-    final outputPath = 'output/path/pdf_output.jpeg';
+      final outputPath = 'output/path/pdf_output.jpeg';
 
-    // Call the method and check the response.
-    final result = await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
-      outputPath: outputPath,
-    );
+      // Call the method and check the response.
+      final result = await pdfCombiner.createPDFFromMultipleImages(
+        inputPaths: [
+          'example/assets/image_1.jpeg',
+          'example/assets/image_2.png'
+        ],
+        outputPath: outputPath,
+      );
 
-    // Verify the error result matches the expected values.
-    expect(result.status, PdfCombinerStatus.error);
-    expect(result.outputPath, "");
-    expect(result.message,
-        'The outputPath must have a .pdf format: output/path/pdf_output.jpeg');
-    expect(result.toString(),
-        'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
-  });
+      // Verify the error result matches the expected values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message,
+          'The outputPath must have a .pdf format: output/path/pdf_output.jpeg');
+      expect(result.toString(),
+          'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
 
-  // Test for error processing when creating pdf from multiple images using PdfCombiner.
-  test('createPDFFromMultipleImages - Mocked Exception', () async {
-    MockPdfCombinerPlatformWithException fakePlatform =
-        MockPdfCombinerPlatformWithException();
+    // Test for error processing when creating pdf from multiple images using PdfCombiner.
+    test('createPDFFromMultipleImages - Mocked Exception', () async {
+      MockPdfCombinerPlatformWithException fakePlatform =
+          MockPdfCombinerPlatformWithException();
 
-    // Replace the platform instance with the mock implementation.
-    PdfCombinerPlatform.instance = fakePlatform;
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
 
-    // Call the method and check the response.
-    final result = await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
-      outputPath: 'output/path.pdf',
-    );
+      // Call the method and check the response.
+      final result = await pdfCombiner.createPDFFromMultipleImages(
+        inputPaths: [
+          'example/assets/image_1.jpeg',
+          'example/assets/image_2.png'
+        ],
+        outputPath: 'output/path.pdf',
+      );
 
-    // Verify the result matches the expected mock values.
-    expect(result.status, PdfCombinerStatus.error);
-    expect(result.outputPath, "");
-    expect(result.message, 'Exception: Mocked Exception');
-    expect(result.toString(),
-        'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
-  });
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message, 'Exception: Mocked Exception');
+      expect(result.toString(),
+          'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
 
-  // Test for error Mocked Exception when creating pdf from multiple images using PdfCombiner.
-  test('createPDFFromMultipleImages - Mocked Exception', () async {
-    MockPdfCombinerPlatformWithException fakePlatform =
-        MockPdfCombinerPlatformWithException();
+    // Test for error Mocked Exception when creating pdf from multiple images using PdfCombiner.
+    test('createPDFFromMultipleImages - Mocked Exception', () async {
+      MockPdfCombinerPlatformWithException fakePlatform =
+          MockPdfCombinerPlatformWithException();
 
-    // Replace the platform instance with the mock implementation.
-    PdfCombinerPlatform.instance = fakePlatform;
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
 
-    // Call the method and check the response.
-    final result = await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
-      outputPath: 'output/path.pdf',
-    );
+      // Call the method and check the response.
+      final result = await pdfCombiner.createPDFFromMultipleImages(
+        inputPaths: [
+          'example/assets/image_1.jpeg',
+          'example/assets/image_2.png'
+        ],
+        outputPath: 'output/path.pdf',
+      );
 
-    // Verify the result matches the expected mock values.
-    expect(result.status, PdfCombinerStatus.error);
-    expect(result.outputPath, "");
-    expect(result.message, 'Exception: Mocked Exception');
-    expect(result.toString(),
-        'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
-  });
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message, 'Exception: Mocked Exception');
+      expect(result.toString(),
+          'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
 
-  // Test for error processing when creating pdf from multiple images using PdfCombiner.
-  test('createPDFFromMultipleImages - Error in processing', () async {
-    MockPdfCombinerPlatformWithError fakePlatform =
-        MockPdfCombinerPlatformWithError();
+    // Test for error processing when creating pdf from multiple images using PdfCombiner.
+    test('createPDFFromMultipleImages - Error in processing', () async {
+      MockPdfCombinerPlatformWithError fakePlatform =
+          MockPdfCombinerPlatformWithError();
 
-    // Replace the platform instance with the mock implementation.
-    PdfCombinerPlatform.instance = fakePlatform;
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
 
-    // Call the method and check the response.
-    final result = await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: ['example/assets/image_1.jpeg', 'example/assets/image_2.png'],
-      outputPath: 'output/path.pdf',
-    );
+      // Call the method and check the response.
+      final result = await pdfCombiner.createPDFFromMultipleImages(
+        inputPaths: [
+          'example/assets/image_1.jpeg',
+          'example/assets/image_2.png'
+        ],
+        outputPath: 'output/path.pdf',
+      );
 
-    // Verify the result matches the expected mock values.
-    expect(result.status, PdfCombinerStatus.error);
-    expect(result.outputPath, "");
-    expect(result.message, 'error');
-    expect(result.toString(),
-        'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message, 'error');
+      expect(result.toString(),
+          'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
   });
 }

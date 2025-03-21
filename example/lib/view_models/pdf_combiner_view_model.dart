@@ -12,6 +12,7 @@ import 'package:platform_detail/platform_detail.dart';
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
   List<String> outputFiles = []; // Path for the combined output file
+  final _pdfCombiner = PdfCombiner();
 
   /// Function to pick PDF files from the device (old method)
   Future<void> pickFiles() async {
@@ -64,7 +65,7 @@ class PdfCombinerViewModel {
       final directory = await _getOutputDirectory();
       String outputFilePath = '${directory?.path}/combined_output.pdf';
 
-      final response = await PdfCombiner.mergeMultiplePDFs(
+      final response = await _pdfCombiner.mergeMultiplePDFs(
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
       ); // Combine the PDFs
@@ -84,7 +85,7 @@ class PdfCombinerViewModel {
     try {
       final directory = await _getOutputDirectory();
       String outputFilePath = '${directory?.path}/combined_output.pdf';
-      final response = await PdfCombiner.createPDFFromMultipleImages(
+      final response = await _pdfCombiner.createPDFFromMultipleImages(
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
       );
@@ -105,7 +106,7 @@ class PdfCombinerViewModel {
     try {
       final directory = await _getOutputDirectory();
       String outputFilePath = '${directory?.path}/combined_output.pdf';
-      final response = await PdfCombiner.generatePDFFromDocuments(
+      final response = await _pdfCombiner.generatePDFFromDocuments(
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
       );
@@ -129,7 +130,7 @@ class PdfCombinerViewModel {
     try {
       final directory = await _getOutputDirectory();
       final outputFilePath = '${directory?.path}';
-      final response = await PdfCombiner.createImageFromPDF(
+      final response = await _pdfCombiner.createImageFromPDF(
         inputPath: selectedFiles.first,
         outputDirPath: outputFilePath,
       );

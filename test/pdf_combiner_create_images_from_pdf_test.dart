@@ -11,6 +11,7 @@ import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
 
 void main() {
   group('PdfCombiner Create Images From PDF Unit Tests', () {
+    final pdfCombiner = PdfCombiner();
     PdfCombiner.isMock = true;
     // Test for error handling when you try to send a file that its not a pdf in createImageFromPDF
     test('createImageFromPDF - Error handling (File is not a pdf)', () async {
@@ -20,7 +21,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: 'assets/test_image1.png',
         outputDirPath: 'output/path',
       );
@@ -40,7 +41,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: 'assets/test_image_not_exist.pdf',
         outputDirPath: 'output/path',
       );
@@ -60,7 +61,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: '',
         outputDirPath: 'output/path',
       );
@@ -80,7 +81,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: 'output/path',
       );
@@ -102,7 +103,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: 'output/path',
       );
@@ -124,7 +125,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: 'output/path',
         config: ImageFromPdfConfig(
@@ -149,7 +150,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: 'output/path',
       );
@@ -172,7 +173,7 @@ void main() {
       final outputDirPath = 'output/path';
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: outputDirPath,
         config: ImageFromPdfConfig(createOneImage: true),
@@ -196,7 +197,7 @@ void main() {
       final outputDirPath = 'output/path';
 
       // Call the method and check the response.
-      final result = await PdfCombiner.createImageFromPDF(
+      final result = await pdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: outputDirPath,
       );

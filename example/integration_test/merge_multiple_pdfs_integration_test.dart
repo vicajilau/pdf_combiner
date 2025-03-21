@@ -13,13 +13,14 @@ void main() {
   });
 
   group('mergeMultiplePDFs Integration Tests', () {
+    final pdfCombiner = PdfCombiner();
     testWidgets('Test merging two PDFs', (tester) async {
       final helper =
           TestFileHelper(['assets/document_1.pdf', 'assets/document_2.pdf']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await PdfCombiner.mergeMultiplePDFs(
+      final result = await pdfCombiner.mergeMultiplePDFs(
         inputPaths: inputPaths,
         outputPath: outputPath,
       );
@@ -34,7 +35,7 @@ void main() {
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await PdfCombiner.mergeMultiplePDFs(
+      final result = await pdfCombiner.mergeMultiplePDFs(
         inputPaths: inputPaths,
         outputPath: outputPath,
       );
@@ -48,7 +49,7 @@ void main() {
       final helper = TestFileHelper([]);
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await PdfCombiner.mergeMultiplePDFs(
+      final result = await pdfCombiner.mergeMultiplePDFs(
         inputPaths: [],
         outputPath: outputPath,
       );
@@ -66,7 +67,7 @@ void main() {
 
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await PdfCombiner.mergeMultiplePDFs(
+      final result = await pdfCombiner.mergeMultiplePDFs(
         inputPaths: inputPaths,
         outputPath: outputPath,
       );
@@ -83,7 +84,7 @@ void main() {
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await PdfCombiner.mergeMultiplePDFs(
+      final result = await pdfCombiner.mergeMultiplePDFs(
         inputPaths: inputPaths,
         outputPath: outputPath,
       );
