@@ -59,7 +59,6 @@ class PdfCombinerViewModel {
     if (selectedFiles.length < 2) {
       throw Exception('You need to select more than one document.');
     }
-    if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
 
     try {
       final directory = await _getOutputDirectory();
@@ -82,11 +81,9 @@ class PdfCombinerViewModel {
 
   /// Function to create a PDF file from a list of images
   Future<void> createPDFFromImages() async {
-    if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
-    String outputFilePath = "combined_output.pdf";
     try {
       final directory = await _getOutputDirectory();
-      outputFilePath = '${directory?.path}/combined_output.pdf';
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
       final response = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
@@ -105,7 +102,6 @@ class PdfCombinerViewModel {
 
   /// Function to create a PDF file from a list of documents
   Future<void> createPDFFromDocuments() async {
-    if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     try {
       final directory = await _getOutputDirectory();
       String outputFilePath = '${directory?.path}/combined_output.pdf';
@@ -127,7 +123,6 @@ class PdfCombinerViewModel {
 
   /// Function to create a PDF file from a list of images
   Future<void> createImagesFromPDF() async {
-    if (selectedFiles.isEmpty) return; // If no files are selected, do nothing
     if (selectedFiles.length > 1) {
       throw Exception('Only you can select a single document.');
     }
