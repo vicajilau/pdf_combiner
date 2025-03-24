@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
@@ -55,6 +56,11 @@ void main() {
           'example/assets/document_2.pdf'
         ],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          expect(paths, ["output/path.pdf"]);
+        }, onError: (error) {
+          fail("Test failed due to error: ${error.toString()}");
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -77,6 +83,12 @@ void main() {
           'example/assets/document_2.pdf'
         ],
         outputPath: 'output/path.jpeg',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: The outputPath must have a .pdf format: output/path.jpeg');
+        }),
       );
 
       expect(result.status, PdfCombinerStatus.error);
@@ -100,6 +112,12 @@ void main() {
       final result = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: [],
         outputPath: 'output/path',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: The parameter (inputPaths) cannot be empty');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -121,6 +139,12 @@ void main() {
       final result = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: ['path1', 'path2'],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: File is not of PDF type or does not exist: path1');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -159,6 +183,12 @@ void main() {
       final result = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: ['path1.pdf', 'path2.pdf'],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: File is not of PDF type or does not exist: path1.pdf');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -183,6 +213,11 @@ void main() {
           'example/assets/document_2.pdf'
         ],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: error');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -208,6 +243,11 @@ void main() {
           'example/assets/document_2.pdf'
         ],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: Mocked Exception');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -234,6 +274,11 @@ void main() {
           'example/assets/document_2.pdf'
         ],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: error');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -248,7 +293,7 @@ void main() {
     test('combine - Error in processing', () async {
       // Create a mock platform that simulates an error during PDF merging.
       MockPdfCombinerPlatformWithError fakePlatformWithError =
-      MockPdfCombinerPlatformWithError();
+          MockPdfCombinerPlatformWithError();
 
       // Replace the platform instance with the error mock implementation.
       PdfCombinerPlatform.instance = fakePlatformWithError;

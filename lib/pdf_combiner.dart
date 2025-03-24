@@ -225,7 +225,7 @@ class PdfCombiner {
           }
         }
       } catch (e) {
-        delegate?.onError?.call(Exception(e));
+        delegate?.onError?.call(e is Exception ? e : Exception(e.toString()));
         return MergeMultiplePDFResponse(
             status: PdfCombinerStatus.error, message: e.toString());
       }
@@ -313,7 +313,7 @@ class PdfCombiner {
           }
         }
       } catch (e) {
-        delegate?.onError?.call(Exception(e));
+        delegate?.onError?.call(e is Exception ? e : Exception(e.toString()));
         return PdfFromMultipleImageResponse(
           status: PdfCombinerStatus.error,
           message: e.toString(),
@@ -399,7 +399,7 @@ class PdfCombiner {
           }
         }
       } catch (e) {
-        delegate?.onError?.call(Exception(e));
+        delegate?.onError?.call(e is Exception ? e : Exception(e.toString()));
         return ImageFromPDFResponse(
             status: PdfCombinerStatus.error, message: e.toString());
       }
