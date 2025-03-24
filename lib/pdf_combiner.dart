@@ -66,8 +66,8 @@ class PdfCombiner {
       );
     } else if (outputPath.trim().isEmpty) {
       _notifyFinishProgress(delegate);
-      delegate?.onError?.call(Exception(
-          PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath)));
+      delegate?.onError?.call(
+          Exception(PdfCombinerMessages.emptyParameterMessage("outputPath")));
       return GeneratePdfFromDocumentsResponse(
         status: PdfCombinerStatus.error,
         message: PdfCombinerMessages.emptyParameterMessage("outputPath"),
