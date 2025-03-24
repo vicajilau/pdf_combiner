@@ -1,3 +1,7 @@
+## 4.3.0
+### General
+* Added: `PdfCombinerDelegate` class for handling progress, success, and error callbacks during the PDF combination process.
+
 ## 4.2.5
 ### General
 * Downgrade of path to increase Flutter support. [#46](https://github.com/vicajilau/pdf_combiner/issues/46)
