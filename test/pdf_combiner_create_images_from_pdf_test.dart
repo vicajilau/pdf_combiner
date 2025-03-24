@@ -3,6 +3,7 @@ import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart'
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/image_scale.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
@@ -23,6 +24,12 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: 'assets/test_image1.png',
         outputDirPath: 'output/path',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: File is not of PDF type or does not exist: assets/test_image1.png');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -43,6 +50,12 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: 'assets/test_image_not_exist.pdf',
         outputDirPath: 'output/path',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: File is not of PDF type or does not exist: assets/test_image_not_exist.pdf');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -63,6 +76,12 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: '',
         outputDirPath: 'output/path',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: The parameter (inputPath) cannot be empty');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -83,6 +102,11 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: 'output/path',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: error');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -105,6 +129,11 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: 'output/path',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: error');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -130,6 +159,11 @@ void main() {
         config: ImageFromPdfConfig(
           rescale: ImageScale(width: 500, height: 200),
         ),
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: Error in processing');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -152,6 +186,11 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: 'output/path',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: Mocked Exception');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -176,6 +215,11 @@ void main() {
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: outputDirPath,
         config: ImageFromPdfConfig(createOneImage: true),
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          expect(paths, ['$outputDirPath/image1.png']);
+        }, onError: (error) {
+          fail("Test failed due to error: ${error.toString()}");
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -199,6 +243,12 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
         inputPath: 'example/assets/document_1.pdf',
         outputDirPath: outputDirPath,
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          expect(paths,
+              ['$outputDirPath/image1.png', '$outputDirPath/image2.png']);
+        }, onError: (error) {
+          fail("Test failed due to error: ${error.toString()}");
+        }),
       );
 
       // Verify the error result matches the expected values.
