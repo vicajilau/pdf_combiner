@@ -24,6 +24,12 @@ void main() {
       final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: [],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: The parameter (inputPaths) cannot be empty');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -44,6 +50,12 @@ void main() {
       final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: ['path1.jpg', 'path2.jpg'],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: File is not an image or does not exist: path1.jpg');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -65,6 +77,12 @@ void main() {
       final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: ['assets/document_1.pdf', 'path2.jpg'],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: File is not an image or does not exist: assets/document_1.pdf');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -90,6 +108,11 @@ void main() {
           'example/assets/image_2.png'
         ],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: error');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -114,6 +137,11 @@ void main() {
           'example/assets/image_2.png'
         ],
         outputPath: outputPath,
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          expect(paths, [outputPath]);
+        }, onError: (error) {
+          fail("Test failed due to error: ${error.toString()}");
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -140,6 +168,12 @@ void main() {
           'example/assets/image_2.png'
         ],
         outputPath: outputPath,
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: The outputPath must have a .pdf format: output/path/pdf_output.jpeg');
+        }),
       );
 
       // Verify the error result matches the expected values.
@@ -166,6 +200,11 @@ void main() {
           'example/assets/image_2.png'
         ],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: Mocked Exception');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -191,6 +230,11 @@ void main() {
           'example/assets/image_2.png'
         ],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: Mocked Exception');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -216,6 +260,11 @@ void main() {
           'example/assets/image_2.png'
         ],
         outputPath: 'output/path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(), 'Exception: error');
+        }),
       );
 
       // Verify the result matches the expected mock values.
@@ -224,29 +273,6 @@ void main() {
       expect(result.message, 'error');
       expect(result.toString(),
           'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
-    });
-
-    // Test for error setting a different type of file in the mergeMultiplePDF method.
-    test('combine - Error createPDFFromMultipleImages using delegate',
-        () async {
-      // Create a mock platform that simulates an error during PDF merging.
-      MockPdfCombinerPlatformWithError fakePlatformWithError =
-          MockPdfCombinerPlatformWithError();
-      // Replace the platform instance with the error mock implementation.
-      PdfCombinerPlatform.instance = fakePlatformWithError;
-
-      // Call the method and check the response.
-      await PdfCombiner.generatePDFFromDocuments(
-        inputPaths: [
-          'example/assets/image_1.jpeg',
-        ],
-        outputPath: 'output/path.pdf',
-        delegate: PdfCombinerDelegate(onSuccess: (paths) {
-          fail("Test failed due to success: $paths");
-        }, onError: (error) {
-          expect(error.toString(), 'Exception: error');
-        }),
-      );
     });
   });
 }
