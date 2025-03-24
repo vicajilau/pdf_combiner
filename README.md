@@ -255,7 +255,7 @@ void main() async {
 }
 ```
 
-**Note:** When using the `PdfCombinerDelegate` for callbacks, do not use the return value from the `await` call in the same method. This prevents duplicate handling of the result, as the callbacks will already manage the progress, success, and error states.
+> **Note:** When using the `PdfCombinerDelegate` for callbacks, do not use the return value from the `await` call in the same method. This prevents duplicate handling of the result, as the callbacks will already manage the progress, success, and error states.
 
 In this example, the `PdfCombinerDelegate` is used to handle progress updates, successful completion, and errors during the PDF combination process. The `mergeMultiplePDFs` method takes the delegate as an optional parameter and triggers the appropriate callbacks based on the operation's outcome.
 
