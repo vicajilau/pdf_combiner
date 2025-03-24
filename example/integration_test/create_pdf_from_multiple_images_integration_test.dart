@@ -13,14 +13,13 @@ void main() {
   });
 
   group('createPDFFromMultipleImages Integration Tests', () {
-    final pdfCombiner = PdfCombiner();
     testWidgets('Test creating pdf from two images', (tester) async {
       final helper =
           TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await pdfCombiner.createPDFFromMultipleImages(
+      final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: inputPaths,
         outputPath: outputPath,
       );
@@ -31,7 +30,7 @@ void main() {
     }, timeout: Timeout.none);
 
     testWidgets('Test creating pdf with empty list', (tester) async {
-      final result = await pdfCombiner.createPDFFromMultipleImages(
+      final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: [],
         outputPath: '${TestFileHelper.basePath}/assets/merged_output.pdf',
       );
@@ -49,7 +48,7 @@ void main() {
       inputPaths.add('${TestFileHelper.basePath}/assets/non_existing.jpg');
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await pdfCombiner.createPDFFromMultipleImages(
+      final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: inputPaths,
         outputPath: outputPath,
       );
@@ -66,7 +65,7 @@ void main() {
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await pdfCombiner.createPDFFromMultipleImages(
+      final result = await PdfCombiner.createPDFFromMultipleImages(
         inputPaths: inputPaths,
         outputPath: outputPath,
       );

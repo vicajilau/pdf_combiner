@@ -14,13 +14,12 @@ void main() {
   });
 
   group('createImageFromPDF Integration Tests', () {
-    final pdfCombiner = PdfCombiner();
     testWidgets('Test creating images from PDF file', (tester) async {
       final helper = TestFileHelper(['assets/document_1.pdf']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath();
 
-      final result = await pdfCombiner.createImageFromPDF(
+      final result = await PdfCombiner.createImageFromPDF(
         inputPath: inputPaths[0],
         outputDirPath: outputPath,
       );
@@ -36,7 +35,7 @@ void main() {
       inputPaths.add('${TestFileHelper.basePath}/assets/non_existing.pdf');
       final outputPath = await helper.getOutputFilePath("");
 
-      final result = await pdfCombiner.createImageFromPDF(
+      final result = await PdfCombiner.createImageFromPDF(
         inputPath: inputPaths[0],
         outputDirPath: outputPath,
       );
@@ -52,7 +51,7 @@ void main() {
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      final result = await pdfCombiner.createImageFromPDF(
+      final result = await PdfCombiner.createImageFromPDF(
         inputPath: inputPaths[0],
         outputDirPath: outputPath,
       );
@@ -68,7 +67,7 @@ void main() {
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath();
 
-      final result = await pdfCombiner.createImageFromPDF(
+      final result = await PdfCombiner.createImageFromPDF(
           inputPath: inputPaths[0], outputDirPath: outputPath);
 
       expect(result.status, PdfCombinerStatus.success);
@@ -82,7 +81,7 @@ void main() {
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath();
 
-      final result = await pdfCombiner.createImageFromPDF(
+      final result = await PdfCombiner.createImageFromPDF(
           inputPath: inputPaths[0],
           outputDirPath: outputPath,
           config: ImageFromPdfConfig(createOneImage: false));

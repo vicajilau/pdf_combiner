@@ -50,7 +50,7 @@ class PdfCombiner {
   /// - Returns an error if any input file is neither a PDF nor an image.
   /// - Returns an error if the image-to-PDF conversion fails.
   /// - Returns an error if the merging process fails.
-  Future<GeneratePdfFromDocumentsResponse> generatePDFFromDocuments({
+  static Future<GeneratePdfFromDocumentsResponse> generatePDFFromDocuments({
     required List<String> inputPaths,
     required String outputPath,
     PdfCombinerDelegate? delegate,
@@ -76,7 +76,6 @@ class PdfCombiner {
       _notifyCustomProgress(delegate, 0.3);
       final List<String> mutablePaths = List.from(inputPaths);
       String dirname = path.dirname(outputPath);
-      final pdfCombiner = PdfCombiner();
       for (int i = 0; i < mutablePaths.length; i++) {
         final path = mutablePaths[i];
         final isPDF = await DocumentUtils.isPDF(path);
@@ -102,7 +101,7 @@ class PdfCombiner {
         } else {
           _notifyCustomProgress(delegate, 0.5);
           if (isImage) {
-            final response = await pdfCombiner.createPDFFromMultipleImages(
+            final response = await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
               outputPath: "$dirname/document_$i.pdf",
             );
@@ -119,7 +118,7 @@ class PdfCombiner {
           }
         }
       }
-      final response = await pdfCombiner.mergeMultiplePDFs(
+      final response = await PdfCombiner.mergeMultiplePDFs(
         inputPaths: mutablePaths,
         outputPath: outputPath,
         delegate: delegate,
@@ -141,16 +140,16 @@ class PdfCombiner {
     }
   }
 
-  void _notifyCustomProgress(
+  static void _notifyCustomProgress(
       PdfCombinerDelegate? delegate, double customProgress) {
     delegate?.onProgress?.call(customProgress);
   }
 
-  void _notifyStartProgress(PdfCombinerDelegate? delegate) {
+  static void _notifyStartProgress(PdfCombinerDelegate? delegate) {
     delegate?.onProgress?.call(0.1);
   }
 
-  void _notifyFinishProgress(PdfCombinerDelegate? delegate) {
+  static void _notifyFinishProgress(PdfCombinerDelegate? delegate) {
     delegate?.onProgress?.call(1.0);
   }
 
@@ -168,7 +167,7 @@ class PdfCombiner {
   ///
   /// Returns:
   /// - A `Future<MergeMultiplePDFResponse?>` representing the result of the operation (either the success message or an error message).
-  Future<MergeMultiplePDFResponse> mergeMultiplePDFs({
+  static Future<MergeMultiplePDFResponse> mergeMultiplePDFs({
     required List<String> inputPaths,
     required String outputPath,
     PdfCombinerDelegate? delegate,
@@ -226,7 +225,7 @@ class PdfCombiner {
           }
         }
       } catch (e) {
-        delegate?.onError?.call(Exception(e.toString()));
+        delegate?.onError?.call(Exception(e));
         return MergeMultiplePDFResponse(
             status: PdfCombinerStatus.error, message: e.toString());
       }
@@ -248,7 +247,7 @@ class PdfCombiner {
   ///
   /// Returns:
   /// - A `Future<PdfFromMultipleImageResponse?>` representing the result of the operation (either the success message or an error message).
-  Future<PdfFromMultipleImageResponse> createPDFFromMultipleImages({
+  static Future<PdfFromMultipleImageResponse> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
@@ -314,7 +313,7 @@ class PdfCombiner {
           }
         }
       } catch (e) {
-        delegate?.onError?.call(Exception(e.toString()));
+        delegate?.onError?.call(Exception(e));
         return PdfFromMultipleImageResponse(
           status: PdfCombinerStatus.error,
           message: e.toString(),
@@ -346,7 +345,7 @@ class PdfCombiner {
   ///
   /// Returns:
   /// - A `Future<ImageFromPDFResponse?>` representing the result of the operation (either the success message or an error message).
-  Future<ImageFromPDFResponse> createImageFromPDF({
+  static Future<ImageFromPDFResponse> createImageFromPDF({
     required String inputPath,
     required String outputDirPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
@@ -400,7 +399,7 @@ class PdfCombiner {
           }
         }
       } catch (e) {
-        delegate?.onError?.call(Exception(e.toString()));
+        delegate?.onError?.call(Exception(e));
         return ImageFromPDFResponse(
             status: PdfCombinerStatus.error, message: e.toString());
       }
