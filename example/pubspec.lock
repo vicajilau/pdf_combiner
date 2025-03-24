@@ -157,10 +157,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_magic_number
-      sha256: eab1f0c708f846fc4be920e738f0eae7921ba45b6c232b7e19d82a301562f981
+      sha256: "510c3d3d152e6c9125801383a8a52441b4bcd9889d3f4938a7b9de026b1b4883"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "1.2.2"
   file_picker:
     dependency: "direct main"
     description:
