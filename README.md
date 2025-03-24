@@ -222,10 +222,6 @@ final compression = ImageCompression.medium;
 print(compression.value); // Output: 60
 ```
 
-Entendido. Aquí tienes la sección del README actualizada con una nota que indica que no se deben usar el return y los callbacks juntos en la misma llamada:
-
----
-
 ### Callbacks with `PdfCombinerDelegate`
 
 The `PdfCombinerDelegate` class is designed to handle progress, success, and error callbacks during the PDF combination process. This delegate can be passed as a parameter to any of the PDF combiner methods, making the return process cleaner and more efficient. While both mechanisms (direct return and callbacks) are supported, using callbacks is recommended for simpler operations.
