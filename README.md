@@ -221,6 +221,48 @@ Example Usage:
 final compression = ImageCompression.medium;
 print(compression.value); // Output: 60
 ```
+
+Entendido. Aquí tienes la sección del README actualizada con una nota que indica que no se deben usar el return y los callbacks juntos en la misma llamada:
+
+---
+
+### Callbacks with `PdfCombinerDelegate`
+
+The `PdfCombinerDelegate` class is designed to handle progress, success, and error callbacks during the PDF combination process. This delegate can be passed as a parameter to any of the PDF combiner methods, making the return process cleaner and more efficient. While both mechanisms (direct return and callbacks) are supported, using callbacks is recommended for simpler operations.
+
+#### `PdfCombinerDelegate` Class Example Usage
+
+Here's an example of how to use the `PdfCombinerDelegate` with the `mergeMultiplePDFs` method:
+
+```dart
+void main() async {
+  List<String> inputPaths = ['path/to/file1.pdf', 'path/to/file2.pdf'];
+  String outputPath = 'path/to/output.pdf';
+
+  PdfCombinerDelegate delegate = PdfCombinerDelegate(
+    onProgress: (progress) {
+      print('Progress: ${progress * 100}%');
+    },
+    onSuccess: (outputPaths) {
+      print('Successfully combined PDFs. Output paths: $outputPaths');
+    },
+    onError: (error) {
+      print('Error during PDF combination: $error');
+    },
+  );
+
+  await PdfCombiner.mergeMultiplePDFs(
+    inputPaths: inputPaths,
+    outputPath: outputPath,
+    delegate: delegate,
+  );
+}
+```
+
+**Note:** When using the `PdfCombinerDelegate` for callbacks, do not use the return value from the `await` call in the same method. This prevents duplicate handling of the result, as the callbacks will already manage the progress, success, and error states.
+
+In this example, the `PdfCombinerDelegate` is used to handle progress updates, successful completion, and errors during the PDF combination process. The `mergeMultiplePDFs` method takes the delegate as an optional parameter and triggers the appropriate callbacks based on the operation's outcome.
+
 ## Usage
 
 This plugin works with `file_picker` or `image_picker` for selecting files. Ensure you handle permissions using `permission_handler` before invoking the plugin.
