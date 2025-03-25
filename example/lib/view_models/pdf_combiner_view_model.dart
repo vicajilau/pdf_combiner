@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:platform_detail/platform_detail.dart';
 
 class PdfCombinerViewModel {
@@ -74,23 +73,13 @@ class PdfCombinerViewModel {
 
   /// Function to create a PDF file from a list of images
   Future<void> createPDFFromImages(PdfCombinerDelegate delegate) async {
-    try {
-      final directory = await _getOutputDirectory();
-      String outputFilePath = '${directory?.path}/combined_output.pdf';
-      final response = await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: selectedFiles,
-        outputPath: outputFilePath,
-      );
-
-      switch (response.status) {
-        case PdfCombinerStatus.success:
-          outputFiles = [response.outputPath];
-        case PdfCombinerStatus.error:
-          throw Exception('${response.message}');
-      }
-    } catch (e) {
-      throw Exception(e.toString());
-    }
+    final directory = await _getOutputDirectory();
+    String outputFilePath = '${directory?.path}/combined_output.pdf';
+    await PdfCombiner.createPDFFromMultipleImages(
+      inputPaths: selectedFiles,
+      outputPath: outputFilePath,
+      delegate: delegate,
+    );
   }
 
   /// Function to create a PDF file from a list of documents
