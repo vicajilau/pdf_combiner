@@ -88,7 +88,7 @@ private extension PdfCombinerPlugin {
         }
 
         guard mergedPDF.write(to: URL(fileURLWithPath: outputDirPath)) else {
-            completionHandler(.failure(PDFCombinerErrors.cannotWriteFile(outputDirPath))); return
+            completionHandler(.failure(PDFCombinerErrors.canNotWriteFile(outputDirPath))); return
         }
         completionHandler(.success(outputDirPath))
     }
@@ -107,7 +107,7 @@ private extension PdfCombinerPlugin {
         var images: [UIImage] = []
         for path in paths {
             guard let image = UIImage(contentsOfFile: path) else {
-                completionHandler(.failure(PDFCombinerErrors.cannotReadFile(path))); return
+                completionHandler(.failure(PDFCombinerErrors.canNotReadFile(path))); return
             }
             
             if width > 0 && height > 0 && keepAspectRatio {
@@ -147,7 +147,7 @@ private extension PdfCombinerPlugin {
         }
 
         guard let pdfDocument = PDFDocument(url: URL(fileURLWithPath: path)) else {
-            completionHandler(.failure(PDFCombinerErrors.cannotReadFile(path))); return
+            completionHandler(.failure(PDFCombinerErrors.canNotReadFile(path))); return
         }
         
         let compressionQuality = 1.0 - CGFloat(compression) / 100.0
@@ -208,7 +208,7 @@ private extension PdfCombinerPlugin {
                     do {
                         try data.write(to: fileURL)
                     } catch {
-                        completionHandler(.failure(PDFCombinerErrors.cannotWriteFile(fileURL.absoluteString))); return
+                        completionHandler(.failure(PDFCombinerErrors.canNotWriteFile(fileURL.absoluteString))); return
                     }
                     
                 }
@@ -225,8 +225,8 @@ extension FlutterError: Swift.Error {}
 private extension PdfCombinerPlugin {
     enum PDFCombinerErrors: Error {
         case notImplemented
-        case cannotReadFile(String)
-        case cannotWriteFile(String)
+        case canNotReadFile(String)
+        case canNotWriteFile(String)
         case wrongArguments([String])
         case generatePDFFailed
         
@@ -237,11 +237,11 @@ private extension PdfCombinerPlugin {
             case .notImplemented:
                 code = "NotImplemented"
                 message = "Not implemented operation."
-            case .cannotReadFile(let file):
-                code = "CannotreadFile"
+            case .canNotReadFile(let file):
+                code = "CanNotReadFile"
                 message = "Couldn't read file \(file)"
-            case .cannotWriteFile(let file):
-                code = "CannotWriteFile"
+            case .canNotWriteFile(let file):
+                code = "CanNotWriteFile"
                 message = "Couldn't save file \(file)"
             case .generatePDFFailed:
                 code = "GeneratePDFFailed"
