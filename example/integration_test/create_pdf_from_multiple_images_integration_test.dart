@@ -13,9 +13,9 @@ void main() {
   });
 
   group('createPDFFromMultipleImages Integration Tests', () {
-    testWidgets('Test creating pdf from two images', (tester) async {
+    testWidgets('Test creating pdf from three images', (tester) async {
       final helper =
-          TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png']);
+          TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png', 'assets/image_3.heic']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 

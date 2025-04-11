@@ -17,7 +17,7 @@ class PdfCombinerViewModel {
   Future<void> pickFiles() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'png'],
+      allowedExtensions: ['pdf', 'jpg', 'png', 'heic'],
       allowMultiple: true, // Allow picking multiple files
     );
 

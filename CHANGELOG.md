@@ -1,3 +1,8 @@
+## 4.4.0
+### General
+* Added suppor for heic images for iOS, macOS and Android. [#47](https://github.com/vicajilau/pdf_combiner/issues/57)
+
+
 ## 4.3.0
 ### General
 * Added: `PdfCombinerDelegate` class for handling progress, success, and error callbacks during the PDF combination process.

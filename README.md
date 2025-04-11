@@ -95,6 +95,12 @@ Convert a list of image files into a single PDF document.
 - `inputPaths`: A list of strings representing the image file paths.
 - `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
+**Supported images types:**
+- `png`: All platforms
+- `jpg`: All platforms
+- `heic`: Only for iOS, macOS and Android.
+
+
 By default, images are added to the PDF without modifications. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
