@@ -546,10 +546,10 @@ packages:
     dependency: "direct main"
     description:
       name: platform_detail
-      sha256: a4e1ce87d348bca5b1b1bb5414eae908c7b5e8d4b1ec05056bbc05d705084e0f
+      sha256: b992fabde1620b7f3847b6c0f7dae83af9aad164fa010d245016ee912a24c48b
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.0"
+    version: "5.0.0"
   plugin_platform_interface:
     dependency: transitive
     description:
