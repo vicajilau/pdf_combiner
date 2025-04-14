@@ -1,3 +1,8 @@
+## 4.3.1
+### General
+* Fixed an issue where the app was not built. [#58](https://github.com/vicajilau/pdf_combiner/issues/58) 
+* Updated dependencies.
+
 ## 4.3.0
 ### General
 * Added: `PdfCombinerDelegate` class for handling progress, success, and error callbacks during the PDF combination process.
