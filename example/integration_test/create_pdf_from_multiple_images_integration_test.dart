@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
+import 'dart:io';
 
 import 'test_file_helper.dart';
 
@@ -13,9 +14,9 @@ void main() {
   });
 
   group('createPDFFromMultipleImages Integration Tests', () {
-    testWidgets('Test creating pdf from three images', (tester) async {
+    testWidgets('Test creating pdf from two images', (tester) async {
       final helper =
-          TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png', 'assets/image_3.heic']);
+          TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
@@ -28,6 +29,24 @@ void main() {
       expect(result.outputPath, '${TestFileHelper.basePath}/merged_output.pdf');
       expect(result.message, 'Processed successfully');
     }, timeout: Timeout.none);
+
+    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+      testWidgets('Test creating pdf from three images', (tester) async {
+        final helper =
+        TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png', 'assets/image_3.heic']);
+        final inputPaths = await helper.prepareInputFiles();
+        final outputPath = await helper.getOutputFilePath('merged_output.pdf');
+
+        final result = await PdfCombiner.createPDFFromMultipleImages(
+          inputPaths: inputPaths,
+          outputPath: outputPath,
+        );
+
+        expect(result.status, PdfCombinerStatus.success);
+        expect(result.outputPath, '${TestFileHelper.basePath}/merged_output.pdf');
+        expect(result.message, 'Processed successfully');
+      }, timeout: Timeout.none);
+    }
 
     testWidgets('Test creating pdf with empty list', (tester) async {
       final result = await PdfCombiner.createPDFFromMultipleImages(
