@@ -14,9 +14,8 @@ import java.io.FileOutputStream
 
 
 // Class for Merging Multiple PDF
-class MergeMultiplePDF(getContext: Context, getResult: MethodChannel.Result) {
+class MergeMultiplePDF(getResult: MethodChannel.Result) {
 
-    private var context: Context = getContext
     private var result: MethodChannel.Result = getResult
 
     // Method Merge multiple PDF file into one File
@@ -51,6 +50,7 @@ class MergeMultiplePDF(getContext: Context, getResult: MethodChannel.Result) {
             } finally {
                 fileOutputStream.close()
             }
+
         }
 
         // Method invoke after merging complete
