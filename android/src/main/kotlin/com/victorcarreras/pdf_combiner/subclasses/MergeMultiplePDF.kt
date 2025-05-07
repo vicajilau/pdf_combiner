@@ -1,11 +1,9 @@
 package com.victorcarreras.pdf_combiner.subclasses
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.pdf.PdfDocument
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
+import androidx.core.graphics.createBitmap
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -14,18 +12,16 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import org.apache.pdfbox.io.MemoryUsageSetting
-import org.apache.pdfbox.multipdf.PDFMergerUtility
 
 
 // Class for Merging Multiple PDF
-class MergeMultiplePDF(getContext: Context, getResult: MethodChannel.Result) {
+class MergeMultiplePDF(getResult: MethodChannel.Result) {
 
-    private var context: Context = getContext
     private var result: MethodChannel.Result = getResult
     var status = ""
 
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun mergePdfs(inputPaths: List<String>, outputPath: String) = GlobalScope.launch(Dispatchers.IO) {
         try {
 
@@ -40,7 +36,7 @@ class MergeMultiplePDF(getContext: Context, getResult: MethodChannel.Result) {
                     val newPage = outputDocument.startPage(PdfDocument.PageInfo.Builder(page.width, page.height, pageIndex).create())
 
                     val canvas = newPage.canvas
-                    val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+                    val bitmap = createBitmap(page.width, page.height)
 
                     page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
 
@@ -65,7 +61,7 @@ class MergeMultiplePDF(getContext: Context, getResult: MethodChannel.Result) {
 
             status = "success"
             outputDocument.close()
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             status = "error"
         }
     }
