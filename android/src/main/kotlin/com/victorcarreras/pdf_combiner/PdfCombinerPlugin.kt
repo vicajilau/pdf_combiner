@@ -30,7 +30,7 @@ class PdfCombinerPlugin : FlutterPlugin, MethodCallHandler {
                 val paths = call.argument<List<String>>("paths")
                 val outputDirPath = call.argument<String>("outputDirPath")
                 if (paths != null && outputDirPath != null) {
-                    MergeMultiplePDF(result).merge(paths, outputDirPath)
+                    MergeMultiplePDF(context, result).merge(context,paths, outputDirPath)
                 } else {
                     result.error("INVALID_ARGUMENTS", "paths or outputDirPath cannot be null", null)
                 }

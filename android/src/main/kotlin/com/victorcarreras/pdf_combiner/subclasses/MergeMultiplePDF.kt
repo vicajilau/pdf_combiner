@@ -14,7 +14,7 @@ import java.io.FileOutputStream
 
 
 // Class for Merging Multiple PDF
-class MergeMultiplePDF(getResult: MethodChannel.Result) {
+class MergeMultiplePDF(context: Context, getResult: MethodChannel.Result) {
 
     private var result: MethodChannel.Result = getResult
 
@@ -22,7 +22,7 @@ class MergeMultiplePDF(getResult: MethodChannel.Result) {
     // [paths] List of paths
     // [outputDirPath] Output directory path with file name added with it Ex . usr/android/download/ABC.pdf
     @OptIn(DelicateCoroutinesApi::class)
-    fun merge(inputPaths: List<String>, outputPath: String) {
+    fun merge(context:Context,inputPaths: List<String>, outputPath: String) {
         var status = ""
 
         PDFBoxResourceLoader.init(context.applicationContext)
