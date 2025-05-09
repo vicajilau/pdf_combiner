@@ -31,7 +31,7 @@
 
 ### Underlying Technologies
 
-- **Android**: PDF manipulation is done natively using `android.graphics` with Kotlin, with no external dependencies.
+- **Android**: PDF manipulation is done natively using `android.graphics` with Kotlin and [PDFBox](https://pdfbox.apache.org/) from Apache but only for merge PDF files.
 - **iOS and macOS**: PDF manipulation is done natively using Swift, with no external dependencies.
 - **Linux and Windows**: Employs [PDFium](https://pdfium.googlesource.com/pdfium/) from Google, a C++ library.
 - **Web**: Implements [PDFLib](https://pdf-lib.js.org/) in JavaScript for PDF manipulation.
