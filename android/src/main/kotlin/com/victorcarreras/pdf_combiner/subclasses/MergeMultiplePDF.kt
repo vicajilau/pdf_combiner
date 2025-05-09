@@ -1,9 +1,9 @@
 package com.victorcarreras.pdf_combiner.subclasses
 
-import android.graphics.pdf.PdfDocument
-import android.graphics.pdf.PdfRenderer
-import android.os.ParcelFileDescriptor
-import androidx.core.graphics.createBitmap
+import android.content.Context
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import com.tom_roush.pdfbox.io.MemoryUsageSetting
+import com.tom_roush.pdfbox.multipdf.PDFMergerUtility
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -11,66 +11,47 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 
 
 // Class for Merging Multiple PDF
-class MergeMultiplePDF(getResult: MethodChannel.Result) {
+class MergeMultiplePDF(context: Context, getResult: MethodChannel.Result) {
 
     private var result: MethodChannel.Result = getResult
-    var status = ""
 
-
-    @OptIn(DelicateCoroutinesApi::class)
-    fun mergePdfs(inputPaths: List<String>, outputPath: String) = GlobalScope.launch(Dispatchers.IO) {
-        try {
-
-            val outputDocument = PdfDocument()
-
-            fun addPdfToDocument(pdfFile: File) {
-                val fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
-                val renderer = PdfRenderer(fileDescriptor)
-
-                for (pageIndex in 0 until renderer.pageCount) {
-                    val page = renderer.openPage(pageIndex)
-                    val newPage = outputDocument.startPage(PdfDocument.PageInfo.Builder(page.width, page.height, pageIndex).create())
-
-                    val canvas = newPage.canvas
-                    val bitmap = createBitmap(page.width, page.height)
-
-                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-
-                    canvas.drawBitmap(bitmap, 0f, 0f, null)
-
-                    outputDocument.finishPage(newPage)
-                    page.close()
-                }
-
-                renderer.close()
-                fileDescriptor.close()
-            }
-
-            for (inputPath in inputPaths) {
-                val pdfFile = File(inputPath)
-                addPdfToDocument(pdfFile)
-            }
-
-            FileOutputStream(outputPath).use { outputStream ->
-                outputDocument.writeTo(outputStream)
-            }
-
-            status = "success"
-            outputDocument.close()
-        } catch (_: IOException) {
-            status = "error"
-        }
-    }
     // Method Merge multiple PDF file into one File
     // [paths] List of paths
     // [outputDirPath] Output directory path with file name added with it Ex . usr/android/download/ABC.pdf
     @OptIn(DelicateCoroutinesApi::class)
-    fun merge(inputPaths: List<String>, outputPath: String) {
-        val singlePDFFromMultiplePDF = mergePdfs(inputPaths,outputPath)
+    fun merge(context:Context,inputPaths: List<String>, outputPath: String) {
+        var status = ""
+
+        PDFBoxResourceLoader.init(context.applicationContext)
+
+        //Perform Operation in background thread
+        val singlePDFFromMultiplePDF = GlobalScope.launch(Dispatchers.IO) {
+
+            val ut = PDFMergerUtility()
+
+            ut.documentMergeMode = PDFMergerUtility.DocumentMergeMode.OPTIMIZE_RESOURCES_MODE
+
+            for (item in inputPaths) {
+                ut.addSource(item)
+            }
+
+            val file = File(outputPath)
+            val fileOutputStream = FileOutputStream(file)
+            try {
+                ut.destinationStream = fileOutputStream
+                ut.mergeDocuments(MemoryUsageSetting.setupTempFileOnly())
+//                ut.mergeDocuments(true)
+                status = "success"
+            } catch (_: Exception) {
+                status = "error"
+            } finally {
+                fileOutputStream.close()
+            }
+
+        }
 
         // Method invoke after merging complete
         singlePDFFromMultiplePDF.invokeOnCompletion {
