@@ -1,3 +1,7 @@
+## 4.3.3
+### Android
+* Fixed an issue where R8 errors happens during release builds due to missing classes. [#67](https://github.com/vicajilau/pdf_combiner/issues/67)
+
 ## 4.3.2
 ### Android
 * Fixed an issue where multiple PDF files are combined, the resolution of the pages decreases. [#65](https://github.com/vicajilau/pdf_combiner/issues/65)
