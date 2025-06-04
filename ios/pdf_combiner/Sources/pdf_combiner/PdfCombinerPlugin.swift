@@ -118,22 +118,49 @@ private extension PdfCombinerPlugin {
                 images.append(image)
             }
         }
-
-        guard let image = UIImage.mergeVertically(images : images) else {
-            completionHandler(.failure(PDFCombinerErrors.generatePDFFailed)); return
-        }
-
-        let imageRect = CGRect(origin: .zero,
-                               size: CGSize(width: image.size.width, height: image.size.height))
-
-        UIGraphicsBeginPDFContextToFile(outputDirPath, imageRect, nil)
-        UIGraphicsBeginPDFPage()
-        image.draw(at: .zero)
-        UIGraphicsEndPDFContext()
-
+        
+        createMultiPagePDF(from: images, to: URL(fileURLWithPath: outputDirPath))
+        // guard let image = UIImage.mergeVertically(images : images) else {
+        //     completionHandler(.failure(PDFCombinerErrors.generatePDFFailed)); return
+        // }
+        // let imageRect = CGRect(origin: .zero,
+        //                        size: CGSize(width: image.size.width, height: image.size.height))
+        // UIGraphicsBeginPDFContextToFile(outputDirPath, imageRect, nil)
+        // UIGraphicsBeginPDFPage()
+        // image.draw(at: .zero)
+        // UIGraphicsEndPDFContext()
+        
         completionHandler(.success(outputDirPath))
     }
-
+    
+    func createMultiPagePDF(from images: [UIImage], to url: URL, pageSize: CGSize = CGSize(width: 595.2, height: 841.8)) {
+        // A4 size 595.2 x 841.8 pt
+        let format = UIGraphicsPDFRendererFormat()
+        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(origin: .zero, size: pageSize), format: format)
+        do {
+            try renderer.writePDF(to: url) { context in
+                for image in images {
+                    context.beginPage()
+                    // scale to origin aspect
+                    let imageMaxSize = image.size
+                    let aspectWidth = pageSize.width / imageMaxSize.width
+                    let aspectHeight = pageSize.height / imageMaxSize.height
+                    let aspectRatio = min(aspectWidth, aspectHeight)
+                    let scaledImageSize = CGSize(width: imageMaxSize.width * aspectRatio,
+                                                 height: imageMaxSize.height * aspectRatio)
+                    let drawOrigin = CGPoint(
+                        x: (pageSize.width - scaledImageSize.width) / 2,
+                        y: (pageSize.height - scaledImageSize.height) / 2
+                    )
+                    image.draw(in: CGRect(origin: drawOrigin, size: scaledImageSize))
+                }
+            }
+            print("PDF written to: \(url)")
+        } catch {
+            print("Failed to write PDF: \(error)")
+        }
+    }
+    
     //MARK: Images from pdf.
     func createImageFromPDF(args: Dictionary<String, Any>, completionHandler: @escaping (Result<[String], PDFCombinerErrors>) -> Void) {
         guard let path = args["path"] as? String,
