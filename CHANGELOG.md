@@ -1,7 +1,6 @@
 ## 4.3.5
 ### iOS & macOS
-* Create a pdf from multiple images creates one new page for each image. 
-
+* Fixed an issue where a PDF from multiple images were not creating one page for each image. [PR-78](https://github.com/vicajilau/pdf_combiner/pull/78) 
 
 ## 4.3.4
 ### General
