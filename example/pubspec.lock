@@ -509,7 +509,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "4.3.4"
+    version: "4.3.5"
   permission_handler:
     dependency: "direct main"
     description:
