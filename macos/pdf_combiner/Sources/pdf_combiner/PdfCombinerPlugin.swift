@@ -105,41 +105,34 @@ private extension PdfCombinerPlugin {
             completionHandler(.failure(PDFCombinerErrors.wrongArguments(["paths", "outputDirPath", "height", "width", "keepAspectRatio"]))); return
         }
 
-        var images = [NSImage]()
-        paths.forEach { path in
+        let pdfDocument = PDFDocument()
+        
+        for (index, path) in paths.enumerated() {
             guard let image = NSImage(contentsOfFile: path) else {
-                completionHandler(.failure(PDFCombinerErrors.cannotReadFile(path))); return
+                continue
             }
-
+            var resizedImage: NSImage
             if width > 0 && height > 0 && keepAspectRatio {
-                images.append(image.resize(width: width))
+                resizedImage = image.resize(width: width)
             } else if width > 0 && height > 0 && !keepAspectRatio {
-                images.append(image.resize(width: width, height: height))
+                resizedImage = image.resize(width: width, height: height)
             } else {
-                images.append(image)
+                resizedImage = image
             }
+            
+            guard let page = createNewPage(with: resizedImage) else {
+                continue
+            }
+            pdfDocument.insert(page, at: index)
         }
-
-        guard let image = NSImage.mergeVertically(images : images) else {
+        
+        let url = URL(fileURLWithPath: outputDirPath)
+        guard pdfDocument.write(to: url) else {
             completionHandler(.failure(PDFCombinerErrors.generatePDFFailed)); return
         }
-
-        var imageRect = CGRect(origin: .zero, size: image.size)
-        let url = URL(fileURLWithPath: outputDirPath) as CFURL
-        guard let destContext = CGContext(url, mediaBox: &imageRect, nil),
-              let inputCGImage = image.cgImage(forProposedRect: &imageRect, context: nil, hints: nil)
-        else {
-            completionHandler(.failure(PDFCombinerErrors.generatePDFFailed)); return
-        }
-
-        destContext.beginPage(mediaBox: nil)
-        destContext.draw(inputCGImage, in: imageRect)
-        destContext.endPage()
-        destContext.closePDF()
-
         completionHandler(.success(outputDirPath))
     }
-
+    
     //MARK: Images from pdf.
     func createImageFromPDF(args: Dictionary<String, Any>, completionHandler: @escaping (Result<[String], PDFCombinerErrors>) -> Void) {
         guard let path = args["path"] as? String,
@@ -276,6 +269,29 @@ private extension PdfCombinerPlugin {
         let fileName = "image_\(index + 1).png"
         basePath.appendPathComponent(fileName)
         return basePath
+    }
+    
+    func createNewPage(with image: NSImage) -> PDFPage? {
+        let pdfData = NSMutableData()
+        var mediaBox = CGRect(origin: .zero, size: image.size)
+        guard let consumer = CGDataConsumer(data: pdfData as CFMutableData),
+              let context = CGContext(consumer: consumer, mediaBox: &mediaBox, nil) else {
+            return nil
+        }
+           
+        context.beginPDFPage(nil)
+           
+        let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        context.draw(cgImage!, in: mediaBox)
+           
+        context.endPDFPage()
+        context.closePDF()
+           
+        if let document = PDFDocument(data: pdfData as Data),
+            let page = document.page(at: 0) {
+            return page
+        }
+        return nil
     }
 }
 
