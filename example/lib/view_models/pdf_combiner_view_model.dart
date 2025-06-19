@@ -59,16 +59,16 @@ class PdfCombinerViewModel {
     if (selectedFiles.length < 2) {
       delegate.onError
           ?.call(Exception('You need to select more than one document.'));
+    } else {
+      final directory = await _getOutputDirectory();
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
+
+      await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: selectedFiles,
+        outputPath: outputFilePath,
+        delegate: delegate,
+      ); // Combine the PDFs
     }
-
-    final directory = await _getOutputDirectory();
-    String outputFilePath = '${directory?.path}/combined_output.pdf';
-
-    await PdfCombiner.mergeMultiplePDFs(
-      inputPaths: selectedFiles,
-      outputPath: outputFilePath,
-      delegate: delegate,
-    ); // Combine the PDFs
   }
 
   /// Function to create a PDF file from a list of images
