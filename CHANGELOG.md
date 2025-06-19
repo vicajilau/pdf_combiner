@@ -1,3 +1,8 @@
+## 4.3.5
+### iOS & macOS
+* Create a pdf from multiple images creates one new page for each image. 
+
+
 ## 4.3.4
 ### General
 * Fixed an issue where PDF/A files were not working. [#76](https://github.com/vicajilau/pdf_combiner/issues/76) 
