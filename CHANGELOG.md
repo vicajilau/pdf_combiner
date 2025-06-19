@@ -1,3 +1,7 @@
+## 4.3.5
+### iOS & macOS
+* Fixed an issue where a PDF from multiple images were not creating one page for each image. [PR-78](https://github.com/vicajilau/pdf_combiner/pull/78) 
+
 ## 4.3.4
 ### General
 * Fixed an issue where PDF/A files were not working. [#76](https://github.com/vicajilau/pdf_combiner/issues/76) 

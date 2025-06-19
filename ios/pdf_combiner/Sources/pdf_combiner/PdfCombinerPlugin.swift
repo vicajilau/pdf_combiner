@@ -104,33 +104,31 @@ private extension PdfCombinerPlugin {
             completionHandler(.failure(PDFCombinerErrors.wrongArguments(["paths", "outputDirPath", "width", "height", "keepAspectRatio"]))); return
         }
         
-        var images: [UIImage] = []
-        for path in paths {
+        let pdfDocument = PDFDocument()
+                
+        for (index, path) in paths.enumerated() {
             guard let image = UIImage(contentsOfFile: path) else {
                 completionHandler(.failure(PDFCombinerErrors.cannotReadFile(path))); return
             }
-            
+            var resizedImage: UIImage
             if width > 0 && height > 0 && keepAspectRatio {
-                images.append(image.resize(width: width))
+                resizedImage = image.resize(width: width)
             } else if width > 0 && height > 0 && !keepAspectRatio {
-                images.append(image.resize(width: width, height: height))
+                resizedImage = image.resize(width: width, height: height)
             } else {
-                images.append(image)
+                resizedImage = image
             }
+            
+            guard let page = createNewPage(with: resizedImage) else {
+                completionHandler(.failure(PDFCombinerErrors.generatePDFFailed)); return
+            }
+            pdfDocument.insert(page, at: index)
         }
-
-        guard let image = UIImage.mergeVertically(images : images) else {
+        
+        let url = URL(fileURLWithPath: outputDirPath)
+        guard pdfDocument.write(to: url) else {
             completionHandler(.failure(PDFCombinerErrors.generatePDFFailed)); return
         }
-
-        let imageRect = CGRect(origin: .zero,
-                               size: CGSize(width: image.size.width, height: image.size.height))
-
-        UIGraphicsBeginPDFContextToFile(outputDirPath, imageRect, nil)
-        UIGraphicsBeginPDFPage()
-        image.draw(at: .zero)
-        UIGraphicsEndPDFContext()
-
         completionHandler(.success(outputDirPath))
     }
 
@@ -267,6 +265,29 @@ private extension PdfCombinerPlugin {
         basePath.appendPathComponent(fileName)
         return basePath
     }
+    
+    func createNewPage(with image: UIImage) -> PDFPage? {
+           let pdfData = NSMutableData()
+           var mediaBox = CGRect(origin: .zero, size: image.size)
+           guard let consumer = CGDataConsumer(data: pdfData as CFMutableData),
+                 let context = CGContext(consumer: consumer, mediaBox: &mediaBox, nil) else {
+               return nil
+           }
+              
+           context.beginPDFPage(nil)
+              
+           let cgImage = image.cgImage
+           context.draw(cgImage!, in: mediaBox)
+              
+           context.endPDFPage()
+           context.closePDF()
+              
+           if let document = PDFDocument(data: pdfData as Data),
+               let page = document.page(at: 0) {
+               return page
+           }
+           return nil
+       }
 }
 
 extension UIDevice {
