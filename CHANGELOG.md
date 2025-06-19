@@ -1,3 +1,7 @@
+## 4.3.4
+### General
+* Fixed an issue where PDF/A files were not working. [#76](https://github.com/vicajilau/pdf_combiner/issues/76) 
+
 ## 4.3.3
 ### Android
 * Fixed an issue where R8 errors happens during release builds due to missing classes. [#67](https://github.com/vicajilau/pdf_combiner/issues/67)
