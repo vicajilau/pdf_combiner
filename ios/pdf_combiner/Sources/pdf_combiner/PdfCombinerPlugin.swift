@@ -108,7 +108,7 @@ private extension PdfCombinerPlugin {
                 
         for (index, path) in paths.enumerated() {
             guard let image = UIImage(contentsOfFile: path) else {
-                continue
+                completionHandler(.failure(PDFCombinerErrors.cannotReadFile(path))); return
             }
             var resizedImage: UIImage
             if width > 0 && height > 0 && keepAspectRatio {
@@ -120,7 +120,7 @@ private extension PdfCombinerPlugin {
             }
             
             guard let page = createNewPage(with: resizedImage) else {
-                continue
+                completionHandler(.failure(PDFCombinerErrors.generatePDFFailed)); return
             }
             pdfDocument.insert(page, at: index)
         }
