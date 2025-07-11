@@ -1,3 +1,7 @@
+## 4.3.6
+### General
+* Fixed an issue where JPEG files were not detected. [#82](https://github.com/vicajilau/pdf_combiner/issues/82)
+
 ## 4.3.5
 ### iOS & macOS
 * Fixed an issue where a PDF from multiple images were not creating one page for each image. [PR-78](https://github.com/vicajilau/pdf_combiner/pull/78) 
