@@ -1,3 +1,7 @@
+## 4.3.7
+### General
+* Updated the process exposing dependencies to increase the coverage of supported versions.
+
 ## 4.3.6
 ### General
 * Fixed an issue where JPEG files were not detected. [#82](https://github.com/vicajilau/pdf_combiner/issues/82)

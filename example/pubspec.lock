@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: analyzer
-      sha256: de617bfdc64f3d8b00835ec2957441ceca0a29cdf7881f7ab231bc14f71159c0
+      sha256: b1ade5707ab7a90dfd519eaac78a7184341d19adb6096c68d499b59c7c6cf880
       url: "https://pub.dev"
     source: hosted
-    version: "7.5.6"
+    version: "7.7.0"
   args:
     dependency: transitive
     description:
@@ -509,7 +509,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "4.3.6"
+    version: "4.3.7"
   permission_handler:
     dependency: "direct main"
     description:

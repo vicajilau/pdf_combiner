@@ -1,5 +1,5 @@
 /// Represents the compression level of an image, which affects quality and file size.
-sealed class ImageCompression {
+class ImageCompression {
   /// The compression value, typically ranging from 0 to 99.
   final int value;
 
