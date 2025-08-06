@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - feature/fix_issue_github_pages
-    paths:
-      - '.github/workflows/**'
-      - './example'
 
 permissions:
   contents: read
@@ -25,38 +22,29 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        working-directory: example
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
-        working-directory: example
 
       - name: Enable web
         run: flutter config --enable-web
-        working-directory: example
 
       - name: Get dependencies
         run: flutter pub get
-        working-directory: example
 
       - name: Build web
         run: flutter build web --release --base-href /${{ github.event.repository.name }}/
-        working-directory: example
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
         with:
           enablement: true
-        working-directory: example
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: "./build/web"
-        working-directory: example
-
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        working-directory: example
