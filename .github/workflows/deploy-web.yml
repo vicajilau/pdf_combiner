@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feature/fix_issue_github_pages
+    paths:
+      - '.github/workflows/**'
+      - './example'
 
 permissions:
   contents: read
@@ -30,9 +33,11 @@ jobs:
         run: flutter config --enable-web
 
       - name: Get dependencies
+        working-directory: example
         run: flutter pub get
 
       - name: Build web
+        working-directory: example
         run: flutter build web --release --base-href /${{ github.event.repository.name }}/
 
       - name: Setup Pages
