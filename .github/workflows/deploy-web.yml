@@ -3,7 +3,7 @@ name: Deploy Flutter Web to GitHub Pages
 on:
   push:
     branches:
-      - feature/fix_issue_github_pagesç
+      - feature/fix_issue_github_pages
     paths:
       - '.github/workflows/**'
       - './example'
