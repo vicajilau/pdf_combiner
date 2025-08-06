@@ -49,6 +49,5 @@ jobs:
           path: "./example/build/web"
 
       - name: Deploy to GitHub Pages
-        working-directory: example
         id: deployment
         uses: actions/deploy-pages@v4
