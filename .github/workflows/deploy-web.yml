@@ -33,6 +33,7 @@ jobs:
         run: flutter config --enable-web
 
       - name: Get dependencies
+        working-directory: example
         run: flutter pub get
 
       - name: Build web
