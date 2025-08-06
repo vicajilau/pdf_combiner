@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/**'
       - './example'
+      - './'
 
 permissions:
   contents: read
@@ -37,13 +38,17 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        working-directory: example
         run: flutter build web --release --base-href /${{ github.event.repository.name }}/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
         with:
           enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./build/web"
 
       - name: Deploy to GitHub Pages
         id: deployment
