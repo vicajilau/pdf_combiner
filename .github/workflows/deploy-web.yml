@@ -44,9 +44,8 @@ jobs:
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-        working-directory: example
         with:
-          path: "./build/web"
+          path: "./example/build/web"
 
       - name: Deploy to GitHub Pages
         id: deployment
