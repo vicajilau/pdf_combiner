@@ -36,6 +36,7 @@ dependencies:
   get: ^4.7.2
   open_file: ^3.5.10
   platform_detail: ^5.1.0
+  file_magic_number: ^1.4.0
 
 dev_dependencies:
   integration_test:
