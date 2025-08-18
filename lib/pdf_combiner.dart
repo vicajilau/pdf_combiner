@@ -56,6 +56,7 @@ class PdfCombiner {
     PdfCombinerDelegate? delegate,
   }) async {
     _notifyStartProgress(delegate);
+    print("entro dentro de generatePDFFromDocuments con los inputpaths a: $inputPaths, y el outputpath a: $outputPath y el delegate a: $delegate");
     if (inputPaths.isEmpty) {
       _notifyFinishProgress(delegate);
       delegate?.onError?.call(
@@ -105,6 +106,7 @@ class PdfCombiner {
               inputPaths: [path],
               outputPath: "$dirname/document_$i.pdf",
             );
+            print("La respuesta del createPDFFromMultipleImages es: $response");
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
             } else {
