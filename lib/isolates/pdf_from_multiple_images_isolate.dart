@@ -28,6 +28,7 @@ class PdfFromMultipleImagesIsolate {
     required PdfFromMultipleImageConfig config,
   }) async {
     print("Entro dentro del createPDFFromMultipleImages con los inputpaths a: $inputPaths, y el outputpath a: $outputPath y la variable config a: $config");
+    print("la variable de PdfCombiner.isMock es: ${PdfCombiner.isMock}");
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
         inputPaths: inputPaths,
@@ -60,6 +61,7 @@ class PdfFromMultipleImagesIsolate {
     if (token != null) {
       BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     }
+    print("Entro dentro del _pdfFromMultipleImages con los inputpaths a: $inputPaths, y el outputpath a: $outputPath y la variable config a: $config y token a: $token");
 
     return await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
       inputPaths: inputPaths,

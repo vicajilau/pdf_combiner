@@ -62,6 +62,7 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
+    print("Entro dentro del createPDFFromMultipleImages y los valores son los siguientes de sus atributos: inputPaths: $inputPaths, outputPath: $outputPath, config: $config, 'height': ${config.rescale.height}, 'width': ${config.rescale.width}, 'keepAspectRatio': ${config.keepAspectRatio}");
     final result = await methodChannel.invokeMethod<String>(
       'createPDFFromMultipleImage',
       {

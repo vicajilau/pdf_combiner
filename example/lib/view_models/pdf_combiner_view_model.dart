@@ -61,12 +61,7 @@ class PdfCombinerViewModel {
           ?.call(Exception('You need to select more than one document.'));
     } else {
       final directory = await _getOutputDirectory();
-      String outputFilePath = "";
-      if(directory != null && directory.path.isNotEmpty) {
-        outputFilePath = '${directory.path}/combined_output.pdf';
-      } else {
-        outputFilePath = 'combined_output.pdf';
-      }
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
 
       await PdfCombiner.mergeMultiplePDFs(
         inputPaths: selectedFiles,
@@ -79,12 +74,7 @@ class PdfCombinerViewModel {
   /// Function to create a PDF file from a list of images
   Future<void> createPDFFromImages(PdfCombinerDelegate delegate) async {
     final directory = await _getOutputDirectory();
-    String outputFilePath = "";
-    if(directory != null && directory.path.isNotEmpty) {
-      outputFilePath = '${directory.path}/combined_output.pdf';
-    } else {
-      outputFilePath = 'combined_output.pdf';
-    }
+    String outputFilePath = '${directory?.path}/combined_output.pdf';
     await PdfCombiner.createPDFFromMultipleImages(
       inputPaths: selectedFiles,
       outputPath: outputFilePath,
@@ -95,12 +85,7 @@ class PdfCombinerViewModel {
   /// Function to create a PDF file from a list of documents
   Future<void> createPDFFromDocuments(PdfCombinerDelegate delegate) async {
     final directory = await _getOutputDirectory();
-    String outputFilePath = "";
-    if(directory != null && directory.path.isNotEmpty) {
-      outputFilePath = '${directory.path}/combined_output.pdf';
-    } else {
-      outputFilePath = 'combined_output.pdf';
-    }
+    String outputFilePath = '${directory?.path}/combined_output.pdf';
     await PdfCombiner.generatePDFFromDocuments(
       inputPaths: selectedFiles,
       outputPath: outputFilePath,
