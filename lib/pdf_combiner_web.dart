@@ -95,7 +95,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
-    print("Entro dentro del createPDFFromMultipleImages y el valor del config desgranado es: ${config.jsify()}");
+    print("Entro dentro del createPDFFromMultipleImages y el valor del config desgranado es: width: ${config.rescale.width} y height: ${config.rescale.height} y keepAspectRatio: ${config.keepAspectRatio}");
     final JSString result =
         (await createPdfFromImages(jsInputPaths, config.jsify()).toDart)
             as JSString;
