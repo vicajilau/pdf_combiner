@@ -27,6 +27,7 @@ class PdfFromMultipleImagesIsolate {
     required String outputPath,
     required PdfFromMultipleImageConfig config,
   }) async {
+    print("Entro dentro del createPDFFromMultipleImages con los inputpaths a: $inputPaths, y el outputpath a: $outputPath y la variable config a: $config");
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
         inputPaths: inputPaths,
