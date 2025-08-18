@@ -11,7 +11,7 @@ external JSPromise combinePDFs(JSArray<JSString> inputPaths);
 /// It returns a `JSPromise` which resolves to the path of the created PDF.
 @JS('createPdfFromImages')
 external JSPromise createPdfFromImages(
-    JSArray<JSString> inputPaths, JSAny? config);
+    JSArray<JSString> inputPaths, String? config);
 
 /// **JavaScript binding to convert a PDF to a single image**
 /// This external function calls the `pdfToImage` JavaScript function, passing a `JSString` input path of the PDF file.
