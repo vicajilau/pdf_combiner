@@ -31,13 +31,13 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     final pdfCombinerScript = document.createElement('script');
 
     pdfMinScript.setAttribute('src',
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
+        '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
     pdfMinScript.setAttribute('type', 'text/javascript');
     pdfWorkerScript.setAttribute('src',
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
+        '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
     pdfWorkerScript.setAttribute('type', 'text/javascript');
     pdfLibScript.setAttribute('src',
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
+        '//cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
     pdfLibScript.setAttribute('type', 'text/javascript');
     pdfCombinerScript.setAttribute('src',
         'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js');
