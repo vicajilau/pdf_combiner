@@ -102,6 +102,8 @@ class PdfCombiner {
         } else {
           _notifyCustomProgress(delegate, 0.5);
           if (isImage) {
+            print("El nombre y ruta del documento es: $dirname/document_$i.pdf");
+            print("El path es: $path");
             final response = await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
               outputPath: "$dirname/document_$i.pdf",
@@ -256,7 +258,9 @@ class PdfCombiner {
     PdfCombinerDelegate? delegate,
   }) async {
     final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+    print("Entro dentro del createPDFFromMultipleImages con los inputpaths a: $inputPaths, y el outputpath a: $outputPath y el delegate a: $delegate y la variable outputPathIsPDF a: $outputPathIsPDF");
     if (!outputPathIsPDF) {
+      print("el outputhpath es: $outputPath y va a generar un error: ${PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath)}");
       delegate?.onError?.call(Exception(
           PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath)));
       return PdfFromMultipleImageResponse(
@@ -264,6 +268,7 @@ class PdfCombiner {
         message: PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath),
       );
     } else if (inputPaths.isEmpty) {
+      print("el inputpath es: $outputPath y va a generar un error: ${PdfCombinerMessages.emptyParameterMessage("inputPaths")}");
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("inputPaths")));
       return PdfFromMultipleImageResponse(
@@ -282,7 +287,9 @@ class PdfCombiner {
           i++;
         }
 
+        print("El isImage es $success y el path es $path");
         if (!success) {
+          print("El isImage es $success y el path es $path, aparte hay un error que es: ${PdfCombinerMessages.errorMessageImage(path)}");
           delegate?.onError
               ?.call(Exception(PdfCombinerMessages.errorMessageImage(path)));
           return PdfFromMultipleImageResponse(
@@ -296,7 +303,7 @@ class PdfCombiner {
             outputPath: outputPath,
             config: config,
           );
-
+          print("El isImage es $success y el response es $response");
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
             delegate?.onSuccess?.call([response]);
@@ -306,6 +313,7 @@ class PdfCombiner {
               outputPath: response,
             );
           } else {
+            print("El isImage es $success y el response tiene un error que es $response");
             delegate?.onError
                 ?.call(Exception(response ?? PdfCombinerMessages.errorMessage));
             return PdfFromMultipleImageResponse(
@@ -315,6 +323,7 @@ class PdfCombiner {
           }
         }
       } catch (e) {
+        print("Entro en el catch con el error: $e con el error: ${e.toString()}");
         delegate?.onError?.call(e is Exception ? e : Exception(e.toString()));
         return PdfFromMultipleImageResponse(
           status: PdfCombinerStatus.error,
