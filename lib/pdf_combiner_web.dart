@@ -31,13 +31,13 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     final pdfCombinerScript = document.createElement('script');
 
     pdfMinScript.setAttribute('src',
-        '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
     pdfMinScript.setAttribute('type', 'text/javascript');
     pdfWorkerScript.setAttribute('src',
-        '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
     pdfWorkerScript.setAttribute('type', 'text/javascript');
     pdfLibScript.setAttribute('src',
-        '//cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
     pdfLibScript.setAttribute('type', 'text/javascript');
     pdfCombinerScript.setAttribute('src',
         'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js');
@@ -96,9 +96,9 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   }) async {
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
     print("Entro dentro del createPDFFromMultipleImages y el valor del config desgranado es: width: ${config.rescale.width} y height: ${config.rescale.height} y keepAspectRatio: ${config.keepAspectRatio}");
-    print("Entro dentro del createPDFFromMultipleImages y el valor del config con jsfy es el siguiente: ${config.toExternalReference.jsify()}");
+    print("Entro dentro del createPDFFromMultipleImages y el valor del config con jsfy es el siguiente: ${config.jsify()}");
     final JSString result =
-        (await createPdfFromImages(jsInputPaths, config.toExternalReference.jsify()).toDart)
+        (await createPdfFromImages(jsInputPaths, config.jsify()).toDart)
             as JSString;
     print("JSSResult: $result");
     return result.toDart;
