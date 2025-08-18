@@ -99,6 +99,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     final JSString result =
         (await createPdfFromImages(jsInputPaths, config.jsify()).toDart)
             as JSString;
+    print("JSSResult: $result");
     return result.toDart;
   }
 
