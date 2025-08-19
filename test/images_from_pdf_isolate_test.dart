@@ -3,6 +3,7 @@ import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/isolates/merge_pdfs_isolate.dart';
 import 'package:pdf_combiner/isolates/pdf_from_multiple_images_isolate.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/image_scale.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 
 void main() {
@@ -37,6 +38,22 @@ void main() {
                 outputPath: 'output/output.pdf',
                 config: PdfFromMultipleImageConfig()),
         throwsA(isA<Error>()),
+      );
+    });
+
+    test('PdfFromMultipleImageConfig test map has same values as config', () async {
+      final config = PdfFromMultipleImageConfig(
+          rescale: ImageScale(width: 400, height: 400), keepAspectRatio: false);
+      final Map<String, dynamic> expectedMap = {
+        'rescale': {
+          'width': 400,
+          'height': 400,
+        },
+        'keepAspectRatio': false
+      };
+      expect(
+        config.toMap(),
+        expectedMap,
       );
     });
   });
