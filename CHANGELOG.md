@@ -1,3 +1,9 @@
+## 4.3.8
+### General
+* Prepare app to access it from github_pages
+### Web 
+* Resolve issue when you convert any image into pdf
+
 ## 4.3.7
 ### General
 * Updated the process exposing dependencies to increase the coverage of supported versions.
