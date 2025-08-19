@@ -28,7 +28,7 @@ class ImageScale {
   /// and should return a new [ImageScale] instance.
   Map<String,dynamic> toMap() {
     return {
-      'width': width, // Convert enum to string
+      'width': width,
       'height': height,
     };
   }

@@ -20,7 +20,7 @@ class PdfFromMultipleImageConfig {
   /// Converts this [PdfFromMultipleImageConfig] instance to a [Map<String, dynamic>].
   Map<String, dynamic> toMap() {
     return {
-      'rescale': rescale.toMap(), // Convert enum to string
+      'rescale': rescale.toMap(), // Convert enum to map
       'keepAspectRatio': keepAspectRatio,
     };
   }
