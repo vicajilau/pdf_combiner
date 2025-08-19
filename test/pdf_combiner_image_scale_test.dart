@@ -20,6 +20,12 @@ void main() {
       expect(scale.isOriginal, isFalse);
     });
 
+    test('toMap should return a complete map representation', () {
+      final scale = ImageScale(width: 100, height: 200);
+      Map<String,dynamic> map ={"width": 100, "height": 200};
+      expect(scale.toMap(), map);
+    });
+
     test('should throw assertion error for invalid width or height values', () {
       expect(() => ImageScale(width: -1, height: 0), throwsA(isA<AssertionError>()));
       expect(() => ImageScale(width: 0, height: -1), throwsA(isA<AssertionError>()));

@@ -96,7 +96,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   }) async {
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
     final JSString result =
-        (await createPdfFromImages(jsInputPaths, config.jsify()).toDart)
+        (await createPdfFromImages(jsInputPaths, config.toMap().jsify()).toDart)
             as JSString;
     return result.toDart;
   }
