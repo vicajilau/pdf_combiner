@@ -20,4 +20,16 @@ class ImageScale {
 
   /// Returns `true` if this instance represents the original image (no scaling).
   bool get isOriginal => width == 0 && height == 0;
+
+  /// Creates a new [ImageScale] instance by applying a transformation function
+  /// to the current width and height.
+  ///
+  /// The [mapper] function takes the current width and height as arguments
+  /// and should return a new [ImageScale] instance.
+  Map<String,dynamic> toMap() {
+    return {
+      'width': width, // Convert enum to string
+      'height': height,
+    };
+  }
 }

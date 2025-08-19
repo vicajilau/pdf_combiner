@@ -16,4 +16,12 @@ class PdfFromMultipleImageConfig {
     this.rescale = ImageScale.original,
     this.keepAspectRatio = true,
   });
+
+  /// Converts this [PdfFromMultipleImageConfig] instance to a [Map<String, dynamic>].
+  Map<String, dynamic> toMap() {
+    return {
+      'rescale': rescale.toMap(), // Convert enum to string
+      'keepAspectRatio': keepAspectRatio,
+    };
+  }
 }
