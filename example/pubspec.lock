@@ -517,7 +517,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "4.3.7"
+    version: "4.3.8"
   permission_handler:
     dependency: "direct main"
     description:
