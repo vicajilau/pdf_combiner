@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:path/path.dart' as path;
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
