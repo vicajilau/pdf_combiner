@@ -183,6 +183,7 @@ class PdfCombiner {
     required String outputPath,
     PdfCombinerDelegate? delegate,
   }) async {
+    _removeTemporalFiles([outputPath]);
     if (inputPaths.isEmpty) {
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("inputPaths")));
