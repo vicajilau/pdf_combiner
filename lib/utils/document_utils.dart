@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
 
@@ -7,6 +9,17 @@ import 'package:path/path.dart' as p;
 /// such as Windows, macOS, and Linux. The `filePath` parameter should be a valid
 /// local file path.
 class DocumentUtils {
+
+  /// Removes a list of temporary files from the file system.
+  /// It iterates through the provided list of file paths and deletes each file if it exists.
+  static Future<void> removeTemporalFiles(List<String> paths) async {
+    for (final path in paths) {
+      final file = File(path);
+      if (await file.exists()) {
+        file.delete();
+      }
+    }
+  }
   /// Determines whether the given file path corresponds to a PDF file.
   ///
   /// This method checks if the file path ends with the `.pdf` extension
