@@ -155,15 +155,6 @@ class PdfCombiner {
     delegate?.onProgress?.call(1.0);
   }
 
-  static Future<void> _removeTemporalFiles(List<String> paths) async {
-    for (final path in paths) {
-      final file = File(path);
-      if (await file.exists()) {
-        file.delete();
-      }
-    }
-  }
-
   /// Combines multiple PDF files into a single PDF.
   ///
   /// This method takes a list of file paths (`inputPaths`) representing the PDFs to be combined,
@@ -183,7 +174,7 @@ class PdfCombiner {
     required String outputPath,
     PdfCombinerDelegate? delegate,
   }) async {
-    _removeTemporalFiles([outputPath]);
+    DocumentUtils.removeTemporalFiles([outputPath]);
     if (inputPaths.isEmpty) {
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("inputPaths")));
