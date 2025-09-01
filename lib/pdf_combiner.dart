@@ -156,9 +156,9 @@ class PdfCombiner {
   }
 
   static Future<void> _removeTemporalFiles(List<String> paths) async {
-    for(final path in paths){
+    for (final path in paths) {
       final file = File(path);
-      if(await file.exists()){
+      if (await file.exists()) {
         file.delete();
       }
     }
