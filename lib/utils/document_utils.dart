@@ -11,11 +11,11 @@ import 'package:path/path.dart' as p;
 class DocumentUtils {
   /// Removes a list of temporary files from the file system.
   /// It iterates through the provided list of file paths and deletes each file if it exists.
-  static Future<void> removeTemporalFiles(List<String> paths) async {
+  static void removeTemporalFiles(List<String> paths) {
     for (final path in paths) {
       final file = File(path);
-      if (await file.exists()) {
-        file.delete();
+      if (file.existsSync()) {
+        file.deleteSync();
       }
     }
   }
