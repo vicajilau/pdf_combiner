@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:path/path.dart' as path;
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
@@ -125,6 +126,7 @@ class PdfCombiner {
       );
       if (response.status == PdfCombinerStatus.success) {
         _notifyFinishProgress(delegate);
+        _removeTemporalFiles(mutablePaths);
         return GeneratePdfFromDocumentsResponse(
           status: PdfCombinerStatus.success,
           message: PdfCombinerMessages.successMessage,
@@ -151,6 +153,15 @@ class PdfCombiner {
 
   static void _notifyFinishProgress(PdfCombinerDelegate? delegate) {
     delegate?.onProgress?.call(1.0);
+  }
+
+  static Future<void> _removeTemporalFiles(List<String> paths) async {
+    for(final path in paths){
+      final file = File(path);
+      if(await file.exists()){
+        file.delete();
+      }
+    }
   }
 
   /// Combines multiple PDF files into a single PDF.
@@ -212,6 +223,7 @@ class PdfCombiner {
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
             delegate?.onSuccess?.call([response]);
+
             return MergeMultiplePDFResponse(
                 status: PdfCombinerStatus.success,
                 message: PdfCombinerMessages.successMessage,
@@ -294,7 +306,6 @@ class PdfCombiner {
             outputPath: outputPath,
             config: config,
           );
-
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
             delegate?.onSuccess?.call([response]);
