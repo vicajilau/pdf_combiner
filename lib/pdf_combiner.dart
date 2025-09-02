@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:path/path.dart' as path;
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
@@ -75,7 +74,6 @@ class PdfCombiner {
     } else {
       _notifyCustomProgress(delegate, 0.3);
       final List<String> mutablePaths = List.from(inputPaths);
-      String dirname = path.dirname(outputPath);
       for (int i = 0; i < mutablePaths.length; i++) {
         final path = mutablePaths[i];
         final isPDF = await DocumentUtils.isPDF(path);
@@ -103,7 +101,7 @@ class PdfCombiner {
           if (isImage) {
             final response = await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
-              outputPath: "$dirname/document_$i.pdf",
+              outputPath: "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
             );
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
@@ -173,7 +171,7 @@ class PdfCombiner {
     required String outputPath,
     PdfCombinerDelegate? delegate,
   }) async {
-    DocumentUtils.removeTemporalFiles([outputPath]);
+
     if (inputPaths.isEmpty) {
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("inputPaths")));

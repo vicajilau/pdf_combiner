@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
+import 'package:pdf_combiner/pdf_combiner.dart';
 
 /// Utility class for handling document-related checks in a file system environment.
 ///
@@ -12,12 +13,26 @@ class DocumentUtils {
   /// Removes a list of temporary files from the file system.
   /// It iterates through the provided list of file paths and deletes each file if it exists.
   static void removeTemporalFiles(List<String> paths) {
-    for (final path in paths) {
-      final file = File(path);
-      if (file.existsSync()) {
-        file.deleteSync();
+    if(!PdfCombiner.isMock){
+      for (final path in paths) {
+        // Ensure we only delete files within the designated temporary folder
+        if (path.startsWith(getTemporalFolderPath())) {
+          final file = File(path);
+          if (file.existsSync()) {
+            file.deleteSync();
+          }
+        }
       }
     }
+
+  }
+
+  /// Returns the absolute path to the system's temporary directory.
+  static String getTemporalFolderPath(){
+    if(PdfCombiner.isMock){
+      return './example/assets/temp';
+    }
+    return Directory.systemTemp.path;
   }
 
   /// Determines whether the given file path corresponds to a PDF file.
@@ -26,8 +41,8 @@ class DocumentUtils {
   /// (case insensitive).
   static Future<bool> isPDF(String filePath) async {
     try {
-      return await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath) ==
-          FileMagicNumberType.pdf;
+        return await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath) ==
+            FileMagicNumberType.pdf;
     } catch (e) {
       return false;
     }
