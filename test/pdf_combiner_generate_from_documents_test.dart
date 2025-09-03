@@ -7,6 +7,8 @@ import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart'
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
+import 'package:pdf_combiner/utils/document_utils.dart';
+
 import 'mocks/mock_pdf_combiner_platform.dart';
 import 'mocks/mock_pdf_combiner_platform_with_error.dart';
 import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
@@ -72,6 +74,8 @@ void main() {
 
     // Test for successfully combining multiple PDFs using PdfCombiner.
     test('generatePDFFromDocuments mix of documents (PdfCombiner)', () async {
+      PdfCombiner.isMock = true;
+      DocumentUtils.temporalDir = "./example/assets/temp";
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
       // Replace the platform instance with the mock implementation.

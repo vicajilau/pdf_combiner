@@ -5,8 +5,6 @@ import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 void main() {
   group('PdfCombiner.generatePDFFromDocuments', () {
-
-
     test('error cuando inputPaths está vacío', () async {
       PdfCombiner.isMock = false;
       final res = await PdfCombiner.generatePDFFromDocuments(
@@ -15,7 +13,8 @@ void main() {
       );
 
       expect(res.status, PdfCombinerStatus.error);
-      expect(res.message, PdfCombinerMessages.emptyParameterMessage('inputPaths'));
+      expect(
+          res.message, PdfCombinerMessages.emptyParameterMessage('inputPaths'));
     });
 
     test('error cuando outputPath está vacío o en blanco', () async {
@@ -26,10 +25,12 @@ void main() {
       );
 
       expect(res.status, PdfCombinerStatus.error);
-      expect(res.message, PdfCombinerMessages.emptyParameterMessage('outputPath'));
+      expect(
+          res.message, PdfCombinerMessages.emptyParameterMessage('outputPath'));
     });
 
-    test('error cuando outputPath no tiene extensión .pdf (case-sensitive)', () async {
+    test('error cuando outputPath no tiene extensión .pdf (case-sensitive)',
+        () async {
       PdfCombiner.isMock = false;
       var createCalls = 0;
       var mergeCalls = 0;
