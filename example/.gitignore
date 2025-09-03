@@ -11,6 +11,7 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+/example/assets/temp/
 
 # IntelliJ related
 *.iml

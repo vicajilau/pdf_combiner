@@ -7,6 +7,7 @@ import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
+import 'mocks/mock_document_utils.dart';
 import 'mocks/mock_pdf_combiner_platform.dart';
 import 'mocks/mock_pdf_combiner_platform_with_error.dart';
 import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
@@ -62,6 +63,10 @@ void main() {
           fail("Test failed due to error: ${error.toString()}");
         }),
       );
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.success);
@@ -90,7 +95,10 @@ void main() {
               'Exception: The outputPath must have a .pdf format: output/path.jpeg');
         }),
       );
-
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
       expect(result.message,
@@ -119,7 +127,11 @@ void main() {
               'Exception: The parameter (inputPaths) cannot be empty');
         }),
       );
-
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
+      MockDocumentUtils().removeTemporalFiles([]);
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
@@ -146,7 +158,10 @@ void main() {
               'Exception: File is not of PDF type or does not exist: path1');
         }),
       );
-
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
@@ -167,7 +182,10 @@ void main() {
         inputPaths: ['path1', 'path2'],
         outputPath: 'output/path.pdf',
       );
-
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
       // Verify the error result matches the expected values.
       expect(result, 'error');
     });
@@ -190,6 +208,10 @@ void main() {
               'Exception: File is not of PDF type or does not exist: path1.pdf');
         }),
       );
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
 
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
@@ -219,6 +241,10 @@ void main() {
           expect(error.toString(), 'Exception: error');
         }),
       );
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
@@ -249,7 +275,10 @@ void main() {
           expect(error.toString(), 'Exception: Mocked Exception');
         }),
       );
-
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
@@ -280,6 +309,10 @@ void main() {
           expect(error.toString(), 'Exception: error');
         }),
       );
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
@@ -306,6 +339,10 @@ void main() {
         ],
         outputPath: 'output/path.pdf',
       );
+      MockDocumentUtils().removeTemporalFiles([
+        'example/assets/temp/document_0.pdf',
+        'example/assets/temp/document_1.pdf'
+      ]);
 
       // Verify the result matches the expected mock values.
       expect(result.status, PdfCombinerStatus.error);
