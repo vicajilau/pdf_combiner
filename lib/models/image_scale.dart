@@ -26,7 +26,7 @@ class ImageScale {
   ///
   /// The [mapper] function takes the current width and height as arguments
   /// and should return a new [ImageScale] instance.
-  Map<String,dynamic> toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'width': width,
       'height': height,
