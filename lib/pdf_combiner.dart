@@ -28,15 +28,11 @@ class PdfCombiner {
 
   static Future<PdfFromMultipleImageResponse> createPdfFromImage(
       String path, int i) async {
-      return await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: [path],
-        outputPath:
-            "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
-      );
+    return await PdfCombiner.createPDFFromMultipleImages(
+      inputPaths: [path],
+      outputPath: "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
+    );
   }
-
-
-
 
   /// Combines multiple files into a single PDF. The input files can be either PDFs or images.
   ///
@@ -114,7 +110,7 @@ class PdfCombiner {
             var response = await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
               outputPath:
-              "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
+                  "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
             );
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
@@ -184,7 +180,6 @@ class PdfCombiner {
     required String outputPath,
     PdfCombinerDelegate? delegate,
   }) async {
-
     if (inputPaths.isEmpty) {
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("inputPaths")));
