@@ -130,6 +130,7 @@ class PdfCombiner {
         outputPath: outputPath,
         delegate: delegate,
       );
+      DocumentUtils().removeTemporalFiles(mutablePaths);
       if (response.status == PdfCombinerStatus.success) {
         _notifyFinishProgress(delegate);
         return GeneratePdfFromDocumentsResponse(
