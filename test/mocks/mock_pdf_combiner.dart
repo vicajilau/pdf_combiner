@@ -46,7 +46,7 @@ class PdfCombinerMock with MockPlatformInterfaceMixin implements PdfCombiner {
           return GeneratePdfFromDocumentsResponse(
             status: PdfCombinerStatus.error,
             message:
-            PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath),
+                PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath),
           );
         } else if (!isPDF && !isImage) {
           _notifyFinishProgress(delegate);
@@ -61,7 +61,8 @@ class PdfCombinerMock with MockPlatformInterfaceMixin implements PdfCombiner {
           if (isImage) {
             final response = await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
-              outputPath: "${MockDocumentUtils.getTemporalFolderPath()}/result_temp_document.pdf",
+              outputPath:
+                  "${MockDocumentUtils.getTemporalFolderPath()}/result_temp_document.pdf",
             );
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
@@ -70,7 +71,7 @@ class PdfCombinerMock with MockPlatformInterfaceMixin implements PdfCombiner {
               return GeneratePdfFromDocumentsResponse(
                 status: PdfCombinerStatus.error,
                 message:
-                response.message ?? "Error creating PDF from image: $path",
+                    response.message ?? "Error creating PDF from image: $path",
               );
             }
           }
@@ -98,6 +99,7 @@ class PdfCombinerMock with MockPlatformInterfaceMixin implements PdfCombiner {
       }
     }
   }
+
   static void _notifyCustomProgress(
       PdfCombinerDelegate? delegate, double customProgress) {
     delegate?.onProgress?.call(customProgress);

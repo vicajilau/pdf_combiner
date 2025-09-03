@@ -17,7 +17,8 @@ void main() {
 
     test('should throw assertion error for invalid quality values', () {
       expect(() => ImageCompression.custom(-1), throwsA(isA<AssertionError>()));
-      expect(() => ImageCompression.custom(101), throwsA(isA<AssertionError>()));
+      expect(
+          () => ImageCompression.custom(101), throwsA(isA<AssertionError>()));
     });
   });
 }
