@@ -99,10 +99,19 @@ class PdfCombiner {
         } else {
           _notifyCustomProgress(delegate, 0.5);
           if (isImage) {
-            final response = await PdfCombiner.createPDFFromMultipleImages(
-              inputPaths: [path],
-              outputPath: "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
-            );
+            var response;
+            if(isMock){
+              response = await PdfCombiner.createPDFFromMultipleImages(
+                inputPaths: [path],
+                outputPath:
+                "${DocumentUtils.getTemporalFolderPath()}/result_temp_document.pdf",
+              );
+            }else{
+              response = await PdfCombiner.createPDFFromMultipleImages(
+                inputPaths: [path],
+                outputPath: "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
+              );
+            }
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
             } else {
@@ -121,7 +130,6 @@ class PdfCombiner {
         outputPath: outputPath,
         delegate: delegate,
       );
-      DocumentUtils().removeTemporalFiles(mutablePaths);
       if (response.status == PdfCombinerStatus.success) {
         _notifyFinishProgress(delegate);
         return GeneratePdfFromDocumentsResponse(

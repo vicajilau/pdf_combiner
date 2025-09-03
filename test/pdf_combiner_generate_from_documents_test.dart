@@ -7,8 +7,6 @@ import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart'
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
-
-import 'mocks/mock_pdf_combiner.dart';
 import 'mocks/mock_pdf_combiner_platform.dart';
 import 'mocks/mock_pdf_combiner_platform_with_error.dart';
 import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
@@ -51,7 +49,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
@@ -80,7 +78,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/image_1.jpeg',
           'example/assets/document_1.pdf',
@@ -109,7 +107,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/image_1.jpeg',
           'example/assets/document_1.pdf',
@@ -140,7 +138,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/document_5.pdf',
           'example/assets/image_1.jpeg'
@@ -171,7 +169,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/document_5.pdf',
           'example/assets/image_1.jpeg'
@@ -201,7 +199,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/image_5.jpeg',
           'example/assets/image_2.png'
@@ -231,7 +229,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/document_1.pdf',
           'example/assets/image_1.jpeg'
@@ -262,7 +260,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatformWithError;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [],
         outputPath: 'output/path.pdf',
         delegate: PdfCombinerDelegate(onSuccess: (paths) {
@@ -289,7 +287,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatformWithError;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: ['path1', 'path2'],
         outputPath: 'output/path.pdf',
         delegate: PdfCombinerDelegate(onSuccess: (paths) {
@@ -315,7 +313,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: ['path1.pdf', 'path2.pdf'],
         outputPath: 'output/path.pdf',
         delegate: PdfCombinerDelegate(onSuccess: (paths) {
@@ -342,7 +340,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
@@ -372,7 +370,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatform;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
@@ -403,7 +401,7 @@ void main() {
       PdfCombinerPlatform.instance = fakePlatformWithError;
 
       // Call the method and check the response.
-      final result = await PdfCombinerMock.generatePDFFromDocuments(
+      final result = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: [
           'example/assets/image_1.jpeg',
         ],
