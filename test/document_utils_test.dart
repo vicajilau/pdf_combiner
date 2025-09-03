@@ -86,6 +86,21 @@ void main() {
       await file.delete();
     });
 
+    test('elimina archivo cuando isMock = false y el archivo existe', () async {
+      PdfCombiner.isMock = false;
+      final tempDir = await Directory.systemTemp.createTemp('doc_utils_test_delete_');
+      final filePath = p.join(tempDir.path, 'file_to_delete.tmp');
+      final file = await createFileWithBytes(filePath, [1, 2, 3]);
+
+      expect(file.existsSync(), isTrue, reason: "El archivo debería existir antes de la eliminación");
+
+      DocumentUtils().removeTemporalFiles([filePath]);
+
+      expect(file.existsSync(), isFalse, reason: "El archivo debería haber sido eliminado");
+
+      await tempDir.delete(recursive: true);
+    });
+
     test('elimina solo archivos dentro de systemTemp cuando isMock = false', () async {
       PdfCombiner.isMock = false;
 
