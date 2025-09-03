@@ -6,6 +6,8 @@ import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
+import 'mocks/mock_document_utils.dart';
+
 
 void main() {
   late bool originalIsMock;
@@ -55,7 +57,7 @@ void main() {
     test('devuelve ruta mock cuando PdfCombiner.isMock = true', () {
       PdfCombiner.isMock = true;
 
-      final path = DocumentUtils.getTemporalFolderPath();
+      final path = MockDocumentUtils.getTemporalFolderPath();
 
       expect(path, './example/assets/temp');
     });
@@ -63,7 +65,7 @@ void main() {
     test('devuelve Directory.systemTemp.path cuando PdfCombiner.isMock = false', () {
       PdfCombiner.isMock = false;
 
-      final path = DocumentUtils.getTemporalFolderPath();
+      final path = MockDocumentUtils.getTemporalFolderPath();
 
       expect(path, Directory.systemTemp.path);
     });
@@ -72,7 +74,7 @@ void main() {
   group('removeTemporalFiles', () {
     test('no elimina nada cuando isMock = true (se salta el bucle)', () async {
       PdfCombiner.isMock = true;
-      final mockTemp = DocumentUtils.getTemporalFolderPath();
+      final mockTemp = MockDocumentUtils.getTemporalFolderPath();
       final fileInMockTemp = p.join(mockTemp, 'will_not_be_deleted.tmp');
 
       final file = await createFileWithBytes(fileInMockTemp, [1, 2, 3]);
