@@ -26,14 +26,6 @@ class PdfCombiner {
   /// without performing actual PDF merging operations.
   static bool isMock = false;
 
-  static Future<PdfFromMultipleImageResponse> createPdfFromImage(
-      String path, int i) async {
-    return await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: [path],
-      outputPath: "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
-    );
-  }
-
   /// Combines multiple files into a single PDF. The input files can be either PDFs or images.
   ///
   /// This method takes a list of file paths (`inputPaths`) and an output file path (`outputPath`).
