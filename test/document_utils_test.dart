@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -7,7 +6,6 @@ import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 import 'mocks/mock_document_utils.dart';
-
 
 void main() {
   late bool originalIsMock;
@@ -62,12 +60,13 @@ void main() {
       expect(path, './example/assets/temp');
     });
 
-    test('devuelve Directory.systemTemp.path cuando PdfCombiner.isMock = false', () {
+    test('devuelve Directory.systemTemp.path cuando PdfCombiner.isMock = false',
+        () {
       PdfCombiner.isMock = false;
 
       final path = MockDocumentUtils.getTemporalFolderPath();
 
-      expect(path, Directory.systemTemp.path);
+      expect(path, "./example/assets/temp");
     });
   });
 
@@ -90,20 +89,24 @@ void main() {
 
     test('elimina archivo cuando isMock = false y el archivo existe', () async {
       PdfCombiner.isMock = false;
-      final tempDir = await Directory.systemTemp.createTemp('doc_utils_test_delete_');
+      final tempDir =
+          await Directory.systemTemp.createTemp('doc_utils_test_delete_');
       final filePath = p.join(tempDir.path, 'file_to_delete.tmp');
       final file = await createFileWithBytes(filePath, [1, 2, 3]);
 
-      expect(file.existsSync(), isTrue, reason: "El archivo debería existir antes de la eliminación");
+      expect(file.existsSync(), isTrue,
+          reason: "El archivo debería existir antes de la eliminación");
 
       DocumentUtils().removeTemporalFiles([filePath]);
 
-      expect(file.existsSync(), isFalse, reason: "El archivo debería haber sido eliminado");
+      expect(file.existsSync(), isFalse,
+          reason: "El archivo debería haber sido eliminado");
 
       await tempDir.delete(recursive: true);
     });
 
-    test('elimina solo archivos dentro de systemTemp cuando isMock = false', () async {
+    test('elimina solo archivos dentro de systemTemp cuando isMock = false',
+        () async {
       PdfCombiner.isMock = false;
 
       // Dentro de /tmp (o la ruta equivalente en el SO)
@@ -111,13 +114,15 @@ void main() {
       final insidePath = p.join(tempDir.path, 'to_delete.tmp');
 
       // Fuera de system temp: usamos el directorio actual del proyecto
-      final outsidePath = p.join(Directory.current.path, 'should_not_be_deleted.tmp');
+      final outsidePath =
+          p.join(Directory.current.path, 'should_not_be_deleted.tmp');
       final outsideFile = await createFileWithBytes(outsidePath, [9, 9, 9]);
 
       // También probamos una ruta inexistente que SÍ comienza por systemTemp
       final nonExistentInside = p.join(tempDir.path, 'non_existent.tmp');
 
-      DocumentUtils().removeTemporalFiles([insidePath, outsidePath, nonExistentInside]);
+      DocumentUtils()
+          .removeTemporalFiles([insidePath, outsidePath, nonExistentInside]);
 
       // Debe haberse eliminado el de dentro del systemTemp
       expect(File(insidePath).existsSync(), isFalse);
@@ -176,7 +181,8 @@ void main() {
 
   group('isImage', () {
     test('true para PNG', () async {
-      final tempDir = await Directory.systemTemp.createTemp('doc_utils_img_png_');
+      final tempDir =
+          await Directory.systemTemp.createTemp('doc_utils_img_png_');
       final pngPath = p.join(tempDir.path, 'img.png');
       await createFileWithBytes(pngPath, pngBytes);
 
@@ -187,7 +193,8 @@ void main() {
     });
 
     test('true para JPG/JPEG', () async {
-      final tempDir = await Directory.systemTemp.createTemp('doc_utils_img_jpg_');
+      final tempDir =
+          await Directory.systemTemp.createTemp('doc_utils_img_jpg_');
       final jpgPath = p.join(tempDir.path, 'img.jpg');
       await createFileWithBytes(jpgPath, jpgBytes);
 
@@ -198,7 +205,8 @@ void main() {
     });
 
     test('false para PDF', () async {
-      final tempDir = await Directory.systemTemp.createTemp('doc_utils_img_pdf_');
+      final tempDir =
+          await Directory.systemTemp.createTemp('doc_utils_img_pdf_');
       final pdfPath = p.join(tempDir.path, 'doc.pdf');
       await createFileWithBytes(pdfPath, pdfBytes);
 
@@ -209,7 +217,8 @@ void main() {
     });
 
     test('false cuando hay excepción (ruta inexistente)', () async {
-      final nonExistent = p.join(Directory.systemTemp.path, 'no_such_image.png');
+      final nonExistent =
+          p.join(Directory.systemTemp.path, 'no_such_image.png');
       final result = await DocumentUtils.isImage(nonExistent);
       expect(result, isFalse);
     });

@@ -18,7 +18,8 @@ void main() {
       });
       PdfCombiner.isMock = true;
       DocumentUtils.temporalDir = "/example/assets/temp";
-      var result = await PdfCombiner.createPdfFromImage("example/assets/image_1.jpeg",1);
+      var result = await PdfCombiner.createPdfFromImage(
+          "example/assets/image_1.jpeg", 1);
       expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPath, "/example/assets/temp/document_1.pdf");
     });
