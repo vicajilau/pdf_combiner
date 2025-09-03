@@ -8,6 +8,7 @@ void main() {
 
 
     test('error cuando inputPaths está vacío', () async {
+      PdfCombiner.isMock = false;
       final res = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: const [],
         outputPath: 'out.pdf',
@@ -18,6 +19,7 @@ void main() {
     });
 
     test('error cuando outputPath está vacío o en blanco', () async {
+      PdfCombiner.isMock = false;
       final res = await PdfCombiner.generatePDFFromDocuments(
         inputPaths: const ['any'],
         outputPath: '   ',
@@ -28,6 +30,7 @@ void main() {
     });
 
     test('error cuando outputPath no tiene extensión .pdf (case-sensitive)', () async {
+      PdfCombiner.isMock = false;
       var createCalls = 0;
       var mergeCalls = 0;
 
@@ -46,6 +49,7 @@ void main() {
     });
 
     test('error mixed cuando el input no es PDF ni imagen', () async {
+      PdfCombiner.isMock = false;
       final firstPath = '/path/invalido.xyz';
 
       final res = await PdfCombiner.generatePDFFromDocuments(
