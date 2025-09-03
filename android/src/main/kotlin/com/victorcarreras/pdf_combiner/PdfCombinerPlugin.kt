@@ -41,6 +41,7 @@ class PdfCombinerPlugin : FlutterPlugin, MethodCallHandler {
                 val outputDirPath = call.argument<String>("outputDirPath")
                 val maxWidth = call.argument<Int>("width")
                 val maxHeight = call.argument<Int>("height")
+
                 val keepAspectRatio = call.argument<Boolean>("keepAspectRatio")
                 if (paths != null && outputDirPath != null && maxWidth != null && maxHeight != null && keepAspectRatio != null) {
                     CreatePDFFromMultipleImage(result).create(
