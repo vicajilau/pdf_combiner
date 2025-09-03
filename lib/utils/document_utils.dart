@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_magic_number/file_magic_number.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
 
@@ -15,7 +16,7 @@ class DocumentUtils {
   /// Removes a list of temporary files from the file system.
   /// It iterates through the provided list of file paths and deletes each file if it exists.
   void removeTemporalFiles(List<String> paths) {
-    if (!PdfCombiner.isMock) {
+    if (!PdfCombiner.isMock && !kIsWeb) {
       for (final path in paths) {
         // Ensure we only delete files within the designated temporary folder
         if (path.startsWith(getTemporalFolderPath())) {
