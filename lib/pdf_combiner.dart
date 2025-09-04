@@ -99,7 +99,7 @@ class PdfCombiner {
         } else {
           _notifyCustomProgress(delegate, 0.5);
           if (isImage) {
-            var response = await PdfCombiner.createPDFFromMultipleImages(
+            final response = await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
               outputPath:
                   "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
