@@ -90,7 +90,6 @@ void main() {
               'Exception: The outputPath must have a .pdf format: output/path.jpeg');
         }),
       );
-
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
       expect(result.message,
@@ -119,7 +118,6 @@ void main() {
               'Exception: The parameter (inputPaths) cannot be empty');
         }),
       );
-
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);

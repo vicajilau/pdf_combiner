@@ -41,7 +41,8 @@ void main() {
       );
     });
 
-    test('PdfFromMultipleImageConfig test map has same values as config', () async {
+    test('PdfFromMultipleImageConfig test map has same values as config',
+        () async {
       final config = PdfFromMultipleImageConfig(
           rescale: ImageScale(width: 400, height: 400), keepAspectRatio: false);
       final Map<String, dynamic> expectedMap = {

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:path/path.dart' as path;
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
@@ -75,7 +74,6 @@ class PdfCombiner {
     } else {
       _notifyCustomProgress(delegate, 0.3);
       final List<String> mutablePaths = List.from(inputPaths);
-      String dirname = path.dirname(outputPath);
       for (int i = 0; i < mutablePaths.length; i++) {
         final path = mutablePaths[i];
         final isPDF = await DocumentUtils.isPDF(path);
@@ -103,7 +101,8 @@ class PdfCombiner {
           if (isImage) {
             final response = await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
-              outputPath: "$dirname/document_$i.pdf",
+              outputPath:
+                  "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
             );
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
@@ -123,6 +122,7 @@ class PdfCombiner {
         outputPath: outputPath,
         delegate: delegate,
       );
+      DocumentUtils().removeTemporalFiles(mutablePaths);
       if (response.status == PdfCombinerStatus.success) {
         _notifyFinishProgress(delegate);
         return GeneratePdfFromDocumentsResponse(
@@ -212,6 +212,7 @@ class PdfCombiner {
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
             delegate?.onSuccess?.call([response]);
+
             return MergeMultiplePDFResponse(
                 status: PdfCombinerStatus.success,
                 message: PdfCombinerMessages.successMessage,
@@ -294,7 +295,6 @@ class PdfCombiner {
             outputPath: outputPath,
             config: config,
           );
-
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
             delegate?.onSuccess?.call([response]);
