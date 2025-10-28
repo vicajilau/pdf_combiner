@@ -1,3 +1,10 @@
+## 4.4.0
+### General
+* Fixed an issue where temporary PDF files were not cleaned up after `generatePDFFromDocuments` operation, causing unnecessary storage bloat on mobile devices. [#93](https://github.com/vicajilau/pdf_combiner/issues/93)
+* Added ability to customize the temporary folder path where files are generated using `DocumentUtils.setTemporalFolderPath()` on all native platforms (Windows, macOS, Linux, Android, iOS).
+* Improved documentation across the codebase.
+* Updated dependencies.
+
 ## 4.3.8
 ### General
 * Prepare app to access it from github_pages
