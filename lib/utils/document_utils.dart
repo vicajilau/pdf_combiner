@@ -11,11 +11,11 @@ import 'package:pdf_combiner/pdf_combiner.dart';
 /// such as Windows, macOS, and Linux. The `filePath` parameter should be a valid
 /// local file path.
 class DocumentUtils {
-  static var temporalDir = Directory.systemTemp.path;
+  static String _temporalDir = Directory.systemTemp.path;
 
   /// Removes a list of temporary files from the file system.
   /// It iterates through the provided list of file paths and deletes each file if it exists.
-  void removeTemporalFiles(List<String> paths) {
+  static void removeTemporalFiles(List<String> paths) {
     if (!PdfCombiner.isMock && !kIsWeb) {
       for (final path in paths) {
         // Ensure we only delete files within the designated temporary folder
@@ -30,9 +30,10 @@ class DocumentUtils {
   }
 
   /// Returns the absolute path to the system's temporary directory.
-  static String getTemporalFolderPath() {
-    return temporalDir;
-  }
+  static String getTemporalFolderPath() => _temporalDir;
+
+  /// Allow set
+  static void setTemporalFolderPath(String path) => _temporalDir = path;
 
   /// Determines whether the given file path corresponds to a PDF file.
   ///
