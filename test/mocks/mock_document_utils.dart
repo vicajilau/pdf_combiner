@@ -9,7 +9,7 @@ class MockDocumentUtils
   /// Removes a list of temporary files from the file system.
   /// It iterates through the provided list of file paths and deletes each file if it exists.
   @override
-  void removeTemporalFiles(List<String> paths) {
+  static void removeTemporalFiles(List<String> paths) {
     for (final path in paths) {
       // Ensure we only delete files within the designated temporary folder
       if (path.startsWith("example/assets/temp")) {

@@ -79,7 +79,7 @@ void main() {
       final file = await createFileWithBytes(fileInMockTemp, [1, 2, 3]);
 
       // Aun cuando el path está dentro de la carpeta temporal mock, no debe borrarlo
-      DocumentUtils().removeTemporalFiles([fileInMockTemp]);
+      DocumentUtils.removeTemporalFiles([fileInMockTemp]);
 
       expect(File(fileInMockTemp).existsSync(), isTrue);
 
@@ -97,7 +97,7 @@ void main() {
       expect(file.existsSync(), isTrue,
           reason: "El archivo debería existir antes de la eliminación");
 
-      DocumentUtils().removeTemporalFiles([filePath]);
+      DocumentUtils.removeTemporalFiles([filePath]);
 
       expect(file.existsSync(), isFalse,
           reason: "El archivo debería haber sido eliminado");
@@ -121,8 +121,8 @@ void main() {
       // También probamos una ruta inexistente que SÍ comienza por systemTemp
       final nonExistentInside = p.join(tempDir.path, 'non_existent.tmp');
 
-      DocumentUtils()
-          .removeTemporalFiles([insidePath, outsidePath, nonExistentInside]);
+      DocumentUtils.removeTemporalFiles(
+          [insidePath, outsidePath, nonExistentInside]);
 
       // Debe haberse eliminado el de dentro del systemTemp
       expect(File(insidePath).existsSync(), isFalse);

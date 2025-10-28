@@ -19,7 +19,7 @@ void main() {
         }
         return null;
       });
-      DocumentUtils.temporalDir = "./example/assets/temp";
+      DocumentUtils.setTemporalFolderPath("./example/assets/temp");
       var result = await PdfCombiner.generatePDFFromDocuments(
           inputPaths: ["./example/assets/image_1.jpeg"],
           outputPath: "./example/assets/temp/document_0.pdf",

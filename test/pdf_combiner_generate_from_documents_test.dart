@@ -75,7 +75,7 @@ void main() {
     // Test for successfully combining multiple PDFs using PdfCombiner.
     test('generatePDFFromDocuments mix of documents (PdfCombiner)', () async {
       PdfCombiner.isMock = true;
-      DocumentUtils.temporalDir = "./example/assets/temp";
+      DocumentUtils.setTemporalFolderPath("./example/assets/temp");
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
 
       // Replace the platform instance with the mock implementation.
