@@ -278,7 +278,7 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'The parameter (inputPaths) cannot be empty');
+      expect(result.message, 'The parameter (inputs) cannot be empty');
     });
 
     // Test for error setting a different type of file in the mergeMultiplePDF method.
