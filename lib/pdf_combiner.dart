@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner/responses/generate_pdf_from_documents_response.dart';
@@ -99,10 +100,12 @@ class PdfCombiner {
         } else {
           _notifyCustomProgress(delegate, 0.5);
           if (isImage) {
+            final temporalOutputPath = kIsWeb
+                ? "document_$i.pdf"
+                : "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf";
             final response = await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
-              outputPath:
-                  "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf",
+              outputPath: temporalOutputPath,
             );
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
