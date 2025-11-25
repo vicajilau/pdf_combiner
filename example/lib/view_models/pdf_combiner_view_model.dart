@@ -54,7 +54,7 @@ class PdfCombinerViewModel {
     outputFiles = [];
   }
 
-  List<String> _getPaths() => selectedFiles.cast<String>().toList();
+  List<String> _getPaths() => selectedFiles.map((file) => file.path).toList();
 
   List<File> _getFiles() => selectedFiles;
 

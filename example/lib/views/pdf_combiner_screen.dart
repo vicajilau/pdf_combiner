@@ -213,35 +213,128 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                             ),
                           ),
                           // Buttons Section
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              spacing: 10,
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Column(
                               children: [
-                                ElevatedButton(
-                                  onPressed: _viewModel.selectedFiles.isNotEmpty
-                                      ? _createPdfFromMixFromUint8List
-                                      : null,
-                                  child: const Text('Create PDF'),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _createPdfFromMixFromString
+                                            : null,
+                                        child: const Text('Create PDF'),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _combinePdfsFromString
+                                            : null,
+                                        child: const Text('Combine PDFs'),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _createPdfFromImagesFromString
+                                            : null,
+                                        child: const Text('PDF from images'),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _createImagesFromPDFFromFile
+                                            : null,
+                                        child: const Text('Images from PDF'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                ElevatedButton(
-                                  onPressed: _viewModel.selectedFiles.isNotEmpty
-                                      ? _combinePdfsFromUint8List
-                                      : null,
-                                  child: const Text('Combine PDFs'),
+                                const SizedBox(height: 10),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _combinePdfsFromFile
+                                            : null,
+                                        child: const Text(
+                                            'Combine PDFs from file'),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _combinePdfsFromUint8List
+                                            : null,
+                                        child: const Text(
+                                            'Combine PDFs from Uint8List'),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _createPdfFromMixFromFile
+                                            : null,
+                                        child: const Text(
+                                            'Create PDF from mix from file'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                ElevatedButton(
-                                  onPressed: _viewModel.selectedFiles.isNotEmpty
-                                      ? _createPdfFromImagesFromUint8List
-                                      : null,
-                                  child: const Text('PDF from images'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: _viewModel.selectedFiles.isNotEmpty
-                                      ? _createImagesFromPDFFromFile
-                                      : null,
-                                  child: const Text('Images from PDF'),
+                                const SizedBox(height: 10),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _createPdfFromMixFromUint8List
+                                            : null,
+                                        child: const Text(
+                                            'Create PDF from mix from Uint8List'),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _createPdfFromImagesFromFile
+                                            : null,
+                                        child: const Text(
+                                            'Create PDF from images from file'),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _createPdfFromImagesFromUint8List
+                                            : null,
+                                        child: const Text(
+                                            'Create PDF from images from Uint8List'),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      ElevatedButton(
+                                        onPressed: _viewModel
+                                                .selectedFiles.isNotEmpty
+                                            ? _createImagesFromPDFFromString
+                                            : null,
+                                        child: const Text(
+                                            'Create images from PDF from string'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
