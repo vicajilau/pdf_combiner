@@ -161,7 +161,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                   direction: DismissDirection.horizontal,
                                   onDismissed: (direction) {
                                     final path = p.basename(
-                                        _viewModel.selectedFiles[index]);
+                                        _viewModel.selectedFiles[index].path);
                                     setState(() {
                                       _viewModel.removeFileAt(index);
                                     });
@@ -181,10 +181,10 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                     child: ListTile(
                                       leading: FileTypeIcon(
                                           filePath:
-                                              _viewModel.selectedFiles[index]),
+                                              _viewModel.selectedFiles[index].path),
                                       title: Text(
                                         p.basename(
-                                            _viewModel.selectedFiles[index]),
+                                            _viewModel.selectedFiles[index].path),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       onTap: () async =>
@@ -192,7 +192,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                       subtitle: FutureBuilder(
                                           future: FileMagicNumber
                                               .getBytesFromPathOrBlob(_viewModel
-                                                  .selectedFiles[index]),
+                                                  .selectedFiles[index].path),
                                           builder: (context, snapshot) {
                                             if (snapshot.connectionState ==
                                                 ConnectionState.waiting) {
@@ -221,25 +221,25 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                               children: [
                                 ElevatedButton(
                                   onPressed: _viewModel.selectedFiles.isNotEmpty
-                                      ? _createPdfFromMix
+                                      ? _createPdfFromMixFromUint8List
                                       : null,
                                   child: const Text('Create PDF'),
                                 ),
                                 ElevatedButton(
                                   onPressed: _viewModel.selectedFiles.isNotEmpty
-                                      ? _combinePdfs
+                                      ? _combinePdfsFromUint8List
                                       : null,
                                   child: const Text('Combine PDFs'),
                                 ),
                                 ElevatedButton(
                                   onPressed: _viewModel.selectedFiles.isNotEmpty
-                                      ? _createPdfFromImages
+                                      ? _createPdfFromImagesFromUint8List
                                       : null,
                                   child: const Text('PDF from images'),
                                 ),
                                 ElevatedButton(
                                   onPressed: _viewModel.selectedFiles.isNotEmpty
-                                      ? _createImagesFromPDF
+                                      ? _createImagesFromPDFFromFile
                                       : null,
                                   child: const Text('Images from PDF'),
                                 ),
@@ -278,22 +278,52 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     });
     _showSnackbarSafely('App restarted!');
   }
+  // Function to combine selected PDF files into a single output file
+  Future<void> _combinePdfsFromFile() async {
+    await _viewModel.combinePdfsFromFile(delegate);
+  }
 
   // Function to combine selected PDF files into a single output file
-  Future<void> _combinePdfs() async {
-    await _viewModel.combinePdfs(delegate);
+  Future<void> _combinePdfsFromString() async {
+    await _viewModel.combinePdfsFromString(delegate);
   }
 
-  Future<void> _createPdfFromMix() async {
-    await _viewModel.createPDFFromDocuments(delegate);
+  // Function to combine selected PDF files into a single output file
+  Future<void> _combinePdfsFromUint8List() async {
+    await _viewModel.combinePdfsFromUint8List(delegate);
   }
 
-  Future<void> _createPdfFromImages() async {
-    await _viewModel.createPDFFromImages(delegate);
+
+  Future<void> _createPdfFromMixFromFile() async {
+    await _viewModel.createPDFFromDocumentsFromFile(delegate);
   }
 
-  Future<void> _createImagesFromPDF() async {
-    await _viewModel.createImagesFromPDF(delegate);
+  Future<void> _createPdfFromMixFromString() async {
+    await _viewModel.createPDFFromDocumentsFromString(delegate);
+  }
+
+  Future<void> _createPdfFromMixFromUint8List() async {
+    await _viewModel.createPDFFromDocumentsFromUint8List(delegate);
+  }
+
+  Future<void> _createPdfFromImagesFromFile() async {
+    await _viewModel.createPDFFromImagesFromFile(delegate);
+  }
+
+  Future<void> _createPdfFromImagesFromString() async {
+    await _viewModel.createPDFFromImagesFromString(delegate);
+  }
+
+  Future<void> _createPdfFromImagesFromUint8List() async {
+    await _viewModel.createPDFFromImagesFromUint8List(delegate);
+  }
+
+  Future<void> _createImagesFromPDFFromFile() async {
+    await _viewModel.createImagesFromPDFFromFile(delegate);
+  }
+
+  Future<void> _createImagesFromPDFFromString() async {
+    await _viewModel.createImagesFromPDFFromString(delegate);
   }
 
   Future<void> _copyOutputToClipboard(int index) async {
@@ -312,7 +342,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   Future<void> _openInputFile(int index) async {
     if (index < _viewModel.selectedFiles.length) {
-      final result = await OpenFile.open(_viewModel.selectedFiles[index]);
+      final result = await OpenFile.open(_viewModel.selectedFiles[index].path);
       if (result.type != ResultType.done) {
         _showSnackbarSafely('Failed to open file. Error: ${result.message}');
       }

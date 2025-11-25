@@ -10,7 +10,8 @@ import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:platform_detail/platform_detail.dart';
 
 class PdfCombinerViewModel {
-  List<String> selectedFiles = []; // List to store selected PDF file paths
+  List<File> selectedFiles = []; // List to store selected file
+
   List<String> outputFiles = []; // Path for the combined output file
 
   /// Function to pick PDF files from the device (old method)
@@ -35,16 +36,15 @@ class PdfCombinerViewModel {
 
   /// Function to pick PDF files from the device
   Future<void> addFilesDragAndDrop(List<DropItem> files) async {
-    selectedFiles += files.map((file) => file.path).toList();
+    selectedFiles += files.map((file) => File(file.path)).toList();
     outputFiles = [];
   }
 
   /// Function to check if the selected files list is empty
   bool isEmpty() => selectedFiles.isEmpty;
 
-  /// Function to pick PDF files from the device
   Future<void> _addFiles(List<File> files) async {
-    selectedFiles += files.map((file) => file.path).toList();
+    selectedFiles += files;
     outputFiles = [];
   }
 
@@ -54,8 +54,20 @@ class PdfCombinerViewModel {
     outputFiles = [];
   }
 
-  /// Function to combine selected PDF files into a single output file
-  Future<void> combinePdfs(PdfCombinerDelegate delegate) async {
+  List<String> _getPaths() => selectedFiles.cast<String>().toList();
+
+  List<File> _getFiles() => selectedFiles;
+
+  Future<List<Uint8List>> _getUint8Lists() async {
+    final fileBytes = <Uint8List>[];
+    for (final file in selectedFiles) {
+      fileBytes.add(await file.readAsBytes());
+    }
+    return fileBytes;
+  }
+
+  /// Function to combine selected PDF files into a single output file using paths
+  Future<void> combinePdfsFromString(PdfCombinerDelegate delegate) async {
     if (selectedFiles.length < 2) {
       delegate.onError
           ?.call(Exception('You need to select more than one document.'));
@@ -64,7 +76,43 @@ class PdfCombinerViewModel {
       String outputFilePath = '${directory?.path}/combined_output.pdf';
 
       await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: selectedFiles,
+        inputPaths: _getPaths(),
+        outputPath: outputFilePath,
+        delegate: delegate,
+      ); // Combine the PDFs
+    }
+  }
+
+  /// Function to combine selected PDF files into a single output file using Files
+  Future<void> combinePdfsFromFile(PdfCombinerDelegate delegate) async {
+    if (selectedFiles.length < 2) {
+      delegate.onError
+          ?.call(Exception('You need to select more than one document.'));
+    } else {
+      final directory = await _getOutputDirectory();
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
+      await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: _getFiles(),
+        outputPath: outputFilePath,
+        delegate: delegate,
+      ); // Combine the PDFs
+    }
+  }
+
+  /// Function to combine selected PDF files into a single output file using byte data
+  Future<void> combinePdfsFromUint8List(PdfCombinerDelegate delegate) async {
+    if (selectedFiles.length < 2) {
+      delegate.onError
+          ?.call(Exception('You need to select more than one document.'));
+    } else if (kIsWeb) {
+      delegate.onError?.call(Exception(
+          'This feature is not available in web for Uint8List data types.'));
+    } else {
+      final directory = await _getOutputDirectory();
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
+
+      await PdfCombiner.mergeMultiplePDFs(
+        inputPaths: await _getUint8Lists(),
         outputPath: outputFilePath,
         delegate: delegate,
       ); // Combine the PDFs
@@ -72,36 +120,110 @@ class PdfCombinerViewModel {
   }
 
   /// Function to create a PDF file from a list of images
-  Future<void> createPDFFromImages(PdfCombinerDelegate delegate) async {
+  Future<void> createPDFFromImagesFromString(
+      PdfCombinerDelegate delegate) async {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: selectedFiles,
+      inputPaths: _getPaths(),
       outputPath: outputFilePath,
       delegate: delegate,
     );
+  }
+
+  /// Function to create a PDF file from a list of images using Files
+  Future<void> createPDFFromImagesFromFile(PdfCombinerDelegate delegate) async {
+    final directory = await _getOutputDirectory();
+    String outputFilePath = '${directory?.path}/combined_output.pdf';
+    await PdfCombiner.createPDFFromMultipleImages(
+      inputPaths: _getFiles(),
+      outputPath: outputFilePath,
+      delegate: delegate,
+    );
+  }
+
+  /// Function to create a PDF file from a list of images using byte data
+  Future<void> createPDFFromImagesFromUint8List(
+      PdfCombinerDelegate delegate) async {
+    if (kIsWeb) {
+      delegate.onError?.call(Exception(
+          'This feature is not available in web for Uint8List data types.'));
+    } else {
+      final directory = await _getOutputDirectory();
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
+      await PdfCombiner.createPDFFromMultipleImages(
+        inputPaths: await _getUint8Lists(),
+        outputPath: outputFilePath,
+        delegate: delegate,
+      );
+    }
   }
 
   /// Function to create a PDF file from a list of documents
-  Future<void> createPDFFromDocuments(PdfCombinerDelegate delegate) async {
+  Future<void> createPDFFromDocumentsFromString(
+      PdfCombinerDelegate delegate) async {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     await PdfCombiner.generatePDFFromDocuments(
-      inputPaths: selectedFiles,
+      inputPaths: _getPaths(),
       outputPath: outputFilePath,
       delegate: delegate,
     );
   }
 
-  /// Function to create a PDF file from a list of images
-  Future<void> createImagesFromPDF(PdfCombinerDelegate delegate) async {
+  /// Function to create a PDF file from a list of documents using Files
+  Future<void> createPDFFromDocumentsFromFile(
+      PdfCombinerDelegate delegate) async {
+    final directory = await _getOutputDirectory();
+    String outputFilePath = '${directory?.path}/combined_output.pdf';
+    await PdfCombiner.generatePDFFromDocuments(
+      inputPaths: _getFiles(),
+      outputPath: outputFilePath,
+      delegate: delegate,
+    );
+  }
+
+  /// Function to create a PDF file from a list of documents using byte data
+  Future<void> createPDFFromDocumentsFromUint8List(
+      PdfCombinerDelegate delegate) async {
+    if (kIsWeb) {
+      delegate.onError?.call(Exception(
+          'This feature is not available in web for Uint8List data types.'));
+    } else {
+      final directory = await _getOutputDirectory();
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
+      await PdfCombiner.generatePDFFromDocuments(
+        inputPaths: await _getUint8Lists(),
+        outputPath: outputFilePath,
+        delegate: delegate,
+      );
+    }
+  }
+
+  /// Function to create images from a PDF using a path string
+  Future<void> createImagesFromPDFFromString(
+      PdfCombinerDelegate delegate) async {
     if (selectedFiles.length > 1) {
       throw Exception('Only you can select a single document.');
     }
     final directory = await _getOutputDirectory();
     final outputFilePath = '${directory?.path}';
     await PdfCombiner.createImageFromPDF(
-      inputPath: selectedFiles.first,
+      inputPath: selectedFiles.first.path,
+      outputDirPath: outputFilePath,
+      delegate: delegate,
+    );
+  }
+
+  /// Function to create images from a PDF using a File object
+  Future<void> createImagesFromPDFFromFile(PdfCombinerDelegate delegate) async {
+    if (selectedFiles.length > 1) {
+      throw Exception('Only you can select a single document.');
+    }
+    final directory = await _getOutputDirectory();
+    final outputFilePath = '${directory?.path}';
+    await PdfCombiner.createImageFromPDF(
+      inputPath: selectedFiles.first.path,
       outputDirPath: outputFilePath,
       delegate: delegate,
     );
@@ -133,7 +255,7 @@ class PdfCombinerViewModel {
   Future<void> copySelectedFilesToClipboard(int index) async {
     if (selectedFiles.isNotEmpty) {
       await Clipboard.setData(ClipboardData(
-          text: selectedFiles[index])); // Copy selected files to clipboard
+          text: selectedFiles[index].path)); // Copy selected files to clipboard
     }
   }
 
