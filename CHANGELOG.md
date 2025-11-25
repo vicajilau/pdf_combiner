@@ -1,6 +1,6 @@
 ## 4.4.1
 ### Web
-* Fixed an issue where the `web` folder was not being correctly published, preventing the plugin from working on the web platform. [#102]https://github.com/vicajilau/pdf_combiner/issues/102
+* Fixed an issue where the `web` folder was not being correctly published, preventing the plugin from working on the web platform. [#102](https://github.com/vicajilau/pdf_combiner/issues/102)
 
 ### General
 * Updated libraries to improve package analysis and scoring on pub.dev.
