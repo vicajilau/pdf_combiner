@@ -37,7 +37,7 @@ void main() {
 
       expect(result.status, PdfCombinerStatus.error);
       expect(result.outputPath, "");
-      expect(result.message, 'The parameter (inputPaths) cannot be empty');
+      expect(result.message, 'The parameter (inputs) cannot be empty');
     }, timeout: Timeout.none);
 
     testWidgets('Test creating pdf with non-existing file', (tester) async {
