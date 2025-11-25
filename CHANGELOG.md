@@ -1,3 +1,11 @@
+## 4.4.1
+### Web
+* Fixed an issue where the `web` folder was not being correctly published, preventing the plugin from working on the web platform.
+
+### General
+* Updated libraries to improve package analysis and scoring on pub.dev.
+* Updated dependencies.
+
 ## 4.4.0
 ### General
 * Fixed an issue where temporary PDF files were not cleaned up after `generatePDFFromDocuments` operation, causing unnecessary storage bloat on mobile devices. [#93](https://github.com/vicajilau/pdf_combiner/issues/93)
