@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
 import 'package:pdf_combiner/responses/generate_pdf_from_documents_response.dart';
@@ -74,8 +74,9 @@ class PdfCombiner {
       );
     } else {
       _notifyCustomProgress(delegate, 0.3);
-      final List<String>? mutablePaths = await getPathsFromInputs(inputPaths!,delegate);
-      if(mutablePaths == null){
+      final List<String>? mutablePaths =
+          await getPathsFromInputs(inputPaths!, delegate);
+      if (mutablePaths == null) {
         return GeneratePdfFromDocumentsResponse(
           status: PdfCombinerStatus.error,
           message: PdfCombinerMessages.errorMessage,
@@ -148,7 +149,9 @@ class PdfCombiner {
       }
     }
   }
-  static Future<List<String>?> getPathsFromInputs(List<dynamic> inputPaths, PdfCombinerDelegate? delegate) async {
+
+  static Future<List<String>?> getPathsFromInputs(
+      List<dynamic> inputPaths, PdfCombinerDelegate? delegate) async {
     final List<String> paths = [];
     for (int i = 0; i < inputPaths.length; i++) {
       final input = inputPaths[i];
@@ -169,12 +172,14 @@ class PdfCombiner {
       } else if (input is File) {
         paths.add(input.path);
       } else {
-        delegate?.onError?.call(Exception("Invalid input type, it should be a String, Uint8List, or File."));
+        delegate?.onError?.call(Exception(
+            "Invalid input type, it should be a String, Uint8List, or File."));
         return null;
       }
     }
     return paths;
   }
+
   static void _notifyCustomProgress(
       PdfCombinerDelegate? delegate, double customProgress) {
     delegate?.onProgress?.call(customProgress);
@@ -207,13 +212,13 @@ class PdfCombiner {
     required String outputPath,
     PdfCombinerDelegate? delegate,
   }) async {
-    var inputsInString = await getPathsFromInputs(inputPaths,delegate);
-    if(inputsInString == null){
+    var inputsInString = await getPathsFromInputs(inputPaths, delegate);
+    if (inputsInString == null) {
       return MergeMultiplePDFResponse(
         status: PdfCombinerStatus.error,
         message: PdfCombinerMessages.errorMessage,
       );
-    }else if (inputsInString.isEmpty) {
+    } else if (inputsInString.isEmpty) {
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("inputs")));
       return MergeMultiplePDFResponse(
@@ -295,9 +300,9 @@ class PdfCombiner {
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
     PdfCombinerDelegate? delegate,
   }) async {
-    var inputsInString = await getPathsFromInputs(inputPaths,delegate);
+    var inputsInString = await getPathsFromInputs(inputPaths, delegate);
     final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
-    if(inputsInString == null){
+    if (inputsInString == null) {
       return PdfFromMultipleImageResponse(
         status: PdfCombinerStatus.error,
         message: PdfCombinerMessages.errorMessage,
@@ -309,7 +314,7 @@ class PdfCombiner {
         status: PdfCombinerStatus.error,
         message: PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath),
       );
-    }else if (inputsInString.isEmpty) {
+    } else if (inputsInString.isEmpty) {
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("inputs")));
       return PdfFromMultipleImageResponse(
