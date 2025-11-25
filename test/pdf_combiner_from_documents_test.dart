@@ -14,7 +14,7 @@ void main() {
 
       expect(res.status, PdfCombinerStatus.error);
       expect(
-          res.message, PdfCombinerMessages.emptyParameterMessage('inputPaths'));
+          res.message, PdfCombinerMessages.emptyParameterMessage('inputs'));
     });
 
     test('error cuando outputPath está vacío o en blanco', () async {
