@@ -1,7 +1,9 @@
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/pdf_combiner_delegate.dart';
+import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
@@ -26,6 +28,43 @@ void main() {
           delegate: PdfCombinerDelegate());
       expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPath, "./example/assets/temp/document_0.pdf");
+    });
+
+    test("generatePDFFromDocuments with null input paths", () async {
+      var result = await PdfCombiner.generatePDFFromDocuments(
+          inputPaths: null,
+          outputPath: "./example/assets/temp/document_0.pdf",
+          delegate: PdfCombinerDelegate());
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, PdfCombinerMessages.emptyParameterMessage("inputs"));
+    });
+
+    test("generatePDFFromDocuments with empty input paths", () async {
+      var result = await PdfCombiner.generatePDFFromDocuments(
+          inputPaths: [],
+          outputPath: "./example/assets/temp/document_0.pdf",
+          delegate: PdfCombinerDelegate());
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, PdfCombinerMessages.emptyParameterMessage("inputs"));
+    });
+
+    test("generatePDFFromDocuments with empty output path", () async {
+      var result = await PdfCombiner.generatePDFFromDocuments(
+          inputPaths: ["./example/assets/image_1.jpeg"],
+          outputPath: "",
+          delegate: PdfCombinerDelegate());
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message, PdfCombinerMessages.emptyParameterMessage("outputPath"));
+    });
+
+    test("generatePDFFromDocuments with invalid output path", () async {
+      var result = await PdfCombiner.generatePDFFromDocuments(
+          inputPaths: ["./example/assets/image_1.jpeg"],
+          outputPath: "./example/assets/temp/document_0",
+          delegate: PdfCombinerDelegate());
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.message,
+          PdfCombinerMessages.errorMessageInvalidOutputPath("./example/assets/temp/document_0"));
     });
   });
 }
