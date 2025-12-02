@@ -71,6 +71,32 @@ void main() {
       expect(result.toString(),
           'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
     });
+    // Test for successfully combining multiple PDFs using PdfCombiner.
+    test('generatePDFFromDocuments with empty inputs', () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+
+      // Replace the platform instance with the mock implementation.
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // Call the method and check the response.
+      final result = await PdfCombiner.generatePDFFromDocuments(
+        inputPaths: [],
+        outputPath: 'path.pdf',
+        delegate: PdfCombinerDelegate(onSuccess: (paths) {
+          fail("Test failed due to success: $paths");
+        }, onError: (error) {
+          expect(error.toString(),
+              'Exception: The parameter (inputs) cannot be empty');
+        }),
+      );
+
+      // Verify the result matches the expected mock values.
+      expect(result.status, PdfCombinerStatus.error);
+      expect(result.outputPath, "");
+      expect(result.message, 'The parameter (inputs) cannot be empty');
+      expect(result.toString(),
+          'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+    });
 
     // Test for successfully combining multiple PDFs using PdfCombiner.
     test('generatePDFFromDocuments mix of documents (PdfCombiner)', () async {
@@ -278,7 +304,7 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.outputPath, "");
       expect(result.status, PdfCombinerStatus.error);
-      expect(result.message, 'The parameter (inputPaths) cannot be empty');
+      expect(result.message, 'The parameter (inputs) cannot be empty');
     });
 
     // Test for error setting a different type of file in the mergeMultiplePDF method.
