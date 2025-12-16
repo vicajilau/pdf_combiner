@@ -3,7 +3,6 @@
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
-#include <flutter/standard_method_codec.h>
 
 #include <memory>
 
@@ -25,16 +24,6 @@ class PdfCombinerPlugin : public flutter::Plugin {
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
-
-  void merge_multiple_pdfs(const flutter::EncodableMap& args,
-      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
-
-  void create_pdf_from_multiple_image(const flutter::EncodableMap& args,
-      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
-
-  void create_image_from_pdf(const flutter::EncodableMap& args,
-      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
-
 };
 
 }  // namespace pdf_combiner

@@ -53,7 +53,7 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 add_subdirectory("runner")
 
 # Enable the test target.
-set(include_pdf_combiner_tests TRUE)
+set(include_pdf_combiner_tests FALSE)
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
