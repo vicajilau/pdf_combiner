@@ -117,7 +117,7 @@ class PdfCombiner {
           }
         }
       }
-      final response = await PdfCombiner.mergeMultiplePDFs(
+      final response =  await PdfCombiner.mergeMultiplePDFs(
         inputPaths: mutablePaths,
         outputPath: outputPath,
         delegate: delegate,
