@@ -1,3 +1,7 @@
+## 4.42
+### Windows
+* Updates the googletest dependency URL in windows/CMakeLists.txt from version release-1.11.0 to v1.14.0. [#110]((https://github.com/vicajilau/pdf_combiner/issues/110))
+
 ## 4.4.1
 ### Web
 * Fixed an issue where the `web` folder was not being correctly published, preventing the plugin from working on the web platform. [#102](https://github.com/vicajilau/pdf_combiner/issues/102)
