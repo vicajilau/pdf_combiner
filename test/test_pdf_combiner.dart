@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
@@ -26,6 +28,30 @@ void main() {
           inputPaths: ["./example/assets/image_1.jpeg"],
           outputPath: "./example/assets/temp/document_0.pdf",
           delegate: PdfCombinerDelegate());
+      expect(result.status, PdfCombinerStatus.success);
+      expect(result.outputPath, "./example/assets/temp/document_0.pdf");
+    });
+
+    test("generatePDFFromDocuments with Uint8List input", () async {
+      PdfCombiner.isMock = true;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
+        if (methodCall.method == 'createPDFFromMultipleImage' ||
+            methodCall.method == 'mergeMultiplePDF') {
+          return './example/assets/temp/document_0.pdf';
+        }
+        return null;
+      });
+      DocumentUtils.setTemporalFolderPath("./example/assets/temp");
+
+      final imageFile = File("./example/assets/image_1.jpeg");
+      final Uint8List bytes = await imageFile.readAsBytes();
+
+      var result = await PdfCombiner.generatePDFFromDocuments(
+          inputPaths: [bytes],
+          outputPath: "./example/assets/temp/document_0.pdf",
+          delegate: PdfCombinerDelegate());
+
       expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPath, "./example/assets/temp/document_0.pdf");
     });
