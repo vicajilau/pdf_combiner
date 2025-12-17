@@ -1,6 +1,6 @@
 ## 4.4.2
 ### Windows
-* Resolve issue when you use library in windows platform and it not works. [#110]((https://github.com/vicajilau/pdf_combiner/issues/110))
+* * Fixed an issue that prevented building on the Windows platform. [#110](https://github.com/vicajilau/pdf_combiner/issues/110)
 
 ## 4.4.1
 ### Web
