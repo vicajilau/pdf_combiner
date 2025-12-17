@@ -1,6 +1,6 @@
 ## 4.4.2
 ### Windows
-* Updates the googletest dependency URL in windows/CMakeLists.txt from version release-1.11.0 to v1.14.0. [#110]((https://github.com/vicajilau/pdf_combiner/issues/110))
+* Resolve issue when you use library in windows platform and it not works. [#110]((https://github.com/vicajilau/pdf_combiner/issues/110))
 
 ## 4.4.1
 ### Web
