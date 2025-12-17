@@ -219,6 +219,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  flutter_pdfium:
+    dependency: "direct main"
+    description:
+      name: flutter_pdfium
+      sha256: "86a14ec8b9b549d3d3985e361da72ad19c29e6129f717d98c21d1e12d67b8ea2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -514,10 +522,11 @@ packages:
   pdf_combiner:
     dependency: "direct main"
     description:
-      path: ".."
-      relative: true
-    source: path
-    version: "4.4.1"
+      name: pdf_combiner
+      sha256: e7380dfb0362644f7d063a1db5ff29bc315c9961d3318cb73180aaa4348bd068
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.4.2"
   permission_handler:
     dependency: "direct main"
     description:
