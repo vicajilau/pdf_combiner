@@ -1,21 +1,52 @@
 PODS:
+  - desktop_drop (0.0.1):
+    - FlutterMacOS
+  - device_info_plus (0.0.1):
+    - FlutterMacOS
+  - file_picker (0.0.1):
+    - FlutterMacOS
   - FlutterMacOS (1.0.0)
   - open_file_mac (0.0.1):
     - FlutterMacOS
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - pdf_combiner (0.0.1):
+    - FlutterMacOS
 
 DEPENDENCIES:
+  - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
+  - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
+  - file_picker (from `Flutter/ephemeral/.symlinks/plugins/file_picker/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - open_file_mac (from `Flutter/ephemeral/.symlinks/plugins/open_file_mac/macos`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+  - pdf_combiner (from `Flutter/ephemeral/.symlinks/plugins/pdf_combiner/macos`)
 
 EXTERNAL SOURCES:
+  desktop_drop:
+    :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos
+  device_info_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos
+  file_picker:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_picker/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   open_file_mac:
     :path: Flutter/ephemeral/.symlinks/plugins/open_file_mac/macos
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
+  pdf_combiner:
+    :path: Flutter/ephemeral/.symlinks/plugins/pdf_combiner/macos
 
 SPEC CHECKSUMS:
+  desktop_drop: 1eeeb9484299585770b6461e4f3d60950e99efa2
+  device_info_plus: 1b14eed9bf95428983aed283a8d51cce3d8c4215
+  file_picker: e716a70a9fe5fd9e09ebc922d7541464289443af
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  open_file_mac: 01874b6d6a2c1485ac9b126d7105b99102dea2cf
+  open_file_mac: 0e554648e2a87ce59e9438e3e5ca3e552e90d89a
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  pdf_combiner: 20c780199fbdcb2123d3517d6802095f80b51ce1
 
 PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
 

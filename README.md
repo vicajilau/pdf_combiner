@@ -43,6 +43,7 @@
 Combine any number of PDFs and images, in any order, into a single PDF document.
 
 **Required Parameters:**
+
 - `inputPaths`: A list of strings representing the image and PDF file paths.
 - `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
@@ -67,6 +68,7 @@ if (response.status == PdfCombinerStatus.success) {
 Combine several PDF files into a single document.
 
 **Required Parameters:**
+
 - `inputPaths`: A list of strings representing the paths of the PDF files to combine.
 - `outputPath`: A string representing the absolute path of the file where the combined PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
@@ -92,6 +94,7 @@ if (response.status == PdfCombinerStatus.success) {
 Convert a list of image files into a single PDF document.
 
 **Required Parameters:**
+
 - `inputPaths`: A list of strings representing the image file paths.
 - `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
@@ -118,10 +121,12 @@ if (response.status == PdfCombinerStatus.success) {
 The `PdfFromMultipleImageConfig` class is used to configure how images are processed before creating a PDF.
 
 **Parameters:**
+
 - `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
 - `keepAspectRatio` (default: `true`): Ensures that the aspect ratio of the images is preserved when scaling.
 
 Example Usage:
+
 ```dart
 final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
 final outputPath = "path/to/output.pdf";
@@ -147,6 +152,7 @@ if (response.status == PdfCombinerStatus.success) {
 Extract images from a PDF file.
 
 **Required Parameters:**
+
 - `inputPath`: A string representing the file path of the PDF to extract images from.
 - `outputDirPath`: A string representing the directory folder where the extracted images should be saved. In the case of web, this parameter is ignored.
 
@@ -173,11 +179,13 @@ if (response.status == PdfCombinerStatus.success) {
 The `ImageFromPdfConfig` class is used to configure how images are processed before creating a list of images.
 
 **Parameters:**
+
 - `rescale` (default: `ImageScale.original`): Defines the scaling configuration for the images.
 - `compression` (default: `ImageCompression.none`): Sets the compression level for image, affecting file size quality and clarity.
 - `createOneImage` (default: `false`): If you want to create a single image with all pages of the PDF or if you want one image per page.
 
 Example Usage:
+
 ```dart
 final pdfFilePath = "path/to/input.pdf";
 final outputDirPath = "path/to/output";
@@ -217,6 +225,7 @@ Summary of Supported Cases
 | **Custom**        | `1 - 100`   | `ImageCompression.custom(75)` |
 
 Example Usage:
+
 ```dart
 final compression = ImageCompression.medium;
 print(compression.value); // Output: 60
@@ -224,7 +233,7 @@ print(compression.value); // Output: 60
 
 ### Callbacks with `PdfCombinerDelegate`
 
-The `PdfCombinerDelegate` class is designed to handle progress, success, and error callbacks during the PDF combination process. This delegate can be passed as a parameter to any of the PDF combiner methods, making the return process cleaner and more efficient. While both mechanisms (direct return and callbacks) are supported, using callbacks is recommended for simpler operations.
+The `PdfCombinerDelegate` class is designed to handle success, and error callbacks during the PDF combination process. This delegate can be passed as a parameter to any of the PDF combiner methods, making the return process cleaner and more efficient. While both mechanisms (direct return and callbacks) are supported, using callbacks is recommended for simpler operations.
 
 #### `PdfCombinerDelegate` Class Example Usage
 
@@ -236,9 +245,6 @@ void main() async {
   String outputPath = 'path/to/output.pdf';
 
   PdfCombinerDelegate delegate = PdfCombinerDelegate(
-    onProgress: (progress) {
-      print('Progress: ${progress * 100}%');
-    },
     onSuccess: (outputPaths) {
       print('Successfully combined PDFs. Output paths: $outputPaths');
     },
@@ -255,9 +261,9 @@ void main() async {
 }
 ```
 
-> **Note:** When using the `PdfCombinerDelegate` for callbacks, do not use the return value from the `await` call in the same method. This prevents duplicate handling of the result, as the callbacks will already manage the progress, success, and error states.
+> **Note:** When using the `PdfCombinerDelegate` for callbacks, do not use the return value from the `await` call in the same method. This prevents duplicate handling of the result, as the callbacks will already manage the success, and error states.
 
-In this example, the `PdfCombinerDelegate` is used to handle progress updates, successful completion, and errors during the PDF combination process. The `mergeMultiplePDFs` method takes the delegate as an optional parameter and triggers the appropriate callbacks based on the operation's outcome.
+In this example, the `PdfCombinerDelegate` is used to handle updates, successful completion, and errors during the PDF combination process. The `mergeMultiplePDFs` method takes the delegate as an optional parameter and triggers the appropriate callbacks based on the operation's outcome.
 
 ## Usage
 
@@ -292,5 +298,6 @@ For versions older than 3.3.0, follow these steps:
     ```
 
 ## Notes
+
 - No additional configuration is required for Android, iOS, or MacOS. Ensure the necessary dependencies for file selection and permissions are added to your project.
 - Since version 3.3.0, the `pdf_combiner.js` script is automatically loaded in the web platform, making manual inclusion unnecessary for newer versions.

@@ -55,9 +55,7 @@ class PdfCombiner {
     required String outputPath,
     PdfCombinerDelegate? delegate,
   }) async {
-    _notifyStartProgress(delegate);
     if (inputPaths.isEmpty) {
-      _notifyFinishProgress(delegate);
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("inputPaths")));
       return GeneratePdfFromDocumentsResponse(
@@ -65,7 +63,6 @@ class PdfCombiner {
         message: PdfCombinerMessages.emptyParameterMessage("inputPaths"),
       );
     } else if (outputPath.trim().isEmpty) {
-      _notifyFinishProgress(delegate);
       delegate?.onError?.call(
           Exception(PdfCombinerMessages.emptyParameterMessage("outputPath")));
       return GeneratePdfFromDocumentsResponse(
@@ -73,7 +70,6 @@ class PdfCombiner {
         message: PdfCombinerMessages.emptyParameterMessage("outputPath"),
       );
     } else {
-      _notifyCustomProgress(delegate, 0.3);
       final List<String> mutablePaths = List.from(inputPaths);
       for (int i = 0; i < mutablePaths.length; i++) {
         final path = mutablePaths[i];
@@ -81,7 +77,6 @@ class PdfCombiner {
         final isImage = await DocumentUtils.isImage(path);
         final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
         if (!outputPathIsPDF) {
-          _notifyFinishProgress(delegate);
           delegate?.onError?.call(Exception(
               PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath)));
           return GeneratePdfFromDocumentsResponse(
@@ -90,7 +85,6 @@ class PdfCombiner {
                 PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath),
           );
         } else if (!isPDF && !isImage) {
-          _notifyFinishProgress(delegate);
           delegate?.onError
               ?.call(Exception(PdfCombinerMessages.errorMessageMixed(path)));
           return GeneratePdfFromDocumentsResponse(
@@ -98,7 +92,6 @@ class PdfCombiner {
             message: PdfCombinerMessages.errorMessageMixed(path),
           );
         } else {
-          _notifyCustomProgress(delegate, 0.5);
           if (isImage) {
             final temporalOutputPath = kIsWeb
                 ? "document_$i.pdf"
@@ -110,7 +103,6 @@ class PdfCombiner {
             if (response.status == PdfCombinerStatus.success) {
               mutablePaths[i] = response.outputPath;
             } else {
-              _notifyFinishProgress(delegate);
               return GeneratePdfFromDocumentsResponse(
                 status: PdfCombinerStatus.error,
                 message:
@@ -127,33 +119,18 @@ class PdfCombiner {
       );
       DocumentUtils.removeTemporalFiles(mutablePaths);
       if (response.status == PdfCombinerStatus.success) {
-        _notifyFinishProgress(delegate);
         return GeneratePdfFromDocumentsResponse(
           status: PdfCombinerStatus.success,
           message: PdfCombinerMessages.successMessage,
           outputPath: response.outputPath,
         );
       } else {
-        _notifyFinishProgress(delegate);
         return GeneratePdfFromDocumentsResponse(
           status: PdfCombinerStatus.error,
           message: response.message,
         );
       }
     }
-  }
-
-  static void _notifyCustomProgress(
-      PdfCombinerDelegate? delegate, double customProgress) {
-    delegate?.onProgress?.call(customProgress);
-  }
-
-  static void _notifyStartProgress(PdfCombinerDelegate? delegate) {
-    delegate?.onProgress?.call(0.1);
-  }
-
-  static void _notifyFinishProgress(PdfCombinerDelegate? delegate) {
-    delegate?.onProgress?.call(1.0);
   }
 
   /// Combines multiple PDF files into a single PDF.
