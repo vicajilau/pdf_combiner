@@ -4,7 +4,6 @@ import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/image_scale.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
 import 'mocks/mock_pdf_combiner_platform_with_error.dart';
@@ -183,10 +182,9 @@ void main() {
 
       // Verify the error result matches the expected values.
       expect(result.outputPaths, ['$outputDirPath/image1.png']);
-      expect(result.status, PdfCombinerStatus.success);
       expect(result.message, null);
       expect(result.toString(),
-          'ImageFromPDFResponse{outputPaths: ${result.outputPaths}, message: ${result.message}, status: ${result.status} }');
+          'ImageFromPDFResponse{outputPaths: ${result.outputPaths}, message: ${result.message}}');
     });
 
     // Test successfully for createImageFromPDF
@@ -207,10 +205,9 @@ void main() {
       // Verify the error result matches the expected values.
       expect(result.outputPaths,
           ['$outputDirPath/image1.png', '$outputDirPath/image2.png']);
-      expect(result.status, PdfCombinerStatus.success);
       expect(result.message, null);
       expect(result.toString(),
-          'ImageFromPDFResponse{outputPaths: ${result.outputPaths}, message: ${result.message}, status: ${result.status} }');
+          'ImageFromPDFResponse{outputPaths: ${result.outputPaths}, message: ${result.message}}');
     });
   });
 }

@@ -8,7 +8,6 @@ import 'package:pdf_combiner/responses/generate_pdf_from_documents_response.dart
 import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
 import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
@@ -42,7 +41,7 @@ class PdfCombiner {
   /// - [outputPath] The path where the final merged PDF will be saved.
   ///
   /// ### Returns:
-  /// - A [GeneratePdfFromDocumentsResponse] object containing the operation status and message.
+  /// - A [GeneratePdfFromDocumentsResponse] object containing the operation message.
   ///
   /// ### Errors:
   /// - Returns an error if `inputPaths` is empty.
@@ -82,12 +81,8 @@ class PdfCombiner {
               inputPaths: [path],
               outputPath: temporalOutputPath,
             );
-            if (response.status == PdfCombinerStatus.success) {
-              mutablePaths[i] = response.outputPath;
-            } else {
-              throw PdfCombinerException(
-                  response.message ?? "Error creating PDF from image: $path");
-            }
+
+            mutablePaths[i] = response.outputPath;
           }
         }
       }
@@ -96,18 +91,11 @@ class PdfCombiner {
         outputPath: outputPath,
       );
       DocumentUtils.removeTemporalFiles(mutablePaths);
-      if (response.status == PdfCombinerStatus.success) {
-        return GeneratePdfFromDocumentsResponse(
-          status: PdfCombinerStatus.success,
-          message: PdfCombinerMessages.successMessage,
-          outputPath: response.outputPath,
-        );
-      } else {
-        return GeneratePdfFromDocumentsResponse(
-          status: PdfCombinerStatus.error,
-          message: response.message,
-        );
-      }
+
+      return GeneratePdfFromDocumentsResponse(
+        message: PdfCombinerMessages.successMessage,
+        outputPath: response.outputPath,
+      );
     }
   }
 
@@ -157,12 +145,10 @@ class PdfCombiner {
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
             return MergeMultiplePDFResponse(
-                status: PdfCombinerStatus.success,
                 message: PdfCombinerMessages.successMessage,
                 outputPath: response);
           } else {
             return MergeMultiplePDFResponse(
-                status: PdfCombinerStatus.error,
                 message: response ?? PdfCombinerMessages.errorMessage);
           }
         }
@@ -224,7 +210,6 @@ class PdfCombiner {
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
             return PdfFromMultipleImageResponse(
-              status: PdfCombinerStatus.success,
               message: PdfCombinerMessages.successMessage,
               outputPath: response,
             );
@@ -287,7 +272,6 @@ class PdfCombiner {
             if (response.first.contains(outputDirPath) ||
                 response.first.startsWith("blob:http")) {
               return ImageFromPDFResponse(
-                status: PdfCombinerStatus.success,
                 outputPaths: response,
               );
             } else {

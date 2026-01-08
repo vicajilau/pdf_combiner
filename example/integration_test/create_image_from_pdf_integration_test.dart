@@ -3,7 +3,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 import 'test_file_helper.dart';
 
@@ -25,7 +24,6 @@ void main() {
         outputDirPath: outputPath,
       );
 
-      expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPaths, ['${TestFileHelper.basePath}/image_1.png']);
       expect(result.message, null);
     }, timeout: Timeout.none);
@@ -81,7 +79,6 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
           inputPath: inputPaths[0], outputDirPath: outputPath);
 
-      expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPaths.length, 1);
       expect(result.outputPaths, ['${TestFileHelper.basePath}/image_1.png']);
       expect(result.message, null);
@@ -97,7 +94,6 @@ void main() {
           outputDirPath: outputPath,
           config: ImageFromPdfConfig(createOneImage: false));
 
-      expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPaths.length, 4);
       expect(result.message, null);
     }, timeout: Timeout.none);

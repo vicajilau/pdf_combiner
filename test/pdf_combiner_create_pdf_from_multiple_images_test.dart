@@ -3,8 +3,6 @@ import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart'
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
-
 import 'mocks/mock_pdf_combiner_platform.dart';
 import 'mocks/mock_pdf_combiner_platform_with_error.dart';
 import 'mocks/mock_pdf_combiner_platform_with_exception.dart';
@@ -118,10 +116,9 @@ void main() {
 
       // Verify the error result matches the expected values.
       expect(result.outputPath, outputPath);
-      expect(result.status, PdfCombinerStatus.success);
       expect(result.message, 'Processed successfully');
       expect(result.toString(),
-          'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+          'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}}');
     });
 
     // Test for error handling when you try to send a file that its not a pdf in createPDFFromMultipleImages

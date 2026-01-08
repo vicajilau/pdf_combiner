@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 void main() {
@@ -23,7 +22,6 @@ void main() {
         inputPaths: ["./example/assets/image_1.jpeg"],
         outputPath: "./example/assets/temp/document_0.pdf",
       );
-      expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPath, "./example/assets/temp/document_0.pdf");
     });
   });

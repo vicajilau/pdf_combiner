@@ -51,14 +51,15 @@ Combine any number of PDFs and images, in any order, into a single PDF document.
 final imagePaths = ["path/to/image1.jpg", "path/to/document1.pdf", "path/to/image2.png"];
 final outputPath = "path/to/output.pdf";
 
-GeneratePdfFromDocumentsResponse response = await PdfCombiner.generatePDFFromDocuments(
-  inputPaths: imagePaths,
-  outputPath: outputPath,
-);
+try {
+  GeneratePdfFromDocumentsResponse response = await PdfCombiner.generatePDFFromDocuments(
+    inputPaths: imagePaths,
+    outputPath: outputPath,
+  );
 
-if (response.status == PdfCombinerStatus.success) {
   print("File saved to: ${response.outputPath}");
-} else if (response.status == PdfCombinerStatus.error) {
+
+} on PdfCombinerException (e) {
   print("Error: ${response.message}");
 }
 ```
@@ -76,14 +77,13 @@ Combine several PDF files into a single document.
 final filesPath = ["path/to/file1.pdf", "path/to/file2.pdf"];
 final outputPath = "path/to/output.pdf";
 
-MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
-  inputPaths: filesPath,
-  outputPath: outputPath,
-);
-
-if (response.status == PdfCombinerStatus.success) {
+try {
+  MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
+    inputPaths: filesPath,
+    outputPath: outputPath,
+  );
   print("File saved to: ${response.response}");
-} else if (response.status == PdfCombinerStatus.error) {
+} on PdfCombinerException catch (e) {
   print("Error: ${response.message}");
 }
 
@@ -104,14 +104,15 @@ By default, images are added to the PDF without modifications. If needed, you ca
 final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
 final outputPath = "path/to/output.pdf";
 
-PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
+try {
+  PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
   inputPaths: imagePaths,
   outputPath: outputPath,
 );
 
-if (response.status == PdfCombinerStatus.success) {
   print("File saved to: ${response.outputPath}");
-} else if (response.status == PdfCombinerStatus.error) {
+
+} on PdfCombinerException catch (e) {
   print("Error: ${response.message}");
 }
 ```
@@ -131,6 +132,7 @@ Example Usage:
 final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
 final outputPath = "path/to/output.pdf";
 
+try {
 PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
   inputPaths: imagePaths,
   outputPath: outputPath,
@@ -139,10 +141,9 @@ PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleI
     keepAspectRatio: true,
   ),
 );
+print("File saved to: ${response.outputPath}");
 
-if (response.status == PdfCombinerStatus.success) {
-  print("File saved to: ${response.outputPath}");
-} else if (response.status == PdfCombinerStatus.error) {
+} on PdfCombinerException catch (e) {
   print("Error: ${response.message}");
 }
 ```
@@ -162,14 +163,13 @@ By default, images are extracted in their original format. If needed, you can cu
 final pdfFilePath = "path/to/input.pdf";
 final outputDirPath = "path/to/output";
 
+try {
 ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
   inputPath: pdfFilePath, 
   outputDirPath: outputDirPath,
 );
-
-if (response.status == PdfCombinerStatus.success) {
-  print("Files generated: ${response.outputPaths}");
-} else if (response.status == PdfCombinerStatus.error) {
+print("Files generated: ${response.outputPaths}");
+} on PdfCombinerException catch (e) {
   print("Error: ${response.message}");
 }
 ```
@@ -230,40 +230,6 @@ Example Usage:
 final compression = ImageCompression.medium;
 print(compression.value); // Output: 60
 ```
-
-### Callbacks with `PdfCombinerDelegate`
-
-The `PdfCombinerDelegate` class is designed to handle success, and error callbacks during the PDF combination process. This delegate can be passed as a parameter to any of the PDF combiner methods, making the return process cleaner and more efficient. While both mechanisms (direct return and callbacks) are supported, using callbacks is recommended for simpler operations.
-
-#### `PdfCombinerDelegate` Class Example Usage
-
-Here's an example of how to use the `PdfCombinerDelegate` with the `mergeMultiplePDFs` method:
-
-```dart
-void main() async {
-  List<String> inputPaths = ['path/to/file1.pdf', 'path/to/file2.pdf'];
-  String outputPath = 'path/to/output.pdf';
-
-  PdfCombinerDelegate delegate = PdfCombinerDelegate(
-    onSuccess: (outputPaths) {
-      print('Successfully combined PDFs. Output paths: $outputPaths');
-    },
-    onError: (error) {
-      print('Error during PDF combination: $error');
-    },
-  );
-
-  await PdfCombiner.mergeMultiplePDFs(
-    inputPaths: inputPaths,
-    outputPath: outputPath,
-    delegate: delegate,
-  );
-}
-```
-
-> **Note:** When using the `PdfCombinerDelegate` for callbacks, do not use the return value from the `await` call in the same method. This prevents duplicate handling of the result, as the callbacks will already manage the success, and error states.
-
-In this example, the `PdfCombinerDelegate` is used to handle updates, successful completion, and errors during the PDF combination process. The `mergeMultiplePDFs` method takes the delegate as an optional parameter and triggers the appropriate callbacks based on the operation's outcome.
 
 ## Usage
 

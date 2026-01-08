@@ -245,8 +245,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       _showSnackbarSafely(
         'File/s generated successfully: ${_viewModel.outputFiles}',
       );
-    } catch (e) {
-      _showSnackbarSafely((e as PdfCombinerException).message);
+    } on PdfCombinerException catch (e) {
+      _showSnackbarSafely(e.message);
     }
   }
 

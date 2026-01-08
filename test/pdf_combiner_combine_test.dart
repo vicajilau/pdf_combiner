@@ -5,7 +5,6 @@ import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
 import 'mocks/mock_pdf_combiner_platform_with_error.dart';
@@ -59,11 +58,10 @@ void main() {
       );
 
       // Verify the result matches the expected mock values.
-      expect(result.status, PdfCombinerStatus.success);
       expect(result.outputPath, "output/path.pdf");
       expect(result.message, 'Processed successfully');
       expect(result.toString(),
-          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}, status: ${result.status} }');
+          'MergeMultiplePDFResponse{outputPath: ${result.outputPath}, message: ${result.message}}');
     });
 
     // Test for wrong outputPath in combining multiple PDFs using PdfCombiner.
