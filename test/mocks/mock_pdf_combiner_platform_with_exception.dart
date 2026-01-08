@@ -1,4 +1,5 @@
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -23,7 +24,7 @@ class MockPdfCombinerPlatformWithException
     required List<String> inputPaths,
     required String outputPath,
   }) {
-    throw Exception("Mocked Exception");
+    throw PdfCombinerException("Mocked Exception");
   }
 
   /// Mocks the `createPDFFromMultipleImage` method.
@@ -40,7 +41,7 @@ class MockPdfCombinerPlatformWithException
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
-    throw Exception("Mocked Exception");
+    throw PdfCombinerException("Mocked Exception");
   }
 
   /// Mocks the `createImageFromPDF` method.
@@ -59,6 +60,6 @@ class MockPdfCombinerPlatformWithException
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
-    throw Exception("Mocked Exception");
+    throw PdfCombinerException("Mocked Exception");
   }
 }

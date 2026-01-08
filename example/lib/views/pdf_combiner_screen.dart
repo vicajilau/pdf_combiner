@@ -3,7 +3,7 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
-import 'package:pdf_combiner/pdf_combiner_delegate.dart';
+import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
@@ -18,24 +18,6 @@ class PdfCombinerScreen extends StatefulWidget {
 
 class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   final PdfCombinerViewModel _viewModel = PdfCombinerViewModel();
-  late PdfCombinerDelegate delegate;
-
-  @override
-  void initState() {
-    super.initState();
-    initDelegate();
-  }
-
-  void initDelegate() {
-    delegate = PdfCombinerDelegate(onError: (error) {
-      _showSnackbarSafely(error.toString());
-    }, onSuccess: (paths) {
-      setState(() {
-        _viewModel.outputFiles = paths;
-      });
-      _showSnackbarSafely('File/s generated successfully: $paths');
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -256,21 +238,42 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     _showSnackbarSafely('App restarted!');
   }
 
+  Future<void> _runSafely(Future<void> Function() action) async {
+    try {
+      await action();
+      setState(() {});
+      _showSnackbarSafely(
+        'File/s generated successfully: ${_viewModel.outputFiles}',
+      );
+    } catch (e) {
+      _showSnackbarSafely((e as PdfCombinerException).message);
+    }
+  }
+
   // Function to combine selected PDF files into a single output file
+
   Future<void> _combinePdfs() async {
-    await _viewModel.combinePdfs(delegate);
+    await _runSafely(() async {
+      await _viewModel.combinePdfs();
+    });
   }
 
   Future<void> _createPdfFromMix() async {
-    await _viewModel.createPDFFromDocuments(delegate);
+    await _runSafely(() async {
+      await _viewModel.createPDFFromDocuments();
+    });
   }
 
   Future<void> _createPdfFromImages() async {
-    await _viewModel.createPDFFromImages(delegate);
+    await _runSafely(() async {
+      await _viewModel.createPDFFromImages();
+    });
   }
 
   Future<void> _createImagesFromPDF() async {
-    await _viewModel.createImagesFromPDF(delegate);
+    await _runSafely(() async {
+      await _viewModel.createImagesFromPDF();
+    });
   }
 
   Future<void> _copyOutputToClipboard(int index) async {
