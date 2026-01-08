@@ -55,7 +55,7 @@ class PdfCombinerViewModel {
   }
 
   /// Function to combine selected PDF files into a single output file
-  Future<dynamic> combinePdfs() async {
+  Future<String> combinePdfs() async {
     if (selectedFiles.length < 2) {
       throw PdfCombinerException('You need to select more than one document.');
     } else {
@@ -72,7 +72,7 @@ class PdfCombinerViewModel {
   }
 
   /// Function to create a PDF file from a list of images
-  Future<dynamic> createPDFFromImages() async {
+  Future<String> createPDFFromImages() async {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     final response = await PdfCombiner.createPDFFromMultipleImages(
@@ -84,7 +84,7 @@ class PdfCombinerViewModel {
   }
 
   /// Function to create a PDF file from a list of documents
-  Future<dynamic> createPDFFromDocuments() async {
+  Future<String> createPDFFromDocuments() async {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     final response = await PdfCombiner.generatePDFFromDocuments(
@@ -96,7 +96,7 @@ class PdfCombinerViewModel {
   }
 
   /// Function to create a PDF file from a list of images
-  Future<dynamic> createImagesFromPDF() async {
+  Future<String> createImagesFromPDF() async {
     if (selectedFiles.length > 1) {
       throw PdfCombinerException('Only you can select a single document.');
     }
@@ -107,7 +107,7 @@ class PdfCombinerViewModel {
       outputDirPath: outputFilePath,
     );
     outputFiles = response.outputPaths;
-    return response.outputPaths;
+    return response.outputPaths.toString();
   }
 
   /// Function to get the appropriate directory for saving the output file
