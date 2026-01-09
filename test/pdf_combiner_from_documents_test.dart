@@ -1,65 +1,90 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 
 void main() {
   group('PdfCombiner.generatePDFFromDocuments', () {
     test('error cuando inputPaths está vacío', () async {
       PdfCombiner.isMock = false;
-      final res = await PdfCombiner.generatePDFFromDocuments(
-        inputPaths: const [],
-        outputPath: 'out.pdf',
-      );
 
-      expect(res.status, PdfCombinerStatus.error);
       expect(
-          res.message, PdfCombinerMessages.emptyParameterMessage('inputPaths'));
+        () => PdfCombiner.generatePDFFromDocuments(
+          inputPaths: const [],
+          outputPath: 'out.pdf',
+        ),
+        throwsA(
+          predicate(
+            (e) =>
+                e is PdfCombinerException &&
+                e.message.contains(
+                  PdfCombinerMessages.emptyParameterMessage('inputPaths'),
+                ),
+          ),
+        ),
+      );
     });
 
     test('error cuando outputPath está vacío o en blanco', () async {
       PdfCombiner.isMock = false;
-      final res = await PdfCombiner.generatePDFFromDocuments(
-        inputPaths: const ['any'],
-        outputPath: '   ',
-      );
 
-      expect(res.status, PdfCombinerStatus.error);
       expect(
-          res.message, PdfCombinerMessages.emptyParameterMessage('outputPath'));
+        () => PdfCombiner.generatePDFFromDocuments(
+          inputPaths: const ['any'],
+          outputPath: '   ',
+        ),
+        throwsA(
+          predicate(
+            (e) =>
+                e is PdfCombinerException &&
+                e.message.contains(
+                  PdfCombinerMessages.emptyParameterMessage('outputPath'),
+                ),
+          ),
+        ),
+      );
     });
 
     test('error cuando outputPath no tiene extensión .pdf (case-sensitive)',
         () async {
       PdfCombiner.isMock = false;
-      var createCalls = 0;
-      var mergeCalls = 0;
 
-      final res = await PdfCombiner.generatePDFFromDocuments(
-        inputPaths: const ['foo.xyz'],
-        outputPath: 'out.PDF',
-      );
-
-      expect(res.status, PdfCombinerStatus.error);
       expect(
-        res.message,
-        PdfCombinerMessages.errorMessageInvalidOutputPath('out.PDF'),
+        () => PdfCombiner.generatePDFFromDocuments(
+          inputPaths: const ['foo.xyz'],
+          outputPath: 'out.PDF',
+        ),
+        throwsA(
+          predicate(
+            (e) =>
+                e is PdfCombinerException &&
+                e.message.contains(
+                  PdfCombinerMessages.errorMessageInvalidOutputPath('out.PDF'),
+                ),
+          ),
+        ),
       );
-      expect(createCalls, 0);
-      expect(mergeCalls, 0);
     });
 
     test('error mixed cuando el input no es PDF ni imagen', () async {
       PdfCombiner.isMock = false;
       final firstPath = '/path/invalido.xyz';
 
-      final res = await PdfCombiner.generatePDFFromDocuments(
-        inputPaths: [firstPath],
-        outputPath: 'out.pdf',
+      expect(
+        () => PdfCombiner.generatePDFFromDocuments(
+          inputPaths: [firstPath],
+          outputPath: 'out.pdf',
+        ),
+        throwsA(
+          predicate(
+            (e) =>
+                e is PdfCombinerException &&
+                e.message.contains(
+                  PdfCombinerMessages.errorMessageMixed(firstPath),
+                ),
+          ),
+        ),
       );
-
-      expect(res.status, PdfCombinerStatus.error);
-      expect(res.message, PdfCombinerMessages.errorMessageMixed(firstPath));
     });
   });
 }

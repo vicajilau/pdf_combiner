@@ -1,8 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:pdf_combiner/pdf_combiner_delegate.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_status.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 void main() {
@@ -21,10 +19,9 @@ void main() {
       });
       DocumentUtils.setTemporalFolderPath("./example/assets/temp");
       var result = await PdfCombiner.generatePDFFromDocuments(
-          inputPaths: ["./example/assets/image_1.jpeg"],
-          outputPath: "./example/assets/temp/document_0.pdf",
-          delegate: PdfCombinerDelegate());
-      expect(result.status, PdfCombinerStatus.success);
+        inputPaths: ["./example/assets/image_1.jpeg"],
+        outputPath: "./example/assets/temp/document_0.pdf",
+      );
       expect(result.outputPath, "./example/assets/temp/document_0.pdf");
     });
   });
