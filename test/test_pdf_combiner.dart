@@ -22,7 +22,7 @@ void main() {
         inputPaths: ["./example/assets/image_1.jpeg"],
         outputPath: "./example/assets/temp/document_0.pdf",
       );
-      expect(result.outputPath, "./example/assets/temp/document_0.pdf");
+      expect(result, "./example/assets/temp/document_0.pdf");
     });
   });
 }

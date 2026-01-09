@@ -85,18 +85,19 @@ void main() {
         final mockPlatform = MockPdfCombinerPlatformCustomError(customError);
         PdfCombinerPlatform.instance = mockPlatform;
 
-        final file1 = await java.File('test_doc_1.pdf').create();
-        await file1.writeAsString('%PDF-1.4');
-        final file2 = await java.File('test_doc_2.pdf').create();
-        await file2.writeAsString('%PDF-1.4');
+        final file1 = await java.File('test_pdf_C.pdf').create();
+        await file1.writeAsBytes([0x25, 0x50, 0x44, 0x46]);
+        final file2 = await java.File('test_pdf_D.pdf').create();
+        await file2.writeAsBytes([0x25, 0x50, 0x44, 0x46]);
 
         try {
-          final result = await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: ['test_doc_1.pdf', 'test_doc_2.pdf'],
-            outputPath: 'output.pdf',
+          expect(
+            () async => await PdfCombiner.mergeMultiplePDFs(
+              inputPaths: ['test_pdf_C.pdf', 'test_pdf_D.pdf'],
+              outputPath: 'output.pdf',
+            ),
+            throwsA(isA<PdfCombinerException>()),
           );
-
-          expect(result.message, customError);
         } finally {
           if (await file1.exists()) await file1.delete();
           if (await file2.exists()) await file2.delete();
@@ -108,18 +109,19 @@ void main() {
         final mockPlatform = MockPdfCombinerPlatformNullResponse();
         PdfCombinerPlatform.instance = mockPlatform;
 
-        final file1 = await java.File('test_doc_null_1.pdf').create();
-        await file1.writeAsString('%PDF-1.4');
-        final file2 = await java.File('test_doc_null_2.pdf').create();
-        await file2.writeAsString('%PDF-1.4');
+        final file1 = await java.File('test_pdf_A.pdf').create();
+        await file1.writeAsBytes([0x25, 0x50, 0x44, 0x46]);
+        final file2 = await java.File('test_pdf_B.pdf').create();
+        await file2.writeAsBytes([0x25, 0x50, 0x44, 0x46]);
 
         try {
-          final result = await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: ['test_doc_null_1.pdf', 'test_doc_null_2.pdf'],
-            outputPath: 'output.pdf', // Must end in .pdf
+          expect(
+            () async => await PdfCombiner.mergeMultiplePDFs(
+              inputPaths: ['test_pdf_A.pdf', 'test_pdf_B.pdf'],
+              outputPath: 'output.pdf',
+            ),
+            throwsA(isA<PdfCombinerException>()),
           );
-
-          expect(result.message, PdfCombinerMessages.errorMessage);
         } finally {
           if (await file1.exists()) await file1.delete();
           if (await file2.exists()) await file2.delete();
@@ -185,7 +187,7 @@ void main() {
         PdfCombinerPlatform.instance = mockPlatform;
 
         final file1 = await java.File('input.pdf').create();
-        await file1.writeAsString('%PDF-1.4');
+        await file1.writeAsBytes([0x25, 0x50, 0x44, 0x46]);
 
         try {
           expect(

@@ -24,8 +24,7 @@ void main() {
         outputDirPath: outputPath,
       );
 
-      expect(result.outputPaths, ['${TestFileHelper.basePath}/image_1.png']);
-      expect(result.message, null);
+      expect(result, ['${TestFileHelper.basePath}/image_1.png']);
     }, timeout: Timeout.none);
 
     testWidgets('Test creating with non-existing file', (tester) async {
@@ -79,9 +78,8 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
           inputPath: inputPaths[0], outputDirPath: outputPath);
 
-      expect(result.outputPaths.length, 1);
-      expect(result.outputPaths, ['${TestFileHelper.basePath}/image_1.png']);
-      expect(result.message, null);
+      expect(result.length, 1);
+      expect(result, ['${TestFileHelper.basePath}/image_1.png']);
     }, timeout: Timeout.none);
 
     testWidgets('Test creating four images from a PDF', (tester) async {
@@ -94,8 +92,7 @@ void main() {
           outputDirPath: outputPath,
           config: ImageFromPdfConfig(createOneImage: false));
 
-      expect(result.outputPaths.length, 4);
-      expect(result.message, null);
+      expect(result.length, 4);
     }, timeout: Timeout.none);
   });
 }

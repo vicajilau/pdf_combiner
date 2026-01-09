@@ -181,10 +181,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.outputPaths, ['$outputDirPath/image1.png']);
-      expect(result.message, null);
-      expect(result.toString(),
-          'ImageFromPDFResponse{outputPaths: ${result.outputPaths}, message: ${result.message}}');
+      expect(result, ['$outputDirPath/image1.png']);
     });
 
     // Test successfully for createImageFromPDF
@@ -203,11 +200,8 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.outputPaths,
-          ['$outputDirPath/image1.png', '$outputDirPath/image2.png']);
-      expect(result.message, null);
-      expect(result.toString(),
-          'ImageFromPDFResponse{outputPaths: ${result.outputPaths}, message: ${result.message}}');
+      expect(
+          result, ['$outputDirPath/image1.png', '$outputDirPath/image2.png']);
     });
   });
 }

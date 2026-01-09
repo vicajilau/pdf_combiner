@@ -24,8 +24,7 @@ void main() {
         outputPath: outputPath,
       );
 
-      expect(result.outputPath, '${TestFileHelper.basePath}/merged_output.pdf');
-      expect(result.message, 'Processed successfully');
+      expect(result, '${TestFileHelper.basePath}/merged_output.pdf');
     }, timeout: Timeout.none);
 
     testWidgets('Test creating pdf with empty list', (tester) async {

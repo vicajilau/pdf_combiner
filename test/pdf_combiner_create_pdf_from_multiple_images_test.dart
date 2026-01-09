@@ -115,10 +115,7 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
-      expect(result.outputPath, outputPath);
-      expect(result.message, 'Processed successfully');
-      expect(result.toString(),
-          'PdfFromMultipleImageResponse{outputPath: ${result.outputPath}, message: ${result.message}}');
+      expect(result, outputPath);
     });
 
     // Test for error handling when you try to send a file that its not a pdf in createPDFFromMultipleImages
