@@ -4,11 +4,7 @@ import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
-import 'package:pdf_combiner/responses/generate_pdf_from_documents_response.dart';
-import 'package:pdf_combiner/responses/image_from_pdf_response.dart';
-import 'package:pdf_combiner/responses/merge_multiple_pdf_response.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
-import 'package:pdf_combiner/responses/pdf_from_multiple_image_response.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 import 'isolates/merge_pdfs_isolate.dart';
@@ -41,7 +37,7 @@ class PdfCombiner {
   /// - [outputPath] The path where the final merged PDF will be saved.
   ///
   /// ### Returns:
-  /// - A [GeneratePdfFromDocumentsResponse] object containing the operation message.
+  /// - A [String] object containing the output path.
   ///
   /// ### Errors:
   /// - Returns an error if `inputPaths` is empty.
@@ -49,7 +45,7 @@ class PdfCombiner {
   /// - Returns an error if any input file is neither a PDF nor an image.
   /// - Returns an error if the image-to-PDF conversion fails.
   /// - Returns an error if the merging process fails.
-  static Future<GeneratePdfFromDocumentsResponse> generatePDFFromDocuments({
+  static Future<String> generatePDFFromDocuments({
     required List<String> inputPaths,
     required String outputPath,
   }) async {
@@ -82,7 +78,7 @@ class PdfCombiner {
               outputPath: temporalOutputPath,
             );
 
-            mutablePaths[i] = response.outputPath;
+            mutablePaths[i] = response;
           }
         }
       }
@@ -92,10 +88,7 @@ class PdfCombiner {
       );
       DocumentUtils.removeTemporalFiles(mutablePaths);
 
-      return GeneratePdfFromDocumentsResponse(
-        message: PdfCombinerMessages.successMessage,
-        outputPath: response.outputPath,
-      );
+      return response;
     }
   }
 
@@ -112,8 +105,8 @@ class PdfCombiner {
   /// - `outputPath`: A string representing the directory where the combined PDF should be saved.
   ///
   /// Returns:
-  /// - A `Future<MergeMultiplePDFResponse?>` representing the result of the operation (either the success message or an error message).
-  static Future<MergeMultiplePDFResponse> mergeMultiplePDFs({
+  /// - A `Future<String>` representing the result of the operation (either the success message or an error message).
+  static Future<String> mergeMultiplePDFs({
     required List<String> inputPaths,
     required String outputPath,
   }) async {
@@ -144,13 +137,12 @@ class PdfCombiner {
 
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
-            return MergeMultiplePDFResponse(
-                message: PdfCombinerMessages.successMessage,
-                outputPath: response);
-          } else {
-            return MergeMultiplePDFResponse(
-                message: response ?? PdfCombinerMessages.errorMessage);
+            return response;
           }
+
+          final exception = PdfCombinerException(
+              response ?? PdfCombinerMessages.errorMessage);
+          throw exception;
         }
       } catch (e) {
         throw e is Exception ? e : PdfCombinerException(e.toString());
@@ -172,8 +164,8 @@ class PdfCombiner {
   ///   - `keepAspectRatio`: Indicates whether to maintain the aspect ratio of the images (default is `true`).
   ///
   /// Returns:
-  /// - A `Future<PdfFromMultipleImageResponse?>` representing the result of the operation (either the success message or an error message).
-  static Future<PdfFromMultipleImageResponse> createPDFFromMultipleImages({
+  /// - A `Future<String>` representing the result of the operation (either the success message or an error message).
+  static Future<String> createPDFFromMultipleImages({
     required List<String> inputPaths,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
@@ -209,10 +201,7 @@ class PdfCombiner {
           );
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
-            return PdfFromMultipleImageResponse(
-              message: PdfCombinerMessages.successMessage,
-              outputPath: response,
-            );
+            return response;
           } else {
             throw PdfCombinerException(
                 response ?? PdfCombinerMessages.errorMessage);
@@ -246,8 +235,8 @@ class PdfCombiner {
   ///   - `createOneImage`: Indicates whether to create a single image or separate images for each page (default is `true`).
   ///
   /// Returns:
-  /// - A `Future<ImageFromPDFResponse?>` representing the result of the operation (either the success message or an error message).
-  static Future<ImageFromPDFResponse> createImageFromPDF({
+  /// - A `Future<List<String>>` representing the result of the operation (either the success message or an error message).
+  static Future<List<String>> createImageFromPDF({
     required String inputPath,
     required String outputDirPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
@@ -271,9 +260,7 @@ class PdfCombiner {
           if (response != null && response.isNotEmpty) {
             if (response.first.contains(outputDirPath) ||
                 response.first.startsWith("blob:http")) {
-              return ImageFromPDFResponse(
-                outputPaths: response,
-              );
+              return response;
             } else {
               throw PdfCombinerException(response.first);
             }

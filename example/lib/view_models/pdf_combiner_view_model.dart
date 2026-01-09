@@ -66,8 +66,8 @@ class PdfCombinerViewModel {
         inputPaths: selectedFiles,
         outputPath: outputFilePath,
       ); // Combine the PDFs
-      outputFiles = [response.outputPath];
-      return response.outputPath;
+      outputFiles = [response];
+      return response;
     }
   }
 
@@ -79,8 +79,8 @@ class PdfCombinerViewModel {
       inputPaths: selectedFiles,
       outputPath: outputFilePath,
     );
-    outputFiles = [response.outputPath];
-    return response.outputPath;
+    outputFiles = [response];
+    return response;
   }
 
   /// Function to create a PDF file from a list of documents
@@ -91,8 +91,8 @@ class PdfCombinerViewModel {
       inputPaths: selectedFiles,
       outputPath: outputFilePath,
     );
-    outputFiles = [response.outputPath];
-    return response.outputPath;
+    outputFiles = [response];
+    return response;
   }
 
   /// Function to create a PDF file from a list of images
@@ -106,8 +106,8 @@ class PdfCombinerViewModel {
       inputPath: selectedFiles.first,
       outputDirPath: outputFilePath,
     );
-    outputFiles = response.outputPaths;
-    return response.outputPaths.toString();
+    outputFiles = response;
+    return response.toString();
   }
 
   /// Function to get the appropriate directory for saving the output file

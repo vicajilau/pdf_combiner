@@ -59,10 +59,7 @@ void main() {
       );
 
       // Verify the result matches the expected mock values.
-      expect(result.outputPath, "output/path.pdf");
-      expect(result.message, 'Processed successfully');
-      expect(result.toString(),
-          'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}}');
+      expect(result, "output/path.pdf");
     });
 
     // Test for successfully combining multiple PDFs using PdfCombiner.
@@ -84,10 +81,7 @@ void main() {
       );
 
       // Verify the result matches the expected mock values.
-      expect(result.outputPath, "path.pdf");
-      expect(result.message, 'Processed successfully');
-      expect(result.toString(),
-          'GeneratePdfFromDocumentsResponse{outputPath: ${result.outputPath}, message: ${result.message}}');
+      expect(result, "path.pdf");
     });
 
     // Test for error with wrong outputPath in combining multiple PDFs using PdfCombiner.

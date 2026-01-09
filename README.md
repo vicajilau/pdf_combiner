@@ -52,15 +52,17 @@ final imagePaths = ["path/to/image1.jpg", "path/to/document1.pdf", "path/to/imag
 final outputPath = "path/to/output.pdf";
 
 try {
-  GeneratePdfFromDocumentsResponse response = await PdfCombiner.generatePDFFromDocuments(
+  String response = await PdfCombiner.generatePDFFromDocuments(
     inputPaths: imagePaths,
     outputPath: outputPath,
   );
 
-  print("File saved to: ${response.outputPath}");
+  print("File saved to: $response");
 
-} on PdfCombinerException (e) {
-  print("Error: ${response.message}");
+} on PdfCombinerException catch (e) {
+  print("Error: ${e.message}");
+} catch (e) {
+  print("Error: $e");
 }
 ```
 
@@ -78,15 +80,16 @@ final filesPath = ["path/to/file1.pdf", "path/to/file2.pdf"];
 final outputPath = "path/to/output.pdf";
 
 try {
-  MergeMultiplePDFResponse response = await PdfCombiner.mergeMultiplePDFs(
+  String response = await PdfCombiner.mergeMultiplePDFs(
     inputPaths: filesPath,
     outputPath: outputPath,
   );
-  print("File saved to: ${response.response}");
+  print("File saved to: $response");
 } on PdfCombinerException catch (e) {
-  print("Error: ${response.message}");
+  print("Error: ${e.message}");
+} catch (e) {
+  print("Error: $e");
 }
-
 ```
 
 ### Create PDF From Multiple Images
@@ -105,15 +108,17 @@ final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
 final outputPath = "path/to/output.pdf";
 
 try {
-  PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
-  inputPaths: imagePaths,
-  outputPath: outputPath,
-);
+  String response = await PdfCombiner.createPDFFromMultipleImages(
+    inputPaths: imagePaths,
+    outputPath: outputPath,
+  );
 
-  print("File saved to: ${response.outputPath}");
+  print("File saved to: $response");
 
 } on PdfCombinerException catch (e) {
-  print("Error: ${response.message}");
+  print("Error: ${e.message}");
+} catch (e) {
+  print("Error: $e");
 }
 ```
 
@@ -133,18 +138,20 @@ final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
 final outputPath = "path/to/output.pdf";
 
 try {
-PdfFromMultipleImageResponse response = await PdfCombiner.createPDFFromMultipleImages(
-  inputPaths: imagePaths,
-  outputPath: outputPath,
-  config: const PdfFromMultipleImageConfig(
-    rescale: ImageScale(width: 480, height: 640),
-    keepAspectRatio: true,
-  ),
-);
-print("File saved to: ${response.outputPath}");
+  String response = await PdfCombiner.createPDFFromMultipleImages(
+    inputPaths: imagePaths,
+    outputPath: outputPath,
+    config: const PdfFromMultipleImageConfig(
+      rescale: ImageScale(width: 480, height: 640),
+      keepAspectRatio: true,
+    ),
+  );
+  print("File saved to: $response");
 
 } on PdfCombinerException catch (e) {
-  print("Error: ${response.message}");
+  print("Error: ${e.message}");
+} catch (e) {
+  print("Error: $e");
 }
 ```
 
@@ -164,13 +171,15 @@ final pdfFilePath = "path/to/input.pdf";
 final outputDirPath = "path/to/output";
 
 try {
-ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
-  inputPath: pdfFilePath, 
-  outputDirPath: outputDirPath,
-);
-print("Files generated: ${response.outputPaths}");
+  List<String> response = await PdfCombiner.createImageFromPDF(
+    inputPath: pdfFilePath, 
+    outputDirPath: outputDirPath,
+  );
+  print("Files generated: $response");
 } on PdfCombinerException catch (e) {
-  print("Error: ${response.message}");
+  print("Error: ${e.message}");
+} catch (e) {
+  print("Error: $e");
 }
 ```
 
@@ -190,15 +199,22 @@ Example Usage:
 final pdfFilePath = "path/to/input.pdf";
 final outputDirPath = "path/to/output";
 
-ImageFromPDFResponse response = await PdfCombiner.createImageFromPDF(
-  inputPaths: imagePaths,
-  outputPath: outputPath,
-  config: const ImageFromPdfConfig(
-    rescale: ImageScale(width: 480, height: 640),
-    compression: ImageCompression.custom(35),
-    createOneImage: true,
-  ),
-);
+try {
+  List<String> response = await PdfCombiner.createImageFromPDF(
+    inputPath: pdfFilePath,
+    outputDirPath: outputDirPath,
+    config: const ImageFromPdfConfig(
+      rescale: ImageScale(width: 480, height: 640),
+      compression: ImageCompression.custom(35),
+      createOneImage: true,
+    ),
+  );
+  print("Files generated: $response");
+} on PdfCombinerException catch (e) {
+  print("Error: ${e.message}");
+} catch (e) {
+  print("Error: $e");
+}
 ```
 
 #### ImageCompression
@@ -262,6 +278,37 @@ For versions older than 3.3.0, follow these steps:
    ```html
    <script src="assets/js/pdf_combiner.js"></script>
     ```
+
+## Migration Guide (Version X.X.X) TODO: To define version
+
+If you are upgrading from an older version of `pdf_combiner`, please note the following breaking changes:
+
+1.  **Response Models Removed**: The classes `GeneratePdfFromDocumentsResponse`, `MergeMultiplePDFResponse`, `PdfFromMultipleImageResponse`, and `ImageFromPDFResponse` have been removed.
+2.  **Primitive Return Types**: Methods now return `Future<String>` (path) or `Future<List<String>>` (paths) directly.
+3.  **No Status or Delegates**: The `PdfCombinerStatus` enum and `PdfCombinerDelegate` have been removed. The plugin now uses standard Dart `Future`s and `Exception`s.
+4.  **Error Handling**: Instead of checking a status code, you should now use `try-catch` blocks to handle errors. The plugin throws a `PdfCombinerException` if an operation fails.
+
+### Example Migration
+
+**Before:**
+```dart
+var response = await PdfCombiner.mergeMultiplePDFs(...);
+if (response.status == PdfCombinerStatus.success) {
+  print(response.response);
+} else {
+  print(response.message);
+}
+```
+
+**After:**
+```dart
+try {
+  String path = await PdfCombiner.mergeMultiplePDFs(...);
+  print(path);
+} on PdfCombinerException catch (e) {
+  print(e.message);
+}
+```
 
 ## Notes
 
