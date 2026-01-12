@@ -85,22 +85,18 @@ void main() {
         final mockPlatform = MockPdfCombinerPlatformCustomError(customError);
         PdfCombinerPlatform.instance = mockPlatform;
 
-        final file1 = await java.File('test_doc_1.pdf').create();
-        await file1.writeAsString('%PDF-1.4');
-        final file2 = await java.File('test_doc_2.pdf').create();
-        await file2.writeAsString('%PDF-1.4');
-        try {
-          expect(
-            () async => await PdfCombiner.mergeMultiplePDFs(
-              inputPaths: ['test_doc_1.pdf', 'test_doc_2.pdf'],
-              outputPath: 'output.pdf',
-            ),
-            throwsA(isA<PdfCombinerException>()),
-          );
-        } finally {
-          if (await file1.exists()) await file1.delete();
-          if (await file2.exists()) await file2.delete();
-        }
+        // Use real PDF files that pass magic number validation
+        expect(
+          () async => await PdfCombiner.mergeMultiplePDFs(
+            inputPaths: [
+              'example/assets/document_1.pdf',
+              'example/assets/document_2.pdf'
+            ],
+            outputPath: 'output.pdf',
+          ),
+          throwsA(isA<PdfCombinerException>()
+              .having((e) => e.message, 'message', customError)),
+        );
       });
 
       test('returns default error message when platform returns null',
@@ -108,23 +104,18 @@ void main() {
         final mockPlatform = MockPdfCombinerPlatformNullResponse();
         PdfCombinerPlatform.instance = mockPlatform;
 
-        final file1 = await java.File('test_doc_null_1.pdf').create();
-        await file1.writeAsString('%PDF-1.4');
-        final file2 = await java.File('test_doc_null_2.pdf').create();
-        await file2.writeAsString('%PDF-1.4');
-
-        try {
-          expect(
-            () async => await PdfCombiner.mergeMultiplePDFs(
-              inputPaths: ['test_doc_null_1.pdf', 'test_doc_null_2.pdf'],
-              outputPath: 'output.pdf',
-            ),
-            throwsA(isA<PdfCombinerException>()),
-          );
-        } finally {
-          if (await file1.exists()) await file1.delete();
-          if (await file2.exists()) await file2.delete();
-        }
+        // Use real PDF files that pass magic number validation
+        expect(
+          () async => await PdfCombiner.mergeMultiplePDFs(
+            inputPaths: [
+              'example/assets/document_1.pdf',
+              'example/assets/document_2.pdf'
+            ],
+            outputPath: 'output.pdf',
+          ),
+          throwsA(isA<PdfCombinerException>().having(
+              (e) => e.message, 'message', PdfCombinerMessages.errorMessage)),
+        );
       });
     });
 
