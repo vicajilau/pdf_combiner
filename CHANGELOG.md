@@ -1,3 +1,14 @@
+## 5.0.0
+
+### General
+
+* **BREAKING CHANGE**: Removed custom response models (`GeneratePdfFromDocumentsResponse`, `ImageFromPDFResponse`, `MergeMultiplePDFResponse` and `PdfFromMultipleImageResponse`).
+* **BREAKING CHANGE**: Methods now return `Future<String>` (path) or `Future<List<String>>` (paths) directly.
+* **BREAKING CHANGE**: Removed `PdfCombinerStatus` enum and `PdfCombinerDelegate`.
+* **BREAKING CHANGE**: Error handling now uses standard Dart `try-catch` blocks. The plugin throws `PdfCombinerException` on failure.
+* Simplified documentation examples to use generic `try-catch` blocks.
+* Added a dedicated section for `PdfCombinerException` in README.
+
 ## 4.4.2
 
 ### Windows
