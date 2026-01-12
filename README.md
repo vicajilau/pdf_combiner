@@ -36,6 +36,10 @@
 - **Linux and Windows**: Employs [PDFium](https://pdfium.googlesource.com/pdfium/) from Google, a C++ library.
 - **Web**: Implements [PDFLib](https://pdf-lib.js.org/) in JavaScript for PDF manipulation.
 
+### Supported Platforms
+
+This plugin supports **Android**, **iOS**, **Linux**, **macOS** and **web** directly, no additional setup is required.
+
 ## Features
 
 ### Create PDF From Multiple Documents
@@ -272,13 +276,90 @@ The `pdf_combiner` plugin does not directly use the following dependencies. They
 - [image_picker](https://pub.dev/packages/image_picker)
 - [permission_handler](https://pub.dev/packages/permission_handler)
 
-## Supported Platforms
+## Migration Guide
 
-This plugin supports **Android**, **iOS**, **Linux**, **macOS** and **web** directly, no additional setup is required.
+This document describes the breaking changes introduced in recent versions of `pdf_combiner` and how to migrate existing projects safely.
 
-> **As of version 3.3.0 on the web**: The `pdf_combiner.js` JavaScript file is now loaded dynamically, eliminating the need to manually include it and import it into the index.html file.
+---
 
-### Old Web Integration (Prior to Version 3.3.0)
+### Version 5.0.0 (Breaking Changes)
+
+If you are upgrading to **v5.0.0 or later**, please review the following breaking changes carefully.
+
+#### 1. Response Models Removed
+
+The following response classes have been **removed**:
+
+- `GeneratePdfFromDocumentsResponse`
+- `MergeMultiplePDFResponse`
+- `PdfFromMultipleImageResponse`
+- `ImageFromPDFResponse`
+
+The API no longer wraps results in response objects.
+
+#### 2. Primitive Return Types
+
+All public methods now return **primitive values** instead of custom models:
+
+- `Future<String>` → path to the generated PDF/file
+- `Future<List<String>>` → paths to generated files
+
+This makes the API simpler and more idiomatic to Dart.
+
+#### 3. Status & Delegates Removed
+
+The following elements are no longer available:
+
+- `PdfCombinerStatus`
+- `PdfCombinerDelegate`
+
+The plugin now relies exclusively on:
+
+- Standard Dart `Future`s
+- Exceptions for error reporting
+
+#### 4. Error Handling via Exceptions
+
+Instead of checking for status codes, errors are now communicated by throwing a:
+
+- `PdfCombinerException`
+
+Consumers must handle failures using `try-catch`.
+
+### Migration Example
+
+#### Before (v4.x and earlier)
+
+```dart
+var response = await PdfCombiner.mergeMultiplePDFs(...);
+
+if (response.status == PdfCombinerStatus.success) {
+  print(response.response);
+} else {
+  print(response.message);
+}
+```
+
+#### After (v5.0.0+)
+```dart
+try {
+  String path = await PdfCombiner.mergeMultiplePDFs(...);
+  print(path);
+} catch (e) {
+  // If the error is plugin-related, a PdfCombinerException is thrown.
+  print(e);
+}
+```
+
+---
+
+### Version 3.3.0+
+No manual configuration is required for web projects using this version or newer.
+> **As of version 3.3.0 (Web)**: The `pdf_combiner.js` JavaScript file is now loaded dynamically, eliminating the need to manually include it and import it into the index.html file.
+
+---
+
+### Legacy Web Integration (Before v3.3.0)
 
 For versions older than 3.3.0, follow these steps:
 
@@ -291,38 +372,6 @@ For versions older than 3.3.0, follow these steps:
    ```html
    <script src="assets/js/pdf_combiner.js"></script>
     ```
-
-## Migration Guide (Version 5.0.0)
-
-If you are upgrading from an older version of `pdf_combiner`, please note the following breaking changes:
-
-1.  **Response Models Removed**: The classes `GeneratePdfFromDocumentsResponse`, `MergeMultiplePDFResponse`, `PdfFromMultipleImageResponse`, and `ImageFromPDFResponse` have been removed.
-2.  **Primitive Return Types**: Methods now return `Future<String>` (path) or `Future<List<String>>` (paths) directly.
-3.  **No Status or Delegates**: The `PdfCombinerStatus` enum and `PdfCombinerDelegate` have been removed. The plugin now uses standard Dart `Future`s and `Exception`s.
-4.  **Error Handling**: Instead of checking a status code, you should now use `try-catch` blocks to handle errors. The plugin throws a `PdfCombinerException` if an operation fails.
-
-### Example Migration
-
-**Before:**
-```dart
-var response = await PdfCombiner.mergeMultiplePDFs(...);
-if (response.status == PdfCombinerStatus.success) {
-  print(response.response);
-} else {
-  print(response.message);
-}
-```
-
-**After:**
-```dart
-try {
-  String path = await PdfCombiner.mergeMultiplePDFs(...);
-  print(path);
-} catch (e) {
-  // If the error is plugin-related, a PdfCombinerException is thrown.
-  print(e);
-}
-```
 
 ## Notes
 
