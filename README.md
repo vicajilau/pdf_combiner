@@ -59,9 +59,8 @@ try {
 
   print("File saved to: $response");
 
-} on PdfCombinerException catch (e) {
-  print("Error: ${e.message}");
 } catch (e) {
+  // If the error is plugin-related, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -85,9 +84,8 @@ try {
     outputPath: outputPath,
   );
   print("File saved to: $response");
-} on PdfCombinerException catch (e) {
-  print("Error: ${e.message}");
 } catch (e) {
+  // If the error is plugin-related, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -115,9 +113,8 @@ try {
 
   print("File saved to: $response");
 
-} on PdfCombinerException catch (e) {
-  print("Error: ${e.message}");
 } catch (e) {
+  // If the error is plugin-related, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -148,9 +145,8 @@ try {
   );
   print("File saved to: $response");
 
-} on PdfCombinerException catch (e) {
-  print("Error: ${e.message}");
 } catch (e) {
+  // If the error is plugin-related, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -176,9 +172,8 @@ try {
     outputDirPath: outputDirPath,
   );
   print("Files generated: $response");
-} on PdfCombinerException catch (e) {
-  print("Error: ${e.message}");
 } catch (e) {
+  // If the error is plugin-related, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -210,9 +205,8 @@ try {
     ),
   );
   print("Files generated: $response");
-} on PdfCombinerException catch (e) {
-  print("Error: ${e.message}");
 } catch (e) {
+  // If the error is plugin-related, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -247,6 +241,25 @@ final compression = ImageCompression.medium;
 print(compression.value); // Output: 60
 ```
 
+### PdfCombinerException
+
+When an error occurs during an operation, such as a file not being found, an invalid format, or an internal error in PDF processing, the plugin throws a `PdfCombinerException`.
+
+This exception contains:
+- `message`: A descriptive message about what went wrong.
+
+You can handle it explicitly if you need more control:
+
+```dart
+try {
+  // Any PdfCombiner method
+} on PdfCombinerException catch (e) {
+  print("Plugin Error: ${e.message}");
+} catch (e) {
+  print("Other Error: $e");
+}
+```
+
 ## Usage
 
 This plugin works with `file_picker` or `image_picker` for selecting files. Ensure you handle permissions using `permission_handler` before invoking the plugin.
@@ -279,7 +292,7 @@ For versions older than 3.3.0, follow these steps:
    <script src="assets/js/pdf_combiner.js"></script>
     ```
 
-## Migration Guide (Version X.X.X) TODO: To define version
+## Migration Guide (Version 5.0.0)
 
 If you are upgrading from an older version of `pdf_combiner`, please note the following breaking changes:
 
@@ -305,8 +318,9 @@ if (response.status == PdfCombinerStatus.success) {
 try {
   String path = await PdfCombiner.mergeMultiplePDFs(...);
   print(path);
-} on PdfCombinerException catch (e) {
-  print(e.message);
+} catch (e) {
+  // If the error is plugin-related, a PdfCombinerException is thrown.
+  print(e);
 }
 ```
 
