@@ -60,7 +60,7 @@ try {
   print("File saved to: $response");
 
 } catch (e) {
-  // If the error is plugin-related, a PdfCombinerException is thrown.
+  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -85,7 +85,7 @@ try {
   );
   print("File saved to: $response");
 } catch (e) {
-  // If the error is plugin-related, a PdfCombinerException is thrown.
+  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -114,7 +114,7 @@ try {
   print("File saved to: $response");
 
 } catch (e) {
-  // If the error is plugin-related, a PdfCombinerException is thrown.
+  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -146,7 +146,7 @@ try {
   print("File saved to: $response");
 
 } catch (e) {
-  // If the error is plugin-related, a PdfCombinerException is thrown.
+  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -173,7 +173,7 @@ try {
   );
   print("Files generated: $response");
 } catch (e) {
-  // If the error is plugin-related, a PdfCombinerException is thrown.
+  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -206,7 +206,7 @@ try {
   );
   print("Files generated: $response");
 } catch (e) {
-  // If the error is plugin-related, a PdfCombinerException is thrown.
+  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
