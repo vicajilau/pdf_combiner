@@ -45,7 +45,51 @@ PdfCombinerPlugin::PdfCombinerPlugin() {
 PdfCombinerPlugin::~PdfCombinerPlugin() {
     FPDF_DestroyLibrary(); // Destroy the FPDF library
 }
+std::string ConvertHeicToJpeg(const std::string& input_path, const std::string& temp_dir) {
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);    IWICImagingFactory* pFactory = NULL;
+    IWICBitmapDecoder* pDecoder = NULL;
+    IWICBitmapFrameDecode* pFrame = NULL;
+    IWICBitmapEncoder* pEncoder = NULL;
+    IWICStream* pStream = NULL;
+    IWICFormatConverter* pConverter = NULL;
 
+    std::string output_path = temp_dir + "\\temp_" + std::to_string(GetTickCount()) + ".jpg";
+
+    hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFactory));
+    if (SUCCEEDED(hr)) {
+        std::wstring w_input(input_path.begin(), input_path.end());
+        hr = pFactory->CreateDecoderFromFilename(w_input.c_str(), NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &pDecoder);
+    }
+    if (SUCCEEDED(hr)) hr = pDecoder->GetFrame(0, &pFrame);
+    if (SUCCEEDED(hr)) hr = pFactory->CreateFormatConverter(&pConverter);
+    if (SUCCEEDED(hr)) {
+        hr = pConverter->Initialize(pFrame, GUID_WICPixelFormat24bppBGR, WICBitmapDitherTypeNone, NULL, 0.0, WICBitmapPaletteTypeCustom);
+    }
+    if (SUCCEEDED(hr)) hr = pFactory->CreateStream(&pStream);
+    if (SUCCEEDED(hr)) {
+        std::wstring w_output(output_path.begin(), output_path.end());
+        hr = pStream->InitializeFromFilename(w_output.c_str(), GENERIC_WRITE);
+    }
+    if (SUCCEEDED(hr)) hr = pFactory->CreateEncoder(GUID_ContainerFormatJpeg, NULL, &pEncoder);
+    if (SUCCEEDED(hr)) hr = pEncoder->Initialize(pStream, WICBitmapEncoderNoCache);
+
+    IWICBitmapFrameEncode* pFrameEncode = NULL;
+    if (SUCCEEDED(hr)) hr = pEncoder->CreateNewFrame(&pFrameEncode, NULL);
+    if (SUCCEEDED(hr)) hr = pFrameEncode->Initialize(NULL);
+    if (SUCCEEDED(hr)) hr = pFrameEncode->WriteSource(pConverter, NULL);
+    if (SUCCEEDED(hr)) hr = pFrameEncode->Commit();
+    if (SUCCEEDED(hr)) hr = pEncoder->Commit();
+
+    if (pFrameEncode) pFrameEncode->Release();
+    if (pConverter) pConverter->Release();
+    if (pStream) pStream->Release();
+    if (pEncoder) pEncoder->Release();
+    if (pFrame) pFrame->Release();
+    if (pDecoder) pDecoder->Release();
+    if (pFactory) pFactory->Release();
+
+    return SUCCEEDED(hr) ? output_path : "";
+}
 void PdfCombinerPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
@@ -162,11 +206,43 @@ void PdfCombinerPlugin::create_pdf_from_multiple_image(
     std::vector<std::string> input_paths;
     if (std::holds_alternative<std::vector<flutter::EncodableValue>>(paths_it->second)) {
         for (const auto& path_value : std::get<std::vector<flutter::EncodableValue>>(paths_it->second)) {
+            std::string current_path = path;
+            bool is_heic = false;
+
+            // Detectar si es HEIC por extensión (puedes mejorar esto)
+            if (path.length() >= 5) {
+                std::string ext = path.substr(path.length() - 5);
+                for (auto& c : ext) c = tolower(c);
+                if (ext == ".heic" || ext == ".heif") is_heic = true;
+            }
+
+            // Si es HEIC, convertir a JPEG temporalmente
+            if (is_heic) {
+                // Usamos el directorio del output_path como carpeta temporal
+                std::string temp_dir = output_path.substr(0, output_path.find_last_of("\\/"));
+                std::string converted = ConvertHeicToJpeg(path, temp_dir);
+                if (!converted.empty()) {
+                    current_path = converted;
+                }
+            }
+
+            // Cargar la imagen (ahora usando current_path que puede ser el .jpg convertido)
+            int width, height, channels;
+            unsigned char* image_data = stbi_load(current_path.c_str(), &width, &height, &channels, 4);
+
+            if (!image_data) {
+                FPDF_CloseDocument(new_doc);
+                result->Error("image_loading_failed", ("Failed to load image: " + current_path).c_str());
+                return;
+            }
             if (std::holds_alternative<std::string>(path_value)) {
                 input_paths.push_back(std::get<std::string>(path_value));
             } else {
                 result->Error("invalid_arguments", "Each item in paths must be a string");
                 return;
+            }
+            if (is_heic && current_path != path) {
+                DeleteFileA(current_path.c_str());
             }
         }
     } else {
