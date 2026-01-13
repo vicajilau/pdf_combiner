@@ -4,6 +4,8 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+
 
 /// Utility class for handling document-related checks in a file system environment.
 ///
@@ -90,6 +92,35 @@ class DocumentUtils {
     }
   }
 
+  /// Convierte un archivo de imagen (especialmente HEIC) a formato JPEG.
+  ///
+  /// [filePath] es la ruta del archivo original.
+  /// Retorna la ruta del nuevo archivo .jpg creado en el directorio temporal.
+  static Future<String?> convertHeicToJpeg(String filePath) async {
+    try {
+      // 1. Crear el nombre del archivo de salida basado en el original
+      final String fileName = p.basenameWithoutExtension(filePath);
+      final String targetPath = p.join(getTemporalFolderPath(), '$fileName.jpg');
+
+      // 2. Realizar la conversión
+      // flutter_image_compress detecta automáticamente si es HEIC y lo pasa a JPEG
+      final XFile? result = await FlutterImageCompress.compressAndGetFile(
+        filePath,
+        targetPath,
+        format: CompressFormat.jpeg,
+        quality: 90, // Calidad alta
+      );
+
+      if (result != null) {
+        return result.path;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error convirtiendo HEIC a JPEG: $e');
+      return null;
+    }
+  }
+
   /// Checks if the given file path has a PDF extension.
   ///
   /// This is a simple extension check and does not verify if the file is
@@ -123,6 +154,15 @@ class DocumentUtils {
       return fileType == FileMagicNumberType.png ||
           fileType == FileMagicNumberType.jpg ||
           fileType == FileMagicNumberType.heic;
+    } catch (e) {
+      return false;
+    }
+  }
+  static Future<bool> isHeicImage(String filePath) async {
+    try {
+      final fileType =
+          await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
+      return fileType == FileMagicNumberType.heic;
     } catch (e) {
       return false;
     }

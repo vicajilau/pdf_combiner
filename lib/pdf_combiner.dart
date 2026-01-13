@@ -58,7 +58,7 @@ class PdfCombiner {
     } else {
       final List<String> mutablePaths = List.from(inputPaths);
       for (int i = 0; i < mutablePaths.length; i++) {
-        final path = mutablePaths[i];
+        var path = mutablePaths[i];
         final isPDF = await DocumentUtils.isPDF(path);
         final isImage = await DocumentUtils.isImage(path);
         final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
@@ -70,6 +70,9 @@ class PdfCombiner {
               PdfCombinerMessages.errorMessageMixed(path)));
         } else {
           if (isImage) {
+            if (await DocumentUtils.isHeicImage(path)) {
+              path = await DocumentUtils.convertHeicToJpeg(path) ?? path;
+            }
             final temporalOutputPath = kIsWeb
                 ? "document_$i.pdf"
                 : "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf";
