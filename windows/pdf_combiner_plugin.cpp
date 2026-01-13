@@ -46,7 +46,8 @@ PdfCombinerPlugin::~PdfCombinerPlugin() {
     FPDF_DestroyLibrary(); // Destroy the FPDF library
 }
 std::string ConvertHeicToJpeg(const std::string& input_path, const std::string& temp_dir) {
-    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);    IWICImagingFactory* pFactory = NULL;
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    IWICImagingFactory* pFactory = NULL;
     IWICBitmapDecoder* pDecoder = NULL;
     IWICBitmapFrameDecode* pFrame = NULL;
     IWICBitmapEncoder* pEncoder = NULL;
