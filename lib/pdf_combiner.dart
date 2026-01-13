@@ -84,7 +84,7 @@ class PdfCombiner {
             final temporalOutputPath = kIsWeb
                 ? "document_$i.pdf"
                 : "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf";
-            final response = await PdfCombiner.createPDFFromMultipleImages(
+            final response =  await PdfCombiner.createPDFFromMultipleImages(
               inputPaths: [path],
               outputPath: temporalOutputPath,
             );

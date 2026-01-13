@@ -17,7 +17,9 @@
 
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
-
+#include <wincodec.h>
+#include <wrl/client.h> // Para Microsoft::WRL::ComPtr
+#pragma comment(lib, "windowscodecs.lib")
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \
                               PdfCombinerPlugin))
@@ -196,12 +198,22 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 
     // Process each image file in input_paths
     for (const auto& input_path : input_paths) {
-        // Load the image and get its dimensions
         int width, height, channels;
-        unsigned char* image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
+        unsigned char* image_data = nullptr;
+
+        // Lógica de detección de extensión
+        if (input_path.length() > 5 && input_path.substr(input_path.length() - 5) == ".heic") {
+            /*// Usar WIC para HEIC
+            image_data = load_image_via_wic(input_path.c_str(), &width, &height);
+            channels = 4; // WIC nos devuelve RGBA directamente*/
+        } else {
+            // Usar stb_image para el resto (jpg, png, etc)
+            image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
+        }
+
         if (!image_data) {
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image: " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image (Format not supported or file missing): " + input_path).c_str(), nullptr));
         }
 
         // Resize the image if necessary
@@ -496,7 +508,47 @@ static void pdf_combiner_plugin_class_init(PdfCombinerPluginClass* klass) {
 static void pdf_combiner_plugin_init(PdfCombinerPlugin* self) {
   FPDF_InitLibrary(); // Initialize the FPDF library
 }
+unsigned char* load_image_via_wic(const char* filename, int* width, int* height) {
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) return nullptr;
 
+    Microsoft::WRL::ComPtr<IWICImagingFactory> factory;
+    hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+    if (FAILED(hr)) return nullptr;
+
+    // Convertir path a Wide String para Windows
+    wchar_t w_filename[MAX_PATH];
+    MultiByteToWideChar(CP_UTF8, 0, filename, -1, w_filename, MAX_PATH);
+
+    Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
+    hr = factory->CreateDecoderFromFilename(w_filename, NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+    if (FAILED(hr)) return nullptr;
+
+    Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame;
+    hr = decoder->GetFrame(0, &frame);
+    if (FAILED(hr)) return nullptr;
+
+    UINT w, h;
+    frame->GetSize(&w, &h);
+    *width = w;
+    *height = h;
+
+    // Convertir a formato RGBA (que es lo que espera tu código de PDFium)
+    Microsoft::WRL::ComPtr<IWICFormatConverter> converter;
+    factory->CreateFormatConverter(&converter);
+    hr = converter->Initialize(frame.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, NULL, 0.0, WICBitmapPaletteTypeCustom);
+    if (FAILED(hr)) return nullptr;
+
+    unsigned char* buffer = (unsigned char*)malloc(w * h * 4);
+    hr = converter->CopyPixels(NULL, w * 4, w * h * 4, buffer);
+
+    if (FAILED(hr)) {
+        free(buffer);
+        return nullptr;
+    }
+
+    return buffer;
+}
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data) {
   PdfCombinerPlugin* plugin = PDF_COMBINER_PLUGIN(user_data);
   pdf_combiner_plugin_handle_method_call(plugin, method_call);
