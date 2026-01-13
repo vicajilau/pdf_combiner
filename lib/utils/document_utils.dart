@@ -4,7 +4,7 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image/image.dart' as img;
 
 
 /// Utility class for handling document-related checks in a file system environment.
@@ -92,31 +92,32 @@ class DocumentUtils {
     }
   }
 
-  /// Convierte un archivo de imagen (especialmente HEIC) a formato JPEG.
-  ///
-  /// [filePath] es la ruta del archivo original.
-  /// Retorna la ruta del nuevo archivo .jpg creado en el directorio temporal.
   static Future<String?> convertHeicToJpeg(String filePath) async {
     try {
-      // 1. Crear el nombre del archivo de salida basado en el original
+      final File inputFile = File(filePath);
+      if (!await inputFile.exists()) return null;
+
+
+      final Uint8List bytes = await inputFile.readAsBytes();
+
+      final img.Image? image = img.decodeImage(bytes);
+
+      if (image == null) {
+        debugPrint('No se pudo decodificar la imagen');
+        return null;
+      }
+
       final String fileName = p.basenameWithoutExtension(filePath);
       final String targetPath = p.join(getTemporalFolderPath(), '$fileName.jpg');
 
-      // 2. Realizar la conversión
-      // flutter_image_compress detecta automáticamente si es HEIC y lo pasa a JPEG
-      final XFile? result = await FlutterImageCompress.compressAndGetFile(
-        filePath,
-        targetPath,
-        format: CompressFormat.jpeg,
-        quality: 90, // Calidad alta
-      );
+      final Uint8List jpegBytes = Uint8List.fromList(img.encodeJpg(image, quality: 90));
 
-      if (result != null) {
-        return result.path;
-      }
-      return null;
+      final File outputFile = File(targetPath);
+      await outputFile.writeAsBytes(jpegBytes);
+
+      return outputFile.path;
     } catch (e) {
-      debugPrint('Error convirtiendo HEIC a JPEG: $e');
+      debugPrint('Error convirtiendo imagen en Windows/General: $e');
       return null;
     }
   }
