@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:file_magic_number/file_magic_number.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -58,10 +59,20 @@ class PdfCombiner {
     } else {
       final List<String> mutablePaths = List.from(inputPaths);
       for (int i = 0; i < mutablePaths.length; i++) {
-        final path = mutablePaths[i];
+        String path = mutablePaths[i];
+
+        // Convert HEIC to JPEG immediately to avoid native loading errors
+        final fileType =
+            await FileMagicNumber.detectFileTypeFromPathOrBlob(path);
+        if (fileType == FileMagicNumberType.heic) {
+          path = await DocumentUtils.convertHeicToJpeg(path);
+          mutablePaths[i] = path;
+        }
+
         final isPDF = await DocumentUtils.isPDF(path);
         final isImage = await DocumentUtils.isImage(path);
         final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+
         if (!outputPathIsPDF) {
           throw (PdfCombinerException(
               PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath)));
@@ -183,9 +194,25 @@ class PdfCombiner {
         String path = "";
         int i = 0;
 
+        final List<String> processedPaths = [];
+
         while (i < inputPaths.length && success) {
-          success = await DocumentUtils.isImage(inputPaths[i]);
-          path = inputPaths[i];
+          final currentPath = inputPaths[i];
+          success = await DocumentUtils.isImage(currentPath);
+          path = currentPath;
+
+          if (success) {
+            // Check if it's HEIC and convert if necessary
+            final fileType =
+                await FileMagicNumber.detectFileTypeFromPathOrBlob(currentPath);
+            if (fileType == FileMagicNumberType.heic) {
+              final convertedPath =
+                  await DocumentUtils.convertHeicToJpeg(currentPath);
+              processedPaths.add(convertedPath);
+            } else {
+              processedPaths.add(currentPath);
+            }
+          }
           i++;
         }
 
@@ -195,10 +222,14 @@ class PdfCombiner {
         } else {
           final String? response =
               await PdfFromMultipleImagesIsolate.createPDFFromMultipleImages(
-            inputPaths: inputPaths,
+            inputPaths: processedPaths,
             outputPath: outputPath,
             config: config,
           );
+
+          // Cleanup temporary converted files
+          DocumentUtils.removeTemporalFiles(processedPaths);
+
           if (response != null &&
               (response == outputPath || response.startsWith("blob:http"))) {
             return response;
