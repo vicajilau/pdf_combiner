@@ -1,0 +1,44 @@
+{
+	"name": "heic2any",
+	"version": "0.0.4",
+	"description": "Converting HEIC/HEIF to PNG/JPEG/GIF in the browser",
+	"main": "dist/heic2any.js",
+	"files": [
+		"dist"
+	],
+	"types": "dist/heic2any.d.ts",
+	"scripts": {
+		"build": "ts-node ./build/build",
+		"server": "lite-server"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/alexcorvi/heic2any.git"
+	},
+	"keywords": [
+		"HEIC",
+		"HEIF",
+		"PNG",
+		"image",
+		"conversion"
+	],
+	"author": "Alex Corvi",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/alexcorvi/heic2any/issues"
+	},
+	"homepage": "https://github.com/alexcorvi/heic2any#readme",
+	"dependencies": {},
+	"devDependencies": {
+		"@types/buble": "^0.19.2",
+		"@types/chokidar": "^2.1.3",
+		"@types/node": "^13.11.0",
+		"@types/uglify-js": "^3.0.5",
+		"buble": "^0.20.0",
+		"chokidar": "^3.3.1",
+		"lite-server": "^2.5.4",
+		"ts-node": "^8.8.2",
+		"typescript": "^3.8.3",
+		"uglify-js": "^3.8.1"
+	}
+}
