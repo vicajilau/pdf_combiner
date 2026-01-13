@@ -29,6 +29,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     final pdfWorkerScript = document.createElement('script');
     final pdfLibScript = document.createElement('script');
     final pdfCombinerScript = document.createElement('script');
+    final pdfHeicScript = document.createElement('script');
 
     pdfMinScript.setAttribute('src',
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
@@ -39,6 +40,9 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     pdfLibScript.setAttribute('src',
         'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
     pdfLibScript.setAttribute('type', 'text/javascript');
+    pdfHeicScript.setAttribute('src',
+        'https://unpkg.com/heic2any/dist/heic2any.min.js');
+    pdfHeicScript.setAttribute('type', 'text/javascript');
     pdfCombinerScript.setAttribute('src',
         'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js');
     pdfCombinerScript.setAttribute('type', 'text/javascript');
@@ -46,6 +50,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     document.head?.appendChild(pdfMinScript);
     document.head?.appendChild(pdfWorkerScript);
     document.head?.appendChild(pdfLibScript);
+    document.head?.appendChild(pdfHeicScript);
     document.head?.appendChild(pdfCombinerScript);
   }
 
