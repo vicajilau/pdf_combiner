@@ -16,6 +16,10 @@ cmake_policy(VERSION 3.14...3.25)
 # not be changed
 set(PLUGIN_NAME "pdf_combiner_plugin")
 
+# Define the source path of the ImageMagick executable
+set(MAGICK_EXE_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/include/magick/magick.exe")
+
+
 # Any new source files that you add to the plugin should be added here.
 list(APPEND PLUGIN_SOURCES
   "pdf_combiner_plugin.cpp"
@@ -107,6 +111,12 @@ add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
 add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy
   "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" "${CMAKE_CURRENT_BINARY_DIR}/pdfium.dll"
+)
+add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${MAGICK_EXE_SOURCE}"
+        "$<TARGET_FILE_DIR:${BINARY_NAME}>/magick.exe"
+        COMMENT "Copying ImageMagick portable to the output folder..."
 )
 
 # Enable automatic test discovery.
