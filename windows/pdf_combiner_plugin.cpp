@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <wincodec.h>
 #include <shlwapi.h>
+#include <objbase.h>
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
@@ -56,10 +57,9 @@ namespace pdf_combiner {
     }
 
     // Implementation of HEIC to JPEG conversion using WIC
-    std::string ConvertHeicToJpeg(const std::string& heic_path, const std::string& temp_dir) {
-        HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        bool com_initialized = (hr == S_OK || hr == S_FALSE);
-
+    std::string ConvertHeicToJpeg(const std::string& heic_path, const std::string& temp_dir_hint) {
+        HRESULT hrCom = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        
         IWICImagingFactory* factory = nullptr;
         IWICBitmapDecoder* decoder = nullptr;
         IWICBitmapFrameDecode* frame = nullptr;
@@ -68,22 +68,35 @@ namespace pdf_combiner {
         IStream* stream = nullptr;
         IWICFormatConverter* converter = nullptr;
         
-        // Generate a temporary filename in the specified temp_dir
-        wchar_t temp_file[MAX_PATH];
-        if (!GetTempFileNameW(Utf8ToWide(temp_dir).c_str(), L"PDFC", 0, temp_file)) {
-            if (com_initialized) CoUninitialize();
-            return "";
-        }
-        
-        std::wstring w_output_jpg = temp_file;
-        size_t dot = w_output_jpg.find_last_of(L'.');
-        if (dot != std::wstring::npos) {
-            w_output_jpg.replace(dot, std::wstring::npos, L".jpg");
+        std::string output_jpg = "";
+        HRESULT hr = S_OK;
+
+        std::wstring w_temp_dir;
+        if (temp_dir_hint == "." || temp_dir_hint.empty()) {
+            wchar_t system_temp[MAX_PATH];
+            GetTempPathW(MAX_PATH, system_temp);
+            w_temp_dir = system_temp;
         } else {
-            w_output_jpg += L".jpg";
+            w_temp_dir = Utf8ToWide(temp_dir_hint);
+        }
+
+        wchar_t temp_file_path[MAX_PATH];
+        if (!GetTempFileNameW(w_temp_dir.c_str(), L"PDFC", 0, temp_file_path)) {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            goto cleanup_no_com;
         }
         
-        std::string output_jpg = WideToUtf8(w_output_jpg);
+        {
+            std::wstring w_output_jpg = temp_file_path;
+            // Delete the .tmp file created by GetTempFileNameW
+            DeleteFileW(temp_file_path);
+            
+            size_t dot = w_output_jpg.find_last_of(L'.');
+            if (dot != std::wstring::npos) w_output_jpg.replace(dot, std::wstring::npos, L".jpg");
+            else w_output_jpg += L".jpg";
+            
+            output_jpg = WideToUtf8(w_output_jpg);
+        }
 
         hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
         if (FAILED(hr)) goto cleanup;
@@ -146,9 +159,15 @@ namespace pdf_combiner {
         if (decoder) decoder->Release();
         if (factory) factory->Release();
         
-        if (com_initialized) CoUninitialize();
+    cleanup_no_com:
+        if (hrCom == S_OK || hrCom == S_FALSE) CoUninitialize();
 
-        return SUCCEEDED(hr) ? output_jpg : "";
+        if (FAILED(hr)) {
+            if (!output_jpg.empty()) DeleteFileA(output_jpg.c_str());
+            return "";
+        }
+
+        return output_jpg;
     }
 
 // static
@@ -329,12 +348,12 @@ namespace pdf_combiner {
 
         if (is_heic) {
             size_t last_slash = output_path.find_last_of("\\/");
-            std::string temp_dir = (last_slash != std::string::npos) ? output_path.substr(0, last_slash) : ".";
+            std::string temp_dir = (last_slash != std::string::npos) ? output_path.substr(0, last_slash) : "";
 
             std::string converted = ConvertHeicToJpeg(path, temp_dir);
             if (converted.empty()) {
                 FPDF_CloseDocument(new_doc);
-                result->Error("heic_conversion_failed", ("Failed to convert HEIC image: " + path).c_str());
+                result->Error("heic_conversion_failed", ("Failed to convert HEIC image (ensure 'HEIF Image Extensions' is installed from Microsoft Store): " + path).c_str());
                 return;
             }
             current_path = converted;
@@ -509,7 +528,6 @@ namespace pdf_combiner {
                 page_widths[i] = width;
                 page_heights[i] = height;
 
-                // Wrap std::max in parentheses to avoid issues with Windows max macro
                 total_width = (int)(std::max)((double)total_width, width); 
                 total_height += (int)height;
             }
