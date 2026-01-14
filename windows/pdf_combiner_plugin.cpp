@@ -159,30 +159,27 @@ namespace pdf_combiner {
             return;
         }
 
-        std::vector<std::string> input_paths;
-        if (std::holds_alternative<std::vector<flutter::EncodableValue>>(paths_it->second)) {
-            for (const auto& path_value : std::get<std::vector<flutter::EncodableValue>>(paths_it->second)) {
-                if (std::holds_alternative<std::string>(path_value)) {
-                    input_paths.push_back(std::get<std::string>(path_value));
-                } else {
-                    result->Error("invalid_arguments", "Each item in paths must be a string");
-                    return;
-                }
+    // 1. EXTRAER PATHS (Aquí usamos tu for original corregido)
+    std::vector<std::string> input_paths;
+    if (std::holds_alternative<std::vector<flutter::EncodableValue>>(paths_it->second)) {
+        const auto& path_list = std::get<std::vector<flutter::EncodableValue>>(paths_it->second);
+        for (const auto& path_value : path_list) {
+            if (std::holds_alternative<std::string>(path_value)) {
+                input_paths.push_back(std::get<std::string>(path_value));
+            } else {
+                result->Error("invalid_arguments", "Each item in paths must be a string");
+                return;
             }
-        } else {
-            result->Error("invalid_arguments", "paths must be a list of strings");
-            return;
         }
+    } else {
+        result->Error("invalid_arguments", "paths must be a list of strings");
+        return;
+    }
 
-        if (!std::holds_alternative<std::string>(output_it->second)) {
-            result->Error("invalid_arguments", "outputDirPath must be a string");
-            return;
-        }
-        std::string output_path = std::get<std::string>(output_it->second);
-
-        int max_width = std::get<int>(width_it->second);
-        int max_height = std::get<int>(height_it->second);
-        bool keep_aspect_ratio = std::get<bool>(keep_aspect_ratio_it->second);
+    std::string output_path = std::get<std::string>(output_it->second);
+    int max_width = std::get<int>(width_it->second);
+    int max_height = std::get<int>(height_it->second);
+    bool keep_aspect_ratio = std::get<bool>(keep_aspect_ratio_it->second);
 
         // Create an empty document
         FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
@@ -191,16 +188,41 @@ namespace pdf_combiner {
             return;
         }
 
-        // Process each image file in input_paths
-        for (const auto& input_path : input_paths) {
-            // Load the image and get its dimensions
-            int width, height, channels;
-            unsigned char* image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
-            if (!image_data) {
-                FPDF_CloseDocument(new_doc);
-                result->Error("image_loading_failed", ("Failed to load image: " + input_path).c_str());
-                return;
+    // 2. PROCESAR CADA IMAGEN (Aquí integramos la conversión HEIC)
+    for (const auto& path : input_paths) {
+        std::string current_path = path;
+        bool is_heic = false;
+
+        // Detección de HEIC por extensión
+        if (path.length() >= 5) {
+            std::string ext = path.substr(path.length() - 5);
+            for (auto& c : ext) c = tolower(c);
+            if (ext == ".heic" || ext == ".heif") is_heic = true;
+        }
+
+        // Si es HEIC, convertir usando WIC antes de cargar con stbi_load
+        if (is_heic) {
+            // Obtenemos el directorio base del output para guardar el temporal ahí
+            size_t last_slash = output_path.find_last_of("\\/");
+            std::string temp_dir = (last_slash != std::string::npos) ? output_path.substr(0, last_slash) : ".";
+
+            std::string converted = ConvertHeicToJpeg(path, temp_dir);
+            if (!converted.empty()) {
+                current_path = converted;
             }
+        }
+
+        // Cargar la imagen (current_path será .heic original si falló la conversión, o el nuevo .jpg)
+        int width, height, channels;
+        unsigned char* image_data = stbi_load(current_path.c_str(), &width, &height, &channels, 4);
+
+        if (!image_data) {
+            // Si falló y era un temporal, limpiamos antes de salir
+            if (is_heic && current_path != path) DeleteFileA(current_path.c_str());
+            FPDF_CloseDocument(new_doc);
+            result->Error("image_loading_failed", ("Failed to load image: " + current_path).c_str());
+            return;
+        }
 
             // Resize the image if necessary
             if (max_width != 0 || max_height != 0) {
@@ -277,9 +299,13 @@ namespace pdf_combiner {
             FPDFPage_InsertObject(new_page, image_obj);
             FPDFPage_GenerateContent(new_page);
 
-            stbi_image_free(image_data);
-            FPDFBitmap_Destroy(bitmap);
+        stbi_image_free(image_data);
+        FPDFBitmap_Destroy(bitmap);
+
+        if (is_heic && current_path != path) {
+            DeleteFileA(current_path.c_str());
         }
+    }
 
         MyFileWrite file_write;
         file_write.version = 1;
