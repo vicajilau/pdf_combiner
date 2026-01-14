@@ -264,7 +264,7 @@ namespace pdf_combiner {
             if (!new_page) {
                 stbi_image_free(image_data);
                 FPDF_CloseDocument(new_doc);
-                result->Error("page_creation_failed", ("Failed to create page for image: " + input_path).c_str());
+                result->Error("page_creation_failed", ("Failed to create page for image: " + path).c_str()); // CORREGIDO
                 return;
             }
 
@@ -290,7 +290,7 @@ namespace pdf_combiner {
             if (!image_obj) {
                 stbi_image_free(image_data);
                 FPDF_CloseDocument(new_doc);
-                result->Error("image_object_creation_failed", ("Failed to create image object for: " + input_path).c_str());
+                result->Error("image_object_creation_failed", ("Failed to create image object for: " + path).c_str()); // CORREGIDO
                 return;
             }
 
