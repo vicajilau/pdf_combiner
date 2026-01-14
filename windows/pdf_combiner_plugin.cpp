@@ -320,8 +320,16 @@ namespace pdf_combiner {
             const flutter::EncodableMap& args,
             std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
 
-        // ... Mismo código que tenías para extraer imágenes del PDF ...
-        // (Se asume que funciona correctamente y se mantiene igual)
+    // Verify arguments
+    if (args.find(flutter::EncodableValue("path")) == args.end() ||
+        args.find(flutter::EncodableValue("outputDirPath")) == args.end() ||
+        args.find(flutter::EncodableValue("width")) == args.end() ||
+        args.find(flutter::EncodableValue("height")) == args.end() ||
+        args.find(flutter::EncodableValue("compression")) == args.end() ||
+        args.find(flutter::EncodableValue("createOneImage")) == args.end()) {
+        result->Error("invalid_arguments", "Expected a map with inputPath, outputDirPath, width, height, compression and createOneImage keys");
+        return;
+    }
 
         // Verificación de argumentos omitida por brevedad, pero debe mantenerse la que tenías.
         std::string input_path = std::get<std::string>(args.at(flutter::EncodableValue("path")));
@@ -340,13 +348,120 @@ namespace pdf_combiner {
         int page_count = FPDF_GetPageCount(doc);
         std::vector<flutter::EncodableValue> image_paths;
 
-        if (create_one_image) {
-            // Lógica vertical de "una sola imagen" que tenías antes
-            // ... [Tu código original aquí] ...
-        } else {
-            // Lógica de "múltiples imágenes" que tenías antes
-            // ... [Tu código original aquí] ...
+    if (create_one_image) {
+        int total_width = 0;
+        int total_height = 0;
+
+        // First, calculate the total width and height for the combined image
+        std::vector<FPDF_PAGE> pages(page_count);
+        std::vector<double> page_widths(page_count);
+        std::vector<double> page_heights(page_count);
+
+        for (int i = 0; i < page_count; ++i) {
+            FPDF_PAGE page = FPDF_LoadPage(doc, i);
+            if (!page) continue;
+
+            // Get the size of the page
+            double width = FPDF_GetPageWidth(page);
+            double height = FPDF_GetPageHeight(page);
+
+            if (max_width != 0 || max_height != 0) {
+                width = (double)max_width;
+                height = (double)max_height;
+            }
+
+            pages[i] = page;
+            page_widths[i] = width;
+            page_heights[i] = height;
+
+
+            total_width = total_width; // Use the max width
+            if ((int)width > total_width) {
+                total_width = (int)width;
+            }
+            total_height += (int)height; // Sum the heights for vertical layout
         }
+
+        // Create a bitmap large enough to hold all pages vertically
+        FPDF_BITMAP combined_bitmap = FPDFBitmap_Create(total_width, total_height, 0xFFFFFFFF);
+        if (!combined_bitmap) {
+            FPDF_CloseDocument(doc);
+            result->Error("bitmap_creation_failed", "Failed to create combined bitmap");
+            return;
+        }
+
+        int current_y = 0;
+
+        // Render each page into the large combined image
+        for (int i = 0; i < page_count; ++i) {
+            FPDF_PAGE page = pages[i];
+
+            // Render the page into the combined bitmap at the correct position
+            FPDF_RenderPageBitmap(combined_bitmap, page, 0, current_y, (int)page_widths[i], (int)page_heights[i], 0, FPDF_ANNOT);
+            current_y += (int)page_heights[i]; // Move the y position down for the next page
+        }
+
+        // Save the combined bitmap to a PNG file
+        std::string output_image_path = std::string(output_path) + "/image.png";
+        if (!save_bitmap_to_png(combined_bitmap, output_image_path, compression)) {
+            FPDFBitmap_Destroy(combined_bitmap);
+            FPDF_CloseDocument(doc);
+            result->Error("image_save_failed", "Failed to save combined image");
+            return;
+        }
+
+        // Add the combined image path to the result list
+        image_paths.push_back(flutter::EncodableValue(output_image_path));
+
+        // Clean up resources
+        FPDFBitmap_Destroy(combined_bitmap);
+        for (int i = 0; i < page_count; ++i) {
+            FPDF_ClosePage(pages[i]);
+        }
+    } else {
+        for (int i = 0; i < page_count; ++i) {
+            FPDF_PAGE page = FPDF_LoadPage(doc, i);
+            if (!page) continue;
+
+            int width, height;
+            if (max_width != 0 || max_height != 0) {
+                width = max_width;
+                height = max_height;
+            } else {
+                // Get the size of the page
+                width = (int)FPDF_GetPageWidth(page);
+                height = (int)FPDF_GetPageHeight(page);
+            }
+
+            // Create a bitmap of the appropriate size
+            FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0xFFFFFFFF);
+            if (!bitmap) {
+                FPDF_ClosePage(page);
+                FPDF_CloseDocument(doc);
+                result->Error("bitmap_creation_failed", "Failed to create bitmap");
+                return;
+            }
+
+            // Render the page into the bitmap
+            FPDF_RenderPageBitmap(bitmap, page, 0, 0, (int)width, (int)height, 0, FPDF_ANNOT);
+
+            // Save the bitmap to a PNG file
+            std::string output_image_path = std::string(output_path) + "/image_" + std::to_string(i+1) + ".png";
+            if (!save_bitmap_to_png(bitmap, output_image_path, compression)) {
+                FPDF_ClosePage(page);
+                FPDF_CloseDocument(doc);
+                result->Error("image_save_failed", "Failed to save image");
+                return;
+            }
+
+            // Add the image path to the result list
+            image_paths.push_back(flutter::EncodableValue(output_image_path));
+
+            // Clean resources
+            FPDFBitmap_Destroy(bitmap);
+            FPDF_ClosePage(page);
+        }
+    }
 
         FPDF_CloseDocument(doc);
         result->Success(flutter::EncodableValue(image_paths));
