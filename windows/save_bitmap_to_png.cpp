@@ -1,7 +1,8 @@
 #include "include/pdf_combiner/save_bitmap_to_png.h"
 #include <vector>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
+// Eliminada la implementación aquí para evitar duplicados (LNK2005)
+// Se centraliza en pdf_combiner_plugin.cpp
 #include "include/pdf_combiner/stb_image_write.h"
 
 namespace pdf_combiner {

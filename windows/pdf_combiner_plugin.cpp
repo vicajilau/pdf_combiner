@@ -26,16 +26,10 @@
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
 
-#define STB_IMAGE_IMPLEMENTATION
+// IMPORTANTE: No incluir IMPLEMENTATION aquí para evitar errores LNK2005
 #include "include/pdf_combiner/stb_image.h"
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "include/pdf_combiner/stb_image_resize2.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "include/pdf_combiner/stb_image_write.h"
-
-#ifdef HAS_HEIF
-#include <libheif/heif.h>
-#endif
 
 #pragma comment(lib, "shlwapi.lib")
 
@@ -57,50 +51,96 @@ namespace pdf_combiner {
         return strTo;
     }
 
+    // 1. Definimos los tipos de funciones que necesitamos del DLL de HEIF
+    typedef struct heif_context heif_context;
+    typedef struct heif_image_handle heif_image_handle;
+    typedef struct heif_image heif_image;
+    typedef struct heif_error { int code; int sub; const char* msg; } heif_error;
+
+    typedef heif_context* (*func_heif_context_alloc)();
+    typedef heif_error (*func_heif_context_read_from_file)(heif_context*, const char*, const void*);
+    typedef heif_error (*func_heif_context_get_primary_image_handle)(heif_context*, heif_image_handle**);
+    typedef heif_error (*func_heif_decode_image)(const heif_image_handle*, heif_image**, int, int, const void*);
+    typedef int (*func_heif_image_get_width)(const heif_image*, int);
+    typedef int (*func_heif_image_get_height)(const heif_image*, int);
+    typedef const uint8_t* (*func_heif_image_get_plane_readonly)(const heif_image*, int, int*);
+    typedef void (*func_heif_image_release)(const heif_image*);
+    typedef void (*func_heif_image_handle_release)(const heif_image_handle*);
+    typedef void (*func_heif_context_free)(heif_context*);
+
     std::string ConvertHeicToPng(const std::string& heic_path, const std::string& temp_dir_hint) {
-#ifdef HAS_HEIF
+        wchar_t exe_path[MAX_PATH];
+        GetModuleFileNameW(NULL, exe_path, MAX_PATH);
+        PathRemoveFileSpecW(exe_path);
+
+        // Intentamos cargar heif.dll desde la carpeta del ejecutable
+        std::wstring dll_path = std::wstring(exe_path) + L"\\heif.dll";
+        HMODULE hHeif = LoadLibraryW(dll_path.c_str());
+        if (!hHeif) return "";
+
+        // Mapeamos las funciones del DLL
+        auto heif_context_alloc = (func_heif_context_alloc)GetProcAddress(hHeif, "heif_context_alloc");
+        auto heif_context_read_from_file = (func_heif_context_read_from_file)GetProcAddress(hHeif, "heif_context_read_from_file");
+        auto heif_context_get_primary_image_handle = (func_heif_context_get_primary_image_handle)GetProcAddress(hHeif, "heif_context_get_primary_image_handle");
+        auto heif_decode_image = (func_heif_decode_image)GetProcAddress(hHeif, "heif_decode_image");
+        auto heif_image_get_width = (func_heif_image_get_width)GetProcAddress(hHeif, "heif_image_get_width");
+        auto heif_image_get_height = (func_heif_image_get_height)GetProcAddress(hHeif, "heif_image_get_height");
+        auto heif_image_get_plane_readonly = (func_heif_image_get_plane_readonly)GetProcAddress(hHeif, "heif_image_get_plane_readonly");
+        auto heif_image_release = (func_heif_image_release)GetProcAddress(hHeif, "heif_image_release");
+
+        // CORRECCIÓN AQUÍ: Usamos el nombre correcto del typedef definido arriba
+        auto heif_image_handle_release = (func_heif_image_handle_release)GetProcAddress(hHeif, "heif_image_handle_release");
+
+        auto heif_context_free = (func_heif_context_free)GetProcAddress(hHeif, "heif_context_free");
+
+        if (!heif_context_alloc || !heif_decode_image || !heif_image_handle_release) {
+            FreeLibrary(hHeif);
+            return "";
+        }
+
         heif_context* ctx = heif_context_alloc();
         heif_error err = heif_context_read_from_file(ctx, heic_path.c_str(), nullptr);
-        if (err.code != heif_error_Ok) {
+        if (err.code != 0) {
             heif_context_free(ctx);
+            FreeLibrary(hHeif);
             return "";
         }
 
         heif_image_handle* handle = nullptr;
         err = heif_context_get_primary_image_handle(ctx, &handle);
-        if (err.code != heif_error_Ok) {
+        if (err.code != 0) {
             heif_context_free(ctx);
+            FreeLibrary(hHeif);
             return "";
         }
 
         heif_image* img = nullptr;
-        // Decodificamos siempre a RGBA para PDFium
-        err = heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGBA, nullptr);
-        if (err.code != heif_error_Ok) {
+        // 3 = heif_colorspace_RGB, 10 = heif_chroma_interleaved_RGBA
+        err = heif_decode_image(handle, &img, 3, 10, nullptr);
+        if (err.code != 0) {
             heif_image_handle_release(handle);
             heif_context_free(ctx);
+            FreeLibrary(hHeif);
             return "";
         }
 
-        int width = heif_image_get_width(img, heif_channel_interleaved);
-        int height = heif_image_get_height(img, heif_channel_interleaved);
+        int width = heif_image_get_width(img, 0x1000); // 0x1000 = heif_channel_interleaved
+        int height = heif_image_get_height(img, 0x1000);
         int stride;
-        const uint8_t* data = heif_image_get_plane_readonly(img, heif_channel_interleaved, &stride);
+        const uint8_t* data = heif_image_get_plane_readonly(img, 0x1000, &stride);
 
-        // Generar ruta temporal .png
         std::string output_png = heic_path + ".temp.png";
 
-        // Guardar usando stb_image_write
+        // Guardamos el buffer decodificado como PNG usando stb_image_write
         int success = stbi_write_png(output_png.c_str(), width, height, 4, data, stride);
 
+        // Limpieza
         heif_image_release(img);
         heif_image_handle_release(handle);
         heif_context_free(ctx);
+        FreeLibrary(hHeif);
 
         return success ? output_png : "";
-#else
-        return ""; // HEIC no soportado si no se encuentra la librería
-#endif
     }
 
     void PdfCombinerPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar) {
@@ -124,6 +164,7 @@ namespace pdf_combiner {
             result->Error("INVALID_ARGUMENTS", "Expected a map of arguments.");
             return;
         }
+
         if (method_call.method_name() == "mergeMultiplePDF") {
             this->merge_multiple_pdfs(*args, std::move(result));
         } else if (method_call.method_name() == "createPDFFromMultipleImage") {
@@ -139,15 +180,18 @@ namespace pdf_combiner {
                                                 std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
         auto paths_it = args.find(flutter::EncodableValue("paths"));
         auto output_it = args.find(flutter::EncodableValue("outputDirPath"));
+
         std::vector<std::string> input_paths;
         if (paths_it != args.end() && std::holds_alternative<std::vector<flutter::EncodableValue>>(paths_it->second)) {
             for (const auto& path_value : std::get<std::vector<flutter::EncodableValue>>(paths_it->second)) {
                 if (std::holds_alternative<std::string>(path_value)) input_paths.push_back(std::get<std::string>(path_value));
             }
         }
+
         std::string output_path = std::get<std::string>(output_it->second);
         FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
         int total_pages = 0;
+
         for (const auto& input_path : input_paths) {
             FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
             if (!doc) continue;
@@ -156,8 +200,12 @@ namespace pdf_combiner {
             total_pages += page_count;
             FPDF_CloseDocument(doc);
         }
+
         MyFileWrite file_write;
-        file_write.version = 1; file_write.WriteBlock = MyWriteBlock; file_write.filename = output_path.c_str();
+        file_write.version = 1;
+        file_write.WriteBlock = MyWriteBlock;
+        file_write.filename = output_path.c_str();
+
         FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL);
         FPDF_CloseDocument(new_doc);
         result->Success(flutter::EncodableValue(output_path));
@@ -228,7 +276,6 @@ namespace pdf_combiner {
             for (int y = 0; y < height; y++) {
                 unsigned char* src = image_data + y * width * 4;
                 unsigned char* dst = buffer + y * stride;
-
                 for (int x = 0; x < width; x++) {
                     dst[x * 4 + 0] = src[x * 4 + 2]; // B
                     dst[x * 4 + 1] = src[x * 4 + 1]; // G
@@ -239,10 +286,8 @@ namespace pdf_combiner {
 
             FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
             FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
-
             FPDFPageObj_Transform(image_obj, (double)width, 0, 0, (double)height, 0, 0);
             FPDFPage_InsertObject(new_page, image_obj);
-
             FPDFPage_GenerateContent(new_page);
 
             stbi_image_free(image_data);
@@ -273,6 +318,11 @@ namespace pdf_combiner {
         bool create_one_image = std::get<bool>(args.at(flutter::EncodableValue("createOneImage")));
 
         FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
+        if (!doc) {
+            result->Error("PDF_LOAD_FAILED", "Could not load PDF document.");
+            return;
+        }
+
         int page_count = FPDF_GetPageCount(doc);
         std::vector<flutter::EncodableValue> image_paths;
 
@@ -280,6 +330,7 @@ namespace pdf_combiner {
             int total_width = 0, total_height = 0;
             std::vector<FPDF_PAGE> pages(page_count);
             std::vector<double> p_widths(page_count), p_heights(page_count);
+
             for (int i = 0; i < page_count; ++i) {
                 pages[i] = FPDF_LoadPage(doc, i);
                 double w = (max_width != 0) ? (double)max_width : FPDF_GetPageWidth(pages[i]);
@@ -288,27 +339,35 @@ namespace pdf_combiner {
                 total_width = (total_width > (int)w) ? total_width : (int)w;
                 total_height += (int)h;
             }
-            FPDF_BITMAP combined = FPDFBitmap_Create(total_width, total_height, 0xFFFFFFFF);
+
+            FPDF_BITMAP combined = FPDFBitmap_Create(total_width, total_height, 0);
+            FPDFBitmap_FillRect(combined, 0, 0, total_width, total_height, 0xFFFFFFFF);
+
             int current_y = 0;
             for (int i = 0; i < page_count; ++i) {
                 FPDF_RenderPageBitmap(combined, pages[i], 0, current_y, (int)p_widths[i], (int)p_heights[i], 0, FPDF_ANNOT);
                 current_y += (int)p_heights[i];
+                FPDF_ClosePage(pages[i]);
             }
-            std::string out_img = output_path + "/image.png";
+
+            std::string out_img = output_path + "/combined_image.png";
             save_bitmap_to_png(combined, out_img, compression);
             image_paths.push_back(flutter::EncodableValue(out_img));
             FPDFBitmap_Destroy(combined);
-            for (auto p : pages) FPDF_ClosePage(p);
         } else {
             for (int i = 0; i < page_count; ++i) {
                 FPDF_PAGE page = FPDF_LoadPage(doc, i);
                 int w = (max_width != 0) ? max_width : (int)FPDF_GetPageWidth(page);
                 int h = (max_height != 0) ? max_height : (int)FPDF_GetPageHeight(page);
-                FPDF_BITMAP bitmap = FPDFBitmap_Create(w, h, 0xFFFFFFFF);
+
+                FPDF_BITMAP bitmap = FPDFBitmap_Create(w, h, 0);
+                FPDFBitmap_FillRect(bitmap, 0, 0, w, h, 0xFFFFFFFF);
                 FPDF_RenderPageBitmap(bitmap, page, 0, 0, w, h, 0, FPDF_ANNOT);
+
                 std::string out_img = output_path + "/image_" + std::to_string(i+1) + ".png";
                 save_bitmap_to_png(bitmap, out_img, compression);
                 image_paths.push_back(flutter::EncodableValue(out_img));
+
                 FPDFBitmap_Destroy(bitmap);
                 FPDF_ClosePage(page);
             }
