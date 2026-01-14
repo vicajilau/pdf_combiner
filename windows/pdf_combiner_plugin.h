@@ -10,8 +10,8 @@
 
 namespace pdf_combiner {
 
-// Helper function declaration
-std::string ConvertHeicToJpeg(const std::string& heic_path, const std::string& temp_dir);
+// Helper function declaration - Ahora convierte a PNG usando ImageMagick
+std::string ConvertHeicToPng(const std::string& heic_path, const std::string& temp_dir);
 
 class PdfCombinerPlugin : public flutter::Plugin {
  public:
