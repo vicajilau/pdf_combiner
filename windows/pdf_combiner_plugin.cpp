@@ -5,15 +5,18 @@
 #endif
 
 #include <windows.h>
+#include <wincodec.h>
 #include <shlwapi.h>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
+#include <objbase.h>
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
+
+#include <memory>
+#include <sstream>
+#include <algorithm>
+#include <vector>
 
 #include "include/pdfium/fpdfview.h"
 #include "include/pdfium/fpdf_edit.h"
@@ -28,6 +31,7 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "include/pdf_combiner/stb_image_resize2.h"
 
+#pragma comment(lib, "windowscodecs.lib")
 #pragma comment(lib, "shlwapi.lib")
 
 namespace pdf_combiner {
@@ -48,53 +52,116 @@ namespace pdf_combiner {
         return strTo;
     }
 
-    // Nueva función que utiliza ImageMagick para convertir HEIC a PNG
     std::string ConvertHeicToPng(const std::string& heic_path, const std::string& temp_dir_hint) {
+        HRESULT hrCom = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+        if (hrCom == RPC_E_CHANGED_MODE) {
+            hrCom = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        }
+        bool com_initialized = SUCCEEDED(hrCom);
+
+        IWICImagingFactory* factory = nullptr;
+        IWICBitmapDecoder* decoder = nullptr;
+        IWICBitmapFrameDecode* frame = nullptr;
+        IWICBitmapEncoder* encoder = nullptr;
+        IWICBitmapFrameEncode* frame_encode = nullptr;
+        IStream* stream = nullptr;
+        IWICFormatConverter* converter = nullptr;
+        WICPixelFormatGUID format_guid = GUID_WICPixelFormat32bppRGBA;
+        
+        std::string output_png = "";
+        HRESULT hr = S_OK;
+
         std::wstring w_temp_dir;
         if (temp_dir_hint == "." || temp_dir_hint.empty()) {
             wchar_t system_temp[MAX_PATH];
-            GetTempPathW(MAX_PATH, system_temp);
-            w_temp_dir = system_temp;
+            if (GetTempPathW(MAX_PATH, system_temp)) w_temp_dir = system_temp;
+            else w_temp_dir = L"C:\\Windows\\Temp\\";
         } else {
             w_temp_dir = Utf8ToWide(temp_dir_hint);
         }
 
         wchar_t temp_file_path[MAX_PATH];
         if (!GetTempFileNameW(w_temp_dir.c_str(), L"PDFC", 0, temp_file_path)) {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            goto cleanup_no_com;
+        }
+        
+        {
+            std::wstring w_output_png = temp_file_path;
+            DeleteFileW(temp_file_path);
+            size_t dot = w_output_png.find_last_of(L'.');
+            if (dot != std::wstring::npos) w_output_png.replace(dot, std::wstring::npos, L".png");
+            else w_output_png += L".png";
+            output_png = WideToUtf8(w_output_png);
+        }
+
+        hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+        if (FAILED(hr)) goto cleanup;
+
+        hr = factory->CreateDecoderFromFilename(Utf8ToWide(heic_path).c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = decoder->GetFrame(0, &frame);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = factory->CreateFormatConverter(&converter);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = converter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeCustom);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = SHCreateStreamOnFileW(Utf8ToWide(output_png).c_str(), STGM_CREATE | STGM_WRITE, &stream);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = factory->CreateEncoder(GUID_ContainerFormatPng, nullptr, &encoder);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = encoder->Initialize(stream, WICBitmapEncoderNoCache);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = encoder->CreateNewFrame(&frame_encode, nullptr);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = frame_encode->Initialize(nullptr);
+        if (FAILED(hr)) goto cleanup;
+
+        UINT width, height;
+        hr = converter->GetSize(&width, &height);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = frame_encode->SetSize(width, height);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = frame_encode->SetPixelFormat(&format_guid);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = frame_encode->WriteSource(converter, nullptr);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = frame_encode->Commit();
+        if (FAILED(hr)) goto cleanup;
+
+        hr = encoder->Commit();
+        if (FAILED(hr)) goto cleanup;
+
+    cleanup:
+        if (converter) converter->Release();
+        if (stream) stream->Release();
+        if (frame_encode) frame_encode->Release();
+        if (encoder) encoder->Release();
+        if (frame) frame->Release();
+        if (decoder) decoder->Release();
+        if (factory) factory->Release();
+        
+    cleanup_no_com:
+        if (com_initialized) CoUninitialize();
+
+        if (FAILED(hr)) {
+            if (!output_png.empty()) DeleteFileA(output_png.c_str());
             return "";
         }
-        
-        std::wstring w_output_png = temp_file_path;
-        DeleteFileW(temp_file_path); // Liberar el nombre para el nuevo archivo
-        
-        size_t dot = w_output_png.find_last_of(L'.');
-        if (dot != std::wstring::npos) w_output_png.replace(dot, std::wstring::npos, L".png");
-        else w_output_png += L".png";
-        
-        std::string output_png = WideToUtf8(w_output_png);
 
-        // Construir comando: magick "input.heic" "output.png"
-        // Usamos CreateProcess para que sea silencioso (sin ventana de consola)
-        std::wstring command = L"magick \"" + Utf8ToWide(heic_path) + L"\" \"" + w_output_png + L"\"";
-        
-        STARTUPINFOW si = { sizeof(STARTUPINFOW) };
-        si.dwFlags = STARTF_USESHOWWINDOW;
-        si.wShowWindow = SW_HIDE;
-        PROCESS_INFORMATION pi = { 0 };
-
-        if (CreateProcessW(NULL, &command[0], NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-            WaitForSingleObject(pi.hProcess, INFINITE);
-            DWORD exitCode = 0;
-            GetExitCodeProcess(pi.hProcess, &exitCode);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            
-            if (exitCode == 0) {
-                return output_png;
-            }
-        }
-
-        return "";
+        return output_png;
     }
 
     void PdfCombinerPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar) {
@@ -135,13 +202,8 @@ namespace pdf_combiner {
         auto paths_it = args.find(flutter::EncodableValue("paths"));
         auto output_it = args.find(flutter::EncodableValue("outputDirPath"));
 
-        if (paths_it == args.end() || output_it == args.end()) {
-            result->Error("invalid_arguments", "Expected a map with inputPaths and outputPath");
-            return;
-        }
-
         std::vector<std::string> input_paths;
-        if (std::holds_alternative<std::vector<flutter::EncodableValue>>(paths_it->second)) {
+        if (paths_it != args.end() && std::holds_alternative<std::vector<flutter::EncodableValue>>(paths_it->second)) {
             for (const auto& path_value : std::get<std::vector<flutter::EncodableValue>>(paths_it->second)) {
                 if (std::holds_alternative<std::string>(path_value)) {
                     input_paths.push_back(std::get<std::string>(path_value));
@@ -206,11 +268,10 @@ namespace pdf_combiner {
                 size_t last_slash = output_path.find_last_of("\\/");
                 std::string temp_dir = (last_slash != std::string::npos) ? output_path.substr(0, last_slash) : "";
 
-                // Usar ImageMagick para convertir a PNG
                 std::string converted = ConvertHeicToPng(path, temp_dir);
                 if (converted.empty()) {
                     FPDF_CloseDocument(new_doc);
-                    result->Error("heic_conversion_failed", ("Fallo al convertir HEIC. Asegúrate de tener instalado ImageMagick y que esté en el PATH del sistema: " + path).c_str());
+                    result->Error("heic_conversion_failed", ("This device does not have native support for HEIC. To enable it, install ‘HEIF Image Extensions’ for free from the Microsoft Store: " + path).c_str());
                     return;
                 }
                 current_path = converted;
