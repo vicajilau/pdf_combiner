@@ -1,5 +1,10 @@
 #include "pdf_combiner_plugin.h"
 
+// Prevent Windows.h from defining min/max macros that interfere with std::min/max
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 // This must be included before many other Windows headers.
 #include <windows.h>
 #include <wincodec.h>
@@ -53,7 +58,7 @@ namespace pdf_combiner {
     // Implementation of HEIC to JPEG conversion using WIC
     std::string ConvertHeicToJpeg(const std::string& heic_path, const std::string& temp_dir) {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        bool com_initialized = SUCCEEDED(hr);
+        bool com_initialized = (hr == S_OK || hr == S_FALSE);
 
         IWICImagingFactory* factory = nullptr;
         IWICBitmapDecoder* decoder = nullptr;
@@ -62,7 +67,23 @@ namespace pdf_combiner {
         IWICBitmapFrameEncode* frame_encode = nullptr;
         IStream* stream = nullptr;
         IWICFormatConverter* converter = nullptr;
-        std::string output_jpg = heic_path + ".jpg"; // Simple temp name
+        
+        // Generate a temporary filename in the specified temp_dir
+        wchar_t temp_file[MAX_PATH];
+        if (!GetTempFileNameW(Utf8ToWide(temp_dir).c_str(), L"PDFC", 0, temp_file)) {
+            if (com_initialized) CoUninitialize();
+            return "";
+        }
+        
+        std::wstring w_output_jpg = temp_file;
+        size_t dot = w_output_jpg.find_last_of(L'.');
+        if (dot != std::wstring::npos) {
+            w_output_jpg.replace(dot, std::wstring::npos, L".jpg");
+        } else {
+            w_output_jpg += L".jpg";
+        }
+        
+        std::string output_jpg = WideToUtf8(w_output_jpg);
 
         hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
         if (FAILED(hr)) goto cleanup;
@@ -124,6 +145,7 @@ namespace pdf_combiner {
         if (frame) frame->Release();
         if (decoder) decoder->Release();
         if (factory) factory->Release();
+        
         if (com_initialized) CoUninitialize();
 
         return SUCCEEDED(hr) ? output_jpg : "";
@@ -268,7 +290,6 @@ namespace pdf_combiner {
             return;
         }
 
-    // 1. EXTRAER PATHS (Aquí usamos tu for original corregido)
     std::vector<std::string> input_paths;
     if (std::holds_alternative<std::vector<flutter::EncodableValue>>(paths_it->second)) {
         const auto& path_list = std::get<std::vector<flutter::EncodableValue>>(paths_it->second);
@@ -290,50 +311,45 @@ namespace pdf_combiner {
     int max_height = std::get<int>(height_it->second);
     bool keep_aspect_ratio = std::get<bool>(keep_aspect_ratio_it->second);
 
-        // Create an empty document
         FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
         if (!new_doc) {
             result->Error("document_creation_failed", "Failed to create new PDF document");
             return;
         }
 
-    // 2. PROCESAR CADA IMAGEN (Aquí integramos la conversión HEIC)
     for (const auto& path : input_paths) {
         std::string current_path = path;
         bool is_heic = false;
 
-        // Detección de HEIC por extensión
         if (path.length() >= 5) {
             std::string ext = path.substr(path.length() - 5);
             for (auto& c : ext) c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
-            if (ext == ".heic" || ext == ".heif") is_heic = true;
+            if (ext.find(".heic") != std::string::npos || ext.find(".heif") != std::string::npos) is_heic = true;
         }
 
-        // Si es HEIC, convertir usando WIC antes de cargar con stbi_load
         if (is_heic) {
-            // Obtenemos el directorio base del output para guardar el temporal ahí
             size_t last_slash = output_path.find_last_of("\\/");
             std::string temp_dir = (last_slash != std::string::npos) ? output_path.substr(0, last_slash) : ".";
 
             std::string converted = ConvertHeicToJpeg(path, temp_dir);
-            if (!converted.empty()) {
-                current_path = converted;
+            if (converted.empty()) {
+                FPDF_CloseDocument(new_doc);
+                result->Error("heic_conversion_failed", ("Failed to convert HEIC image: " + path).c_str());
+                return;
             }
+            current_path = converted;
         }
 
-        // Cargar la imagen (current_path será .heic original si falló la conversión, o el nuevo .jpg)
         int width, height, channels;
         unsigned char* image_data = stbi_load(current_path.c_str(), &width, &height, &channels, 4);
 
         if (!image_data) {
-            // Si falló y era un temporal, limpiamos antes de salir
             if (is_heic && current_path != path) DeleteFileA(current_path.c_str());
             FPDF_CloseDocument(new_doc);
             result->Error("image_loading_failed", ("Failed to load image: " + current_path).c_str());
             return;
         }
 
-            // Resize the image if necessary
             if (max_width != 0 || max_height != 0) {
                 int new_width = width;
                 int new_height = height;
@@ -355,15 +371,14 @@ namespace pdf_combiner {
 
                 if (!stbir_resize_uint8_linear(image_data, width, height, 0, resized_image_data, new_width, new_height, 0, STBIR_RGBA)) {
                     stbi_image_free(image_data);
+                    if (is_heic && current_path != path) DeleteFileA(current_path.c_str());
                     FPDF_CloseDocument(new_doc);
                     result->Error("image_resize_failed", "Failed to resize image");
                     return;
                 }
 
-                // Free only the original image, not the resized one
                 stbi_image_free(image_data);
 
-                // Assigning the new values
                 image_data = resized_image_data;
                 width = new_width;
                 height = new_height;
@@ -372,12 +387,12 @@ namespace pdf_combiner {
             FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), width, height);
             if (!new_page) {
                 stbi_image_free(image_data);
+                if (is_heic && current_path != path) DeleteFileA(current_path.c_str());
                 FPDF_CloseDocument(new_doc);
-                result->Error("page_creation_failed", ("Failed to create page for image: " + path).c_str()); // CORREGIDO
+                result->Error("page_creation_failed", ("Failed to create page for image: " + path).c_str());
                 return;
             }
 
-            // Crate bitmap of the image
             FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0);
             FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
             unsigned char* bitmap_buffer = (unsigned char*)FPDFBitmap_GetBuffer(bitmap);
@@ -388,18 +403,19 @@ namespace pdf_combiner {
                 unsigned char* dst_row = bitmap_buffer + (height - 1 - y) * stride;
 
                 for (int x = 0; x < width; x++) {
-                    dst_row[x * 4 + 0] = src_row[x * 4 + 2]; // Blue  <- Red
-                    dst_row[x * 4 + 1] = src_row[x * 4 + 1]; // Green <- Green
-                    dst_row[x * 4 + 2] = src_row[x * 4 + 0]; // Red   <- Blue
-                    dst_row[x * 4 + 3] = src_row[x * 4 + 3]; // Alpha <- Alpha
+                    dst_row[x * 4 + 0] = src_row[x * 4 + 2];
+                    dst_row[x * 4 + 1] = src_row[x * 4 + 1];
+                    dst_row[x * 4 + 2] = src_row[x * 4 + 0];
+                    dst_row[x * 4 + 3] = src_row[x * 4 + 3];
                 }
             }
 
             FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
             if (!image_obj) {
                 stbi_image_free(image_data);
+                if (is_heic && current_path != path) DeleteFileA(current_path.c_str());
                 FPDF_CloseDocument(new_doc);
-                result->Error("image_object_creation_failed", ("Failed to create image object for: " + path).c_str()); // CORREGIDO
+                result->Error("image_object_creation_failed", ("Failed to create image object for: " + path).c_str());
                 return;
             }
 
@@ -421,17 +437,14 @@ namespace pdf_combiner {
         file_write.WriteBlock = MyWriteBlock;
         file_write.filename = output_path.c_str();
 
-        // Save the new document
         if (!FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_NO_INCREMENTAL)) {
             FPDF_CloseDocument(new_doc);
             result->Error("document_save_failed", "Failed to save the new PDF document");
             return;
         }
 
-        // Close the new document
         FPDF_CloseDocument(new_doc);
 
-        // Return success response with the output path
         result->Success(flutter::EncodableValue(output_path));
     }
 
@@ -439,7 +452,6 @@ namespace pdf_combiner {
             const flutter::EncodableMap& args,
             std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
 
-        // Verify arguments
         if (args.find(flutter::EncodableValue("path")) == args.end() ||
             args.find(flutter::EncodableValue("outputDirPath")) == args.end() ||
             args.find(flutter::EncodableValue("width")) == args.end() ||
@@ -450,23 +462,14 @@ namespace pdf_combiner {
             return;
         }
 
-        // Get params from the map
         std::string input_path = std::get<std::string>(args.at(flutter::EncodableValue("path")));
         std::string output_path = std::get<std::string>(args.at(flutter::EncodableValue("outputDirPath")));
 
-        // Get width (String)
         int max_width = std::get<int>(args.at(flutter::EncodableValue("width")));
-
-        // Get height (String)
         int max_height = std::get<int>(args.at(flutter::EncodableValue("height")));
-
-        // Get compression (String)
         int compression = std::get<int>(args.at(flutter::EncodableValue("compression")));
-
-        // Get createOneImage (Bool)
         bool create_one_image = std::get<bool>(args.at(flutter::EncodableValue("createOneImage")));
 
-        // Load PDF Document
         FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
         if (!doc) {
             result->Error("document_loading_failed", "Failed to load PDF document");
@@ -486,7 +489,6 @@ namespace pdf_combiner {
             int total_width = 0;
             int total_height = 0;
 
-            // First, calculate the total width and height for the combined image
             std::vector<FPDF_PAGE> pages(page_count);
             std::vector<double> page_widths(page_count);
             std::vector<double> page_heights(page_count);
@@ -495,7 +497,6 @@ namespace pdf_combiner {
                 FPDF_PAGE page = FPDF_LoadPage(doc, i);
                 if (!page) continue;
 
-                // Get the size of the page
                 double width = FPDF_GetPageWidth(page);
                 double height = FPDF_GetPageHeight(page);
 
@@ -508,15 +509,11 @@ namespace pdf_combiner {
                 page_widths[i] = width;
                 page_heights[i] = height;
 
-
-                total_width = total_width; // Use the max width
-                if ((int)width > total_width) {
-                    total_width = (int)width;
-                }
-                total_height += (int)height; // Sum the heights for vertical layout
+                // Wrap std::max in parentheses to avoid issues with Windows max macro
+                total_width = (int)(std::max)((double)total_width, width); 
+                total_height += (int)height;
             }
 
-            // Create a bitmap large enough to hold all pages vertically
             FPDF_BITMAP combined_bitmap = FPDFBitmap_Create(total_width, total_height, 0xFFFFFFFF);
             if (!combined_bitmap) {
                 FPDF_CloseDocument(doc);
@@ -526,16 +523,13 @@ namespace pdf_combiner {
 
             int current_y = 0;
 
-            // Render each page into the large combined image
             for (int i = 0; i < page_count; ++i) {
                 FPDF_PAGE page = pages[i];
 
-                // Render the page into the combined bitmap at the correct position
                 FPDF_RenderPageBitmap(combined_bitmap, page, 0, current_y, (int)page_widths[i], (int)page_heights[i], 0, FPDF_ANNOT);
-                current_y += (int)page_heights[i]; // Move the y position down for the next page
+                current_y += (int)page_heights[i];
             }
 
-            // Save the combined bitmap to a PNG file
             std::string output_image_path = std::string(output_path) + "/image.png";
             if (!save_bitmap_to_png(combined_bitmap, output_image_path, compression)) {
                 FPDFBitmap_Destroy(combined_bitmap);
@@ -544,10 +538,8 @@ namespace pdf_combiner {
                 return;
             }
 
-            // Add the combined image path to the result list
             image_paths.push_back(flutter::EncodableValue(output_image_path));
 
-            // Clean up resources
             FPDFBitmap_Destroy(combined_bitmap);
             for (int i = 0; i < page_count; ++i) {
                 FPDF_ClosePage(pages[i]);
@@ -562,12 +554,10 @@ namespace pdf_combiner {
                     width = max_width;
                     height = max_height;
                 } else {
-                    // Get the size of the page
                     width = (int)FPDF_GetPageWidth(page);
                     height = (int)FPDF_GetPageHeight(page);
                 }
 
-                // Create a bitmap of the appropriate size
                 FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0xFFFFFFFF);
                 if (!bitmap) {
                     FPDF_ClosePage(page);
@@ -576,10 +566,8 @@ namespace pdf_combiner {
                     return;
                 }
 
-                // Render the page into the bitmap
                 FPDF_RenderPageBitmap(bitmap, page, 0, 0, (int)width, (int)height, 0, FPDF_ANNOT);
 
-                // Save the bitmap to a PNG file
                 std::string output_image_path = std::string(output_path) + "/image_" + std::to_string(i+1) + ".png";
                 if (!save_bitmap_to_png(bitmap, output_image_path, compression)) {
                     FPDF_ClosePage(page);
@@ -588,10 +576,8 @@ namespace pdf_combiner {
                     return;
                 }
 
-                // Add the image path to the result list
                 image_paths.push_back(flutter::EncodableValue(output_image_path));
 
-                // Clean resources
                 FPDFBitmap_Destroy(bitmap);
                 FPDF_ClosePage(page);
             }
