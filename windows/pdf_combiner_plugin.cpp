@@ -5,7 +5,6 @@
 #endif
 
 #include <windows.h>
-#include <wincodec.h>
 #include <shlwapi.h>
 #include <objbase.h>
 
@@ -31,13 +30,16 @@
 #include "include/pdf_combiner/stb_image.h"
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "include/pdf_combiner/stb_image_resize2.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "include/pdf_combiner/stb_image_write.h"
 
-#pragma comment(lib, "windowscodecs.lib")
+#ifdef HAS_HEIF
+#include <libheif/heif.h>
+#endif
+
 #pragma comment(lib, "shlwapi.lib")
 
 namespace pdf_combiner {
-
-    HRESULT g_last_wic_hresult = S_OK;
 
     std::wstring Utf8ToWide(const std::string& utf8) {
         if (utf8.empty()) return L"";
@@ -56,139 +58,49 @@ namespace pdf_combiner {
     }
 
     std::string ConvertHeicToPng(const std::string& heic_path, const std::string& temp_dir_hint) {
-        IWICImagingFactory* factory = nullptr;
-        IWICBitmapDecoder* decoder = nullptr;
-        IWICBitmapFrameDecode* frame = nullptr;
-        IWICBitmapEncoder* encoder = nullptr;
-        IWICBitmapFrameEncode* frame_encode = nullptr;
-        IStream* stream = nullptr;
-        IWICFormatConverter* converter = nullptr;
-        WICPixelFormatGUID format_guid = GUID_WICPixelFormat32bppRGBA;
-        std::string output_png = "";
-        HRESULT hr = S_OK;
-        HRESULT hrCom = S_OK;
-        bool com_initialized = false;
-
-        hrCom = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-        if (hrCom == RPC_E_CHANGED_MODE) hrCom = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        com_initialized = SUCCEEDED(hrCom);
-
-        std::wstring w_temp_dir;
-        wchar_t system_temp[MAX_PATH];
-        if (GetTempPathW(MAX_PATH, system_temp)) w_temp_dir = system_temp;
-        else w_temp_dir = L"C:\\Windows\\Temp\\";
-
-        wchar_t temp_file_path[MAX_PATH];
-        if (GetTempFileNameW(w_temp_dir.c_str(), L"PDFC", 0, temp_file_path)) {
-            std::wstring w_output_png = temp_file_path;
-            DeleteFileW(temp_file_path);
-            size_t dot = w_output_png.find_last_of(L'.');
-            if (dot != std::wstring::npos) w_output_png.replace(dot, std::wstring::npos, L".png");
-            else w_output_png += L".png";
-            output_png = WideToUtf8(w_output_png);
-        }
-
-        hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-        if (FAILED(hr)) goto try_external;
-
-        hr = factory->CreateDecoderFromFilename(Utf8ToWide(heic_path).c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &decoder);
-        if (FAILED(hr)) goto try_external;
-
-        hr = decoder->GetFrame(0, &frame);
-        if (FAILED(hr)) goto try_external;
-
-        hr = factory->CreateFormatConverter(&converter);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = converter->Initialize(frame, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeCustom);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = SHCreateStreamOnFileW(Utf8ToWide(output_png).c_str(), STGM_CREATE | STGM_WRITE, &stream);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = factory->CreateEncoder(GUID_ContainerFormatPng, nullptr, &encoder);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = encoder->Initialize(stream, WICBitmapEncoderNoCache);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = encoder->CreateNewFrame(&frame_encode, nullptr);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = frame_encode->Initialize(nullptr);
-        if (FAILED(hr)) goto cleanup;
-
-        UINT width, height;
-        converter->GetSize(&width, &height);
-        frame_encode->SetSize(width, height);
-        frame_encode->SetPixelFormat(&format_guid);
-        frame_encode->WriteSource(converter, nullptr);
-        frame_encode->Commit();
-        encoder->Commit();
-        goto cleanup;
-
-        try_external: {
-        wchar_t exe_path[MAX_PATH];
-        GetModuleFileNameW(NULL, exe_path, MAX_PATH);
-        PathRemoveFileSpecW(exe_path);
-        std::wstring local_magick = std::wstring(exe_path) + L"\\magick.exe";
-
-        if (PathFileExistsW(local_magick.c_str())) {
-            // Added -strip to remove color profiles that might cause corruption
-            std::wstring command = L"\"" + local_magick + L"\" \"" + Utf8ToWide(heic_path) + L"\" -strip \"" + Utf8ToWide(output_png) + L"\"";
-
-            STARTUPINFOW si = { sizeof(si) };
-            si.dwFlags = STARTF_USESHOWWINDOW;
-            si.wShowWindow = SW_HIDE;
-            PROCESS_INFORMATION pi = { 0 };
-
-            std::vector<wchar_t> cmd_buffer(command.begin(), command.end());
-            cmd_buffer.push_back(0);
-
-            if (CreateProcessW(NULL, cmd_buffer.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-                WaitForSingleObject(pi.hProcess, INFINITE);
-
-                DWORD exitCode = 0;
-                GetExitCodeProcess(pi.hProcess, &exitCode);
-                CloseHandle(pi.hProcess);
-                CloseHandle(pi.hThread);
-
-                if (exitCode == 0) {
-                    // Safety sleep to ensure OS file handles are released
-                    Sleep(100);
-                    if (PathFileExistsW(Utf8ToWide(output_png).c_str())) {
-                        hr = S_OK;
-                    } else {
-                        hr = E_FAIL;
-                    }
-                } else {
-                    hr = E_FAIL;
-                }
-            } else {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-            }
-        } else {
-            hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-        }
-    }
-
-        cleanup:
-        if (converter) converter->Release();
-        if (stream) stream->Release();
-        if (frame_encode) frame_encode->Release();
-        if (encoder) encoder->Release();
-        if (frame) frame->Release();
-        if (decoder) decoder->Release();
-        if (factory) factory->Release();
-
-        if (com_initialized) CoUninitialize();
-
-        g_last_wic_hresult = hr;
-        if (FAILED(hr)) {
-            if (!output_png.empty()) DeleteFileA(output_png.c_str());
+#ifdef HAS_HEIF
+        heif_context* ctx = heif_context_alloc();
+        heif_error err = heif_context_read_from_file(ctx, heic_path.c_str(), nullptr);
+        if (err.code != heif_error_Ok) {
+            heif_context_free(ctx);
             return "";
         }
-        return output_png;
+
+        heif_image_handle* handle = nullptr;
+        err = heif_context_get_primary_image_handle(ctx, &handle);
+        if (err.code != heif_error_Ok) {
+            heif_context_free(ctx);
+            return "";
+        }
+
+        heif_image* img = nullptr;
+        // Decodificamos siempre a RGBA para PDFium
+        err = heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGBA, nullptr);
+        if (err.code != heif_error_Ok) {
+            heif_image_handle_release(handle);
+            heif_context_free(ctx);
+            return "";
+        }
+
+        int width = heif_image_get_width(img, heif_channel_interleaved);
+        int height = heif_image_get_height(img, heif_channel_interleaved);
+        int stride;
+        const uint8_t* data = heif_image_get_plane_readonly(img, heif_channel_interleaved, &stride);
+
+        // Generar ruta temporal .png
+        std::string output_png = heic_path + ".temp.png";
+
+        // Guardar usando stb_image_write
+        int success = stbi_write_png(output_png.c_str(), width, height, 4, data, stride);
+
+        heif_image_release(img);
+        heif_image_handle_release(handle);
+        heif_context_free(ctx);
+
+        return success ? output_png : "";
+#else
+        return ""; // HEIC no soportado si no se encuentra la librería
+#endif
     }
 
     void PdfCombinerPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar) {
@@ -328,7 +240,6 @@ namespace pdf_combiner {
             FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
             FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
 
-            // Fixed positioning logic using FPDFPageObj_Transform
             FPDFPageObj_Transform(image_obj, (double)width, 0, 0, (double)height, 0, 0);
             FPDFPage_InsertObject(new_page, image_obj);
 
@@ -336,7 +247,7 @@ namespace pdf_combiner {
 
             stbi_image_free(image_data);
             FPDF_ClosePage(new_page);
-            FPDFBitmap_Destroy(bitmap); // Destroy bitmap AFTER GenerateContent
+            FPDFBitmap_Destroy(bitmap);
 
             if (is_heic) DeleteFileA(current_path.c_str());
         }
