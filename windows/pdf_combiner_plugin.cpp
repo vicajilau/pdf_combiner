@@ -127,27 +127,41 @@ namespace pdf_combiner {
         encoder->Commit();
         goto cleanup;
 
-    try_external:
+        try_external:
         {
             wchar_t exe_path[MAX_PATH];
             GetModuleFileNameW(NULL, exe_path, MAX_PATH);
             PathRemoveFileSpecW(exe_path);
             std::wstring local_magick = std::wstring(exe_path) + L"\\magick.exe";
-            
+
             if (PathFileExistsW(local_magick.c_str())) {
+                // Rodeamos las rutas con comillas por si tienen espacios
                 std::wstring command = L"\"" + local_magick + L"\" \"" + Utf8ToWide(heic_path) + L"\" \"" + Utf8ToWide(output_png) + L"\"";
+
                 STARTUPINFOW si = { sizeof(si) };
                 si.dwFlags = STARTF_USESHOWWINDOW;
                 si.wShowWindow = SW_HIDE;
                 PROCESS_INFORMATION pi = { 0 };
-                if (CreateProcessW(NULL, &command[0], NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-                    WaitForSingleObject(pi.hProcess, 10000); 
+
+                // Usamos una copia de la cadena porque CreateProcessW puede modificarla
+                std::vector<wchar_t> cmd_buffer(command.begin(), command.end());
+                cmd_buffer.push_back(0);
+
+                if (CreateProcessW(NULL, cmd_buffer.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+                    WaitForSingleObject(pi.hProcess, INFINITE); // Esperamos a que termine realmente
                     DWORD exitCode = 0;
                     GetExitCodeProcess(pi.hProcess, &exitCode);
                     CloseHandle(pi.hProcess);
                     CloseHandle(pi.hThread);
-                    if (exitCode == 0) hr = S_OK;
+
+                    if (exitCode == 0 && PathFileExistsW(Utf8ToWide(output_png).c_str())) {
+                        hr = S_OK; // Éxito
+                    } else {
+                        hr = E_FAIL;
+                    }
                 }
+            } else {
+                hr = E_FILE_NOT_FOUND;
             }
         }
 
