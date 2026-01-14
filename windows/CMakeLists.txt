@@ -112,11 +112,25 @@ add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy
   "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" "${CMAKE_CURRENT_BINARY_DIR}/pdfium.dll"
 )
-add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
+# === Configuración de ImageMagick Portable ===
+
+# 1. Definir la ruta de origen (donde pusiste el exe)
+set(MAGICK_EXE_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/include/magick/magick.exe")
+
+# 2. Copiar a la carpeta del plugin (para desarrollo)
+add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${MAGICK_EXE_SOURCE}"
-        "$<TARGET_FILE_DIR:${BINARY_NAME}>/magick.exe"
-        COMMENT "Copying ImageMagick portable to the output folder..."
+        "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/magick.exe"
+        COMMENT "Copiando ImageMagick al directorio del Plugin..."
+)
+
+# 3. Copiar a la carpeta del ejecutable final (Runner) para que tu código lo encuentre
+add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${MAGICK_EXE_SOURCE}"
+        "${CMAKE_CURRENT_BINARY_DIR}/../../runner/$<CONFIG>/magick.exe"
+        COMMENT "Copiando ImageMagick al directorio del ejecutable principal (Runner)..."
 )
 
 # Enable automatic test discovery.
