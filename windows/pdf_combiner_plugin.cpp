@@ -127,27 +127,27 @@ namespace pdf_combiner {
         encoder->Commit();
         goto cleanup;
 
-        try_external:{
+        try_external: {
         wchar_t exe_path[MAX_PATH];
         GetModuleFileNameW(NULL, exe_path, MAX_PATH);
         PathRemoveFileSpecW(exe_path);
         std::wstring local_magick = std::wstring(exe_path) + L"\\magick.exe";
 
         if (PathFileExistsW(local_magick.c_str())) {
-            // Rodeamos las rutas con comillas por si tienen espacios en el nombre de usuario o carpetas
+            // Surround paths with quotes in case there are spaces in usernames or folders
             std::wstring command = L"\"" + local_magick + L"\" \"" + Utf8ToWide(heic_path) + L"\" \"" + Utf8ToWide(output_png) + L"\"";
 
             STARTUPINFOW si = { sizeof(si) };
             si.dwFlags = STARTF_USESHOWWINDOW;
-            si.wShowWindow = SW_HIDE; // Oculta la ventana de consola negra
+            si.wShowWindow = SW_HIDE; // Hide the black console window
             PROCESS_INFORMATION pi = { 0 };
 
-            // Usamos un buffer porque CreateProcessW puede modificar la cadena
+            // Use a buffer because CreateProcessW can modify the string
             std::vector<wchar_t> cmd_buffer(command.begin(), command.end());
             cmd_buffer.push_back(0);
 
             if (CreateProcessW(NULL, cmd_buffer.data(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-                // ESPERAR hasta que el proceso termine (IMPORTANTE)
+                // WAIT until the process finishes (CRITICAL to avoid corruption/file lock)
                 WaitForSingleObject(pi.hProcess, INFINITE);
 
                 DWORD exitCode = 0;
@@ -156,7 +156,7 @@ namespace pdf_combiner {
                 CloseHandle(pi.hThread);
 
                 if (exitCode == 0 && PathFileExistsW(Utf8ToWide(output_png).c_str())) {
-                    hr = S_OK; // Conversión exitosa
+                    hr = S_OK; // Successful conversion
                 } else {
                     hr = E_FAIL;
                 }
@@ -164,7 +164,7 @@ namespace pdf_combiner {
                 hr = HRESULT_FROM_WIN32(GetLastError());
             }
         } else {
-            // AQUÍ LA CORRECCIÓN DEL ERROR C2065
+            // FIX for Error C2065: Use standard Win32 error to HRESULT conversion
             hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
         }
     }
@@ -190,7 +190,7 @@ namespace pdf_combiner {
 
     void PdfCombinerPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar) {
         auto channel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-            registrar->messenger(), "pdf_combiner", &flutter::StandardMethodCodec::GetInstance());
+                registrar->messenger(), "pdf_combiner", &flutter::StandardMethodCodec::GetInstance());
         auto plugin = std::make_unique<PdfCombinerPlugin>();
         channel->SetMethodCallHandler([plugin_pointer = plugin.get()](const auto &call, auto result) {
             plugin_pointer->HandleMethodCall(call, std::move(result));
@@ -202,7 +202,7 @@ namespace pdf_combiner {
     PdfCombinerPlugin::~PdfCombinerPlugin() { FPDF_DestroyLibrary(); }
 
     void PdfCombinerPlugin::HandleMethodCall(const flutter::MethodCall<flutter::EncodableValue> &method_call,
-                                            std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+                                             std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
         const flutter::EncodableValue* dart_arguments = method_call.arguments();
         auto args = std::get_if<flutter::EncodableMap>(dart_arguments);
         if (!args) {
@@ -221,7 +221,7 @@ namespace pdf_combiner {
     }
 
     void PdfCombinerPlugin::merge_multiple_pdfs(const flutter::EncodableMap& args,
-                                               std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+                                                std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
         auto paths_it = args.find(flutter::EncodableValue("paths"));
         auto output_it = args.find(flutter::EncodableValue("outputDirPath"));
         std::vector<std::string> input_paths;
@@ -271,7 +271,7 @@ namespace pdf_combiner {
             std::string current_path = path;
             bool is_heic = false;
 
-            // Detección de HEIC
+            // HEIC Detection
             if (path.length() >= 5) {
                 std::string ext = path.substr(path.length() - 5);
                 for (auto& c : ext) c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
@@ -279,17 +279,17 @@ namespace pdf_combiner {
             }
 
             if (is_heic) {
-                // Intentar convertir HEIC a PNG temporal
+                // Try converting HEIC to temporary PNG
                 std::string converted = ConvertHeicToPng(path, "");
                 if (converted.empty()) {
-                    // Si el HEIC falla, no cerramos todo el proceso, solo saltamos esta imagen o informamos
+                    // Skip this image if conversion fails
                     continue;
                 }
                 current_path = converted;
             }
 
             int width, height, channels;
-            // Cargamos la imagen (sea el PNG temporal o el archivo original PNG/JPG)
+            // Load the image (either the temporary PNG or the original PNG/JPG)
             unsigned char* image_data = stbi_load(current_path.c_str(), &width, &height, &channels, 4);
 
             if (!image_data) {
@@ -297,7 +297,7 @@ namespace pdf_combiner {
                 continue;
             }
 
-            // Redimensionado si es necesario...
+            // Resize if needed
             if (max_width != 0 || max_height != 0) {
                 int new_width = (max_width != 0) ? max_width : width;
                 int new_height = (max_height != 0) ? (keep_aspect_ratio ? static_cast<int>(max_width * (static_cast<double>(height) / width)) : max_height) : height;
@@ -310,7 +310,7 @@ namespace pdf_combiner {
                 }
             }
 
-            // Crear página y bitmap en PDFium
+            // Create page and bitmap in PDFium
             FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), width, height);
             FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0);
             FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
@@ -318,7 +318,7 @@ namespace pdf_combiner {
             unsigned char* buffer = (unsigned char*)FPDFBitmap_GetBuffer(bitmap);
             int stride = FPDFBitmap_GetStride(bitmap);
 
-            // Convertir RGBA (stb) a BGRA (pdfium) y corregir orientación vertical
+            // Convert RGBA (stb) to BGRA (pdfium) and fix vertical orientation
             for (int y = 0; y < height; y++) {
                 unsigned char* src = image_data + y * width * 4;
                 unsigned char* dst = buffer + (height - 1 - y) * stride;
@@ -335,19 +335,19 @@ namespace pdf_combiner {
             FPDFImageObj_SetMatrix(image_obj, (double)width, 0, 0, (double)-height, 0, (double)height);
             FPDFPage_InsertObject(new_page, image_obj);
 
-            // GENERAR CONTENIDO (Vital para que no salga corrupto)
+            // GENERATE CONTENT (Crucial to prevent corrupted PDFs)
             FPDFPage_GenerateContent(new_page);
 
-            // LIMPIEZA DE ESTA PÁGINA
+            // CLEANUP THIS PAGE
             stbi_image_free(image_data);
             FPDFBitmap_Destroy(bitmap);
-            FPDF_ClosePage(new_page); // Cerramos la página para liberar memoria
+            FPDF_ClosePage(new_page); // Release page memory
 
-            // Si era un HEIC, borramos el PNG temporal después de haberlo metido en el PDF
+            // If it was a HEIC, delete the temporary PNG after it has been added to the PDF
             if (is_heic) DeleteFileA(current_path.c_str());
         }
 
-        // Guardar el documento final
+        // Save final document
         MyFileWrite file_write;
         file_write.version = 1;
         file_write.WriteBlock = MyWriteBlock;
@@ -360,7 +360,7 @@ namespace pdf_combiner {
     }
 
     void PdfCombinerPlugin::create_image_from_pdf(const flutter::EncodableMap& args,
-                                                 std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+                                                  std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
         std::string input_path = std::get<std::string>(args.at(flutter::EncodableValue("path")));
         std::string output_path = std::get<std::string>(args.at(flutter::EncodableValue("outputDirPath")));
         int max_width = std::get<int>(args.at(flutter::EncodableValue("width")));
