@@ -315,7 +315,8 @@ namespace pdf_combiner {
 
             for (int y = 0; y < height; y++) {
                 unsigned char* src = image_data + y * width * 4;
-                unsigned char* dst = buffer + (height - 1 - y) * stride;
+                unsigned char* dst = buffer + y * stride;
+
                 for (int x = 0; x < width; x++) {
                     dst[x * 4 + 0] = src[x * 4 + 2]; // B
                     dst[x * 4 + 1] = src[x * 4 + 1]; // G
