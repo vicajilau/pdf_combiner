@@ -20,6 +20,7 @@ set(PLUGIN_NAME "pdf_combiner_plugin")
 list(APPEND PLUGIN_SOURCES
   "pdf_combiner_plugin.cpp"
   "pdf_combiner_plugin.h"
+  "save_bitmap_to_png.cpp"
 )
 
 # Define the plugin library target. Its name must not be changed (see comment

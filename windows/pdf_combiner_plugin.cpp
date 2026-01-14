@@ -2,6 +2,8 @@
 
 // This must be included before many other Windows headers.
 #include <windows.h>
+#include <wincodec.h>
+#include <shlwapi.h>
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
@@ -9,6 +11,8 @@
 
 #include <memory>
 #include <sstream>
+#include <algorithm>
+#include <vector>
 
 #include "include/pdfium/fpdfview.h"
 #include "include/pdfium/fpdf_edit.h"
@@ -18,7 +22,112 @@
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "include/pdf_combiner/stb_image.h"
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "include/pdf_combiner/stb_image_resize2.h"
+
+#pragma comment(lib, "windowscodecs.lib")
+#pragma comment(lib, "shlwapi.lib")
+
 namespace pdf_combiner {
+
+    // Helper to convert UTF-8 string to Wide string
+    std::wstring Utf8ToWide(const std::string& utf8) {
+        if (utf8.empty()) return L"";
+        int size_needed = MultiByteToWideChar(CP_UTF8, 0, &utf8[0], (int)utf8.size(), NULL, 0);
+        std::wstring wstrTo(size_needed, 0);
+        MultiByteToWideChar(CP_UTF8, 0, &utf8[0], (int)utf8.size(), &wstrTo[0], size_needed);
+        return wstrTo;
+    }
+
+    // Helper to convert Wide string to UTF-8 string
+    std::string WideToUtf8(const std::wstring& wstr) {
+        if (wstr.empty()) return "";
+        int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+        std::string strTo(size_needed, 0);
+        WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+        return strTo;
+    }
+
+    // Implementation of HEIC to JPEG conversion using WIC
+    std::string ConvertHeicToJpeg(const std::string& heic_path, const std::string& temp_dir) {
+        HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        bool com_initialized = SUCCEEDED(hr);
+
+        IWICImagingFactory* factory = nullptr;
+        IWICBitmapDecoder* decoder = nullptr;
+        IWICBitmapFrameDecode* frame = nullptr;
+        IWICBitmapEncoder* encoder = nullptr;
+        IWICBitmapFrameEncode* frame_encode = nullptr;
+        IStream* stream = nullptr;
+        IWICFormatConverter* converter = nullptr;
+        std::string output_jpg = heic_path + ".jpg"; // Simple temp name
+
+        hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+        if (FAILED(hr)) goto cleanup;
+
+        hr = factory->CreateDecoderFromFilename(Utf8ToWide(heic_path).c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &decoder);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = decoder->GetFrame(0, &frame);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = factory->CreateFormatConverter(&converter);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = converter->Initialize(frame, GUID_WICPixelFormat24bppRGB, WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeCustom);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = SHCreateStreamOnFileW(Utf8ToWide(output_jpg).c_str(), STGM_CREATE | STGM_WRITE, &stream);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = factory->CreateEncoder(GUID_ContainerFormatJpeg, nullptr, &encoder);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = encoder->Initialize(stream, WICBitmapEncoderNoCache);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = encoder->CreateNewFrame(&frame_encode, nullptr);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = frame_encode->Initialize(nullptr);
+        if (FAILED(hr)) goto cleanup;
+
+        UINT width, height;
+        hr = converter->GetSize(&width, &height);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = frame_encode->SetSize(width, height);
+        if (FAILED(hr)) goto cleanup;
+
+        {
+            WICPixelFormatGUID format = GUID_WICPixelFormat24bppRGB;
+            hr = frame_encode->SetPixelFormat(&format);
+            if (FAILED(hr)) goto cleanup;
+        }
+
+        hr = frame_encode->WriteSource(converter, nullptr);
+        if (FAILED(hr)) goto cleanup;
+
+        hr = frame_encode->Commit();
+        if (FAILED(hr)) goto cleanup;
+
+        hr = encoder->Commit();
+        if (FAILED(hr)) goto cleanup;
+
+    cleanup:
+        if (converter) converter->Release();
+        if (stream) stream->Release();
+        if (frame_encode) frame_encode->Release();
+        if (encoder) encoder->Release();
+        if (frame) frame->Release();
+        if (decoder) decoder->Release();
+        if (factory) factory->Release();
+        if (com_initialized) CoUninitialize();
+
+        return SUCCEEDED(hr) ? output_jpg : "";
+    }
 
 // static
     void PdfCombinerPlugin::RegisterWithRegistrar(
@@ -196,7 +305,7 @@ namespace pdf_combiner {
         // Detección de HEIC por extensión
         if (path.length() >= 5) {
             std::string ext = path.substr(path.length() - 5);
-            for (auto& c : ext) c = tolower(c);
+            for (auto& c : ext) c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
             if (ext == ".heic" || ext == ".heif") is_heic = true;
         }
 
