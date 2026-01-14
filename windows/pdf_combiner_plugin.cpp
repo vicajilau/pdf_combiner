@@ -17,6 +17,7 @@
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <iomanip>
 
 #include "include/pdfium/fpdfview.h"
 #include "include/pdfium/fpdf_edit.h"
@@ -36,6 +37,8 @@
 
 namespace pdf_combiner {
 
+    HRESULT g_last_wic_hresult = S_OK;
+
     std::wstring Utf8ToWide(const std::string& utf8) {
         if (utf8.empty()) return L"";
         int size_needed = MultiByteToWideChar(CP_UTF8, 0, &utf8[0], (int)utf8.size(), NULL, 0);
@@ -53,12 +56,6 @@ namespace pdf_combiner {
     }
 
     std::string ConvertHeicToPng(const std::string& heic_path, const std::string& temp_dir_hint) {
-        HRESULT hrCom = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-        if (hrCom == RPC_E_CHANGED_MODE) {
-            hrCom = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        }
-        bool com_initialized = SUCCEEDED(hrCom);
-
         IWICImagingFactory* factory = nullptr;
         IWICBitmapDecoder* decoder = nullptr;
         IWICBitmapFrameDecode* frame = nullptr;
@@ -67,26 +64,22 @@ namespace pdf_combiner {
         IStream* stream = nullptr;
         IWICFormatConverter* converter = nullptr;
         WICPixelFormatGUID format_guid = GUID_WICPixelFormat32bppRGBA;
-        
         std::string output_png = "";
         HRESULT hr = S_OK;
+        HRESULT hrCom = S_OK;
+        bool com_initialized = false;
+
+        hrCom = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+        if (hrCom == RPC_E_CHANGED_MODE) hrCom = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        com_initialized = SUCCEEDED(hrCom);
 
         std::wstring w_temp_dir;
-        if (temp_dir_hint == "." || temp_dir_hint.empty()) {
-            wchar_t system_temp[MAX_PATH];
-            if (GetTempPathW(MAX_PATH, system_temp)) w_temp_dir = system_temp;
-            else w_temp_dir = L"C:\\Windows\\Temp\\";
-        } else {
-            w_temp_dir = Utf8ToWide(temp_dir_hint);
-        }
+        wchar_t system_temp[MAX_PATH];
+        if (GetTempPathW(MAX_PATH, system_temp)) w_temp_dir = system_temp;
+        else w_temp_dir = L"C:\\Windows\\Temp\\";
 
         wchar_t temp_file_path[MAX_PATH];
-        if (!GetTempFileNameW(w_temp_dir.c_str(), L"PDFC", 0, temp_file_path)) {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto cleanup_no_com;
-        }
-        
-        {
+        if (GetTempFileNameW(w_temp_dir.c_str(), L"PDFC", 0, temp_file_path)) {
             std::wstring w_output_png = temp_file_path;
             DeleteFileW(temp_file_path);
             size_t dot = w_output_png.find_last_of(L'.');
@@ -96,13 +89,13 @@ namespace pdf_combiner {
         }
 
         hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
-        if (FAILED(hr)) goto cleanup;
+        if (FAILED(hr)) goto try_external;
 
-        hr = factory->CreateDecoderFromFilename(Utf8ToWide(heic_path).c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder);
-        if (FAILED(hr)) goto cleanup;
+        hr = factory->CreateDecoderFromFilename(Utf8ToWide(heic_path).c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &decoder);
+        if (FAILED(hr)) goto try_external;
 
         hr = decoder->GetFrame(0, &frame);
-        if (FAILED(hr)) goto cleanup;
+        if (FAILED(hr)) goto try_external;
 
         hr = factory->CreateFormatConverter(&converter);
         if (FAILED(hr)) goto cleanup;
@@ -126,23 +119,37 @@ namespace pdf_combiner {
         if (FAILED(hr)) goto cleanup;
 
         UINT width, height;
-        hr = converter->GetSize(&width, &height);
-        if (FAILED(hr)) goto cleanup;
+        converter->GetSize(&width, &height);
+        frame_encode->SetSize(width, height);
+        frame_encode->SetPixelFormat(&format_guid);
+        frame_encode->WriteSource(converter, nullptr);
+        frame_encode->Commit();
+        encoder->Commit();
+        goto cleanup;
 
-        hr = frame_encode->SetSize(width, height);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = frame_encode->SetPixelFormat(&format_guid);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = frame_encode->WriteSource(converter, nullptr);
-        if (FAILED(hr)) goto cleanup;
-
-        hr = frame_encode->Commit();
-        if (FAILED(hr)) goto cleanup;
-
-        hr = encoder->Commit();
-        if (FAILED(hr)) goto cleanup;
+    try_external:
+        {
+            wchar_t exe_path[MAX_PATH];
+            GetModuleFileNameW(NULL, exe_path, MAX_PATH);
+            PathRemoveFileSpecW(exe_path);
+            std::wstring local_magick = std::wstring(exe_path) + L"\\magick.exe";
+            
+            if (PathFileExistsW(local_magick.c_str())) {
+                std::wstring command = L"\"" + local_magick + L"\" \"" + Utf8ToWide(heic_path) + L"\" \"" + Utf8ToWide(output_png) + L"\"";
+                STARTUPINFOW si = { sizeof(si) };
+                si.dwFlags = STARTF_USESHOWWINDOW;
+                si.wShowWindow = SW_HIDE;
+                PROCESS_INFORMATION pi = { 0 };
+                if (CreateProcessW(NULL, &command[0], NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+                    WaitForSingleObject(pi.hProcess, 10000); 
+                    DWORD exitCode = 0;
+                    GetExitCodeProcess(pi.hProcess, &exitCode);
+                    CloseHandle(pi.hProcess);
+                    CloseHandle(pi.hThread);
+                    if (exitCode == 0) hr = S_OK;
+                }
+            }
+        }
 
     cleanup:
         if (converter) converter->Release();
@@ -153,21 +160,19 @@ namespace pdf_combiner {
         if (decoder) decoder->Release();
         if (factory) factory->Release();
         
-    cleanup_no_com:
         if (com_initialized) CoUninitialize();
 
+        g_last_wic_hresult = hr;
         if (FAILED(hr)) {
             if (!output_png.empty()) DeleteFileA(output_png.c_str());
             return "";
         }
-
         return output_png;
     }
 
     void PdfCombinerPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar) {
         auto channel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
             registrar->messenger(), "pdf_combiner", &flutter::StandardMethodCodec::GetInstance());
-
         auto plugin = std::make_unique<PdfCombinerPlugin>();
         channel->SetMethodCallHandler([plugin_pointer = plugin.get()](const auto &call, auto result) {
             plugin_pointer->HandleMethodCall(call, std::move(result));
@@ -201,20 +206,15 @@ namespace pdf_combiner {
                                                std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
         auto paths_it = args.find(flutter::EncodableValue("paths"));
         auto output_it = args.find(flutter::EncodableValue("outputDirPath"));
-
         std::vector<std::string> input_paths;
         if (paths_it != args.end() && std::holds_alternative<std::vector<flutter::EncodableValue>>(paths_it->second)) {
             for (const auto& path_value : std::get<std::vector<flutter::EncodableValue>>(paths_it->second)) {
-                if (std::holds_alternative<std::string>(path_value)) {
-                    input_paths.push_back(std::get<std::string>(path_value));
-                }
+                if (std::holds_alternative<std::string>(path_value)) input_paths.push_back(std::get<std::string>(path_value));
             }
         }
-
         std::string output_path = std::get<std::string>(output_it->second);
         FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
         int total_pages = 0;
-
         for (const auto& input_path : input_paths) {
             FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
             if (!doc) continue;
@@ -223,11 +223,8 @@ namespace pdf_combiner {
             total_pages += page_count;
             FPDF_CloseDocument(doc);
         }
-
         MyFileWrite file_write;
-        file_write.version = 1;
-        file_write.WriteBlock = MyWriteBlock;
-        file_write.filename = output_path.c_str();
+        file_write.version = 1; file_write.WriteBlock = MyWriteBlock; file_write.filename = output_path.c_str();
         FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL);
         FPDF_CloseDocument(new_doc);
         result->Success(flutter::EncodableValue(output_path));
@@ -243,9 +240,7 @@ namespace pdf_combiner {
 
         std::vector<std::string> input_paths;
         const auto& path_list = std::get<std::vector<flutter::EncodableValue>>(paths_it->second);
-        for (const auto& path_value : path_list) {
-            input_paths.push_back(std::get<std::string>(path_value));
-        }
+        for (const auto& path_value : path_list) input_paths.push_back(std::get<std::string>(path_value));
 
         std::string output_path = std::get<std::string>(output_it->second);
         int max_width = std::get<int>(width_it->second);
@@ -257,7 +252,6 @@ namespace pdf_combiner {
         for (const auto& path : input_paths) {
             std::string current_path = path;
             bool is_heic = false;
-
             if (path.length() >= 5) {
                 std::string ext = path.substr(path.length() - 5);
                 for (auto& c : ext) c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
@@ -265,13 +259,12 @@ namespace pdf_combiner {
             }
 
             if (is_heic) {
-                size_t last_slash = output_path.find_last_of("\\/");
-                std::string temp_dir = (last_slash != std::string::npos) ? output_path.substr(0, last_slash) : "";
-
-                std::string converted = ConvertHeicToPng(path, temp_dir);
+                std::string converted = ConvertHeicToPng(path, "");
                 if (converted.empty()) {
                     FPDF_CloseDocument(new_doc);
-                    result->Error("heic_conversion_failed", ("This device does not have native support for HEIC. To enable it, install ‘HEIF Image Extensions’ for free from the Microsoft Store: " + path).c_str());
+                    std::stringstream ss;
+                    ss << "Fallo al procesar HEIC. Para soporte nativo instala 'HEIF Image Extensions' de la Store, o incluye 'magick.exe' en la carpeta de la app. Error: 0x" << std::hex << g_last_wic_hresult;
+                    result->Error("heic_conversion_failed", ss.str());
                     return;
                 }
                 current_path = converted;
@@ -279,22 +272,17 @@ namespace pdf_combiner {
 
             int width, height, channels;
             unsigned char* image_data = stbi_load(current_path.c_str(), &width, &height, &channels, 4);
-
             if (!image_data) {
-                if (is_heic && current_path != path) DeleteFileA(current_path.c_str());
+                if (is_heic) DeleteFileA(current_path.c_str());
                 continue;
             }
 
             if (max_width != 0 || max_height != 0) {
                 int new_width = (max_width != 0) ? max_width : width;
                 int new_height = (max_height != 0) ? (keep_aspect_ratio ? static_cast<int>(max_width * (static_cast<double>(height) / width)) : max_height) : height;
-
                 unsigned char* resized_data = new unsigned char[new_width * new_height * 4];
                 if (stbir_resize_uint8_linear(image_data, width, height, 0, resized_data, new_width, new_height, 0, STBIR_RGBA)) {
-                    stbi_image_free(image_data);
-                    image_data = resized_data;
-                    width = new_width;
-                    height = new_height;
+                    stbi_image_free(image_data); image_data = resized_data; width = new_width; height = new_height;
                 }
             }
 
@@ -303,33 +291,24 @@ namespace pdf_combiner {
             FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
             unsigned char* buffer = (unsigned char*)FPDFBitmap_GetBuffer(bitmap);
             int stride = FPDFBitmap_GetStride(bitmap);
-
             for (int y = 0; y < height; y++) {
                 unsigned char* src = image_data + y * width * 4;
                 unsigned char* dst = buffer + (height - 1 - y) * stride;
                 for (int x = 0; x < width; x++) {
-                    dst[x * 4 + 0] = src[x * 4 + 2];
-                    dst[x * 4 + 1] = src[x * 4 + 1];
-                    dst[x * 4 + 2] = src[x * 4 + 0];
-                    dst[x * 4 + 3] = src[x * 4 + 3];
+                    dst[x * 4 + 0] = src[x * 4 + 2]; dst[x * 4 + 1] = src[x * 4 + 1];
+                    dst[x * 4 + 2] = src[x * 4 + 0]; dst[x * 4 + 3] = src[x * 4 + 3];
                 }
             }
-
             FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
             FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
-            FPDFImageObj_SetMatrix(image_obj, width, 0, 0, -height, 0, height);
+            FPDFImageObj_SetMatrix(image_obj, (double)width, 0, 0, (double)-height, 0, (double)height);
             FPDFPage_InsertObject(new_page, image_obj);
             FPDFPage_GenerateContent(new_page);
-
-            stbi_image_free(image_data);
-            FPDFBitmap_Destroy(bitmap);
-            if (is_heic && current_path != path) DeleteFileA(current_path.c_str());
+            stbi_image_free(image_data); FPDFBitmap_Destroy(bitmap);
+            if (is_heic) DeleteFileA(current_path.c_str());
         }
-
         MyFileWrite file_write;
-        file_write.version = 1;
-        file_write.WriteBlock = MyWriteBlock;
-        file_write.filename = output_path.c_str();
+        file_write.version = 1; file_write.WriteBlock = MyWriteBlock; file_write.filename = output_path.c_str();
         FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_NO_INCREMENTAL);
         FPDF_CloseDocument(new_doc);
         result->Success(flutter::EncodableValue(output_path));
@@ -352,23 +331,20 @@ namespace pdf_combiner {
             int total_width = 0, total_height = 0;
             std::vector<FPDF_PAGE> pages(page_count);
             std::vector<double> p_widths(page_count), p_heights(page_count);
-
             for (int i = 0; i < page_count; ++i) {
                 pages[i] = FPDF_LoadPage(doc, i);
-                double w = (max_width != 0) ? max_width : FPDF_GetPageWidth(pages[i]);
-                double h = (max_height != 0) ? max_height : FPDF_GetPageHeight(pages[i]);
+                double w = (max_width != 0) ? (double)max_width : FPDF_GetPageWidth(pages[i]);
+                double h = (max_height != 0) ? (double)max_height : FPDF_GetPageHeight(pages[i]);
                 p_widths[i] = w; p_heights[i] = h;
-                total_width = (int)(std::max)((double)total_width, w);
+                total_width = (total_width > (int)w) ? total_width : (int)w;
                 total_height += (int)h;
             }
-
             FPDF_BITMAP combined = FPDFBitmap_Create(total_width, total_height, 0xFFFFFFFF);
             int current_y = 0;
             for (int i = 0; i < page_count; ++i) {
                 FPDF_RenderPageBitmap(combined, pages[i], 0, current_y, (int)p_widths[i], (int)p_heights[i], 0, FPDF_ANNOT);
                 current_y += (int)p_heights[i];
             }
-
             std::string out_img = output_path + "/image.png";
             save_bitmap_to_png(combined, out_img, compression);
             image_paths.push_back(flutter::EncodableValue(out_img));
@@ -391,5 +367,4 @@ namespace pdf_combiner {
         FPDF_CloseDocument(doc);
         result->Success(flutter::EncodableValue(image_paths));
     }
-
 }
