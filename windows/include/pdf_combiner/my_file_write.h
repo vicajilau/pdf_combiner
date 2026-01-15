@@ -12,20 +12,13 @@ typedef struct MyFileWrite {
     FILE* file;
 } MyFileWrite;
 
-// Implementación del callback de escritura
-static int MyWriteBlock(struct FPDF_FILEWRITE_* pThis, const void* pData, unsigned long size) {
-    MyFileWrite* pMe = (MyFileWrite*)pThis;
-    if (!pMe || !pData) return 0;
-
-    if (!pMe->file) {
-        // Abrir en modo "wb" (write binary) para sobreescribir/crear
-        if (fopen_s(&pMe->file, pMe->filename, "wb") != 0 || !pMe->file) {
-            return 0;
-        }
-    }
-
-    size_t written = fwrite(pData, 1, size, pMe->file);
-    return (written == size) ? 1 : 0;
+// Solo declaración, la implementación irá en el .cpp para evitar LNK2005
+#ifdef __cplusplus
+extern "C" {
+#endif
+    int MyWriteBlock(struct FPDF_FILEWRITE_* pThis, const void* pData, unsigned long size);
+#ifdef __cplusplus
 }
+#endif
 
 #endif // MY_FILE_WRITE_H
