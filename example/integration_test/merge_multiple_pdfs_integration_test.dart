@@ -53,7 +53,7 @@ void main() {
           predicate(
             (e) =>
                 e is PdfCombinerException &&
-                e.message == 'The parameter (inputPaths) cannot be empty',
+                e.message == 'The parameter (inputs) cannot be empty',
           ),
         ),
       );

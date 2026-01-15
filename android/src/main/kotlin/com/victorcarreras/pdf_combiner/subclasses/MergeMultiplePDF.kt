@@ -9,6 +9,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
 
@@ -19,10 +20,11 @@ class MergeMultiplePDF(context: Context, getResult: MethodChannel.Result) {
     private var result: MethodChannel.Result = getResult
 
     // Method Merge multiple PDF file into one File
-    // [paths] List of paths
-    // [outputDirPath] Output directory path with file name added with it Ex . usr/android/download/ABC.pdf
+    // [sources] List of sources (path or bytes)
+    // [inputPaths] List of paths (for backward compatibility)
+    // [outputPath] Output directory path with file name added with it Ex . usr/android/download/ABC.pdf
     @OptIn(DelicateCoroutinesApi::class)
-    fun merge(context:Context,inputPaths: List<String>, outputPath: String) {
+    fun merge(context: Context, sources: List<Map<String, Any>>?, inputPaths: List<String>?, outputPath: String) {
         var status = ""
 
         PDFBoxResourceLoader.init(context.applicationContext)
@@ -34,8 +36,21 @@ class MergeMultiplePDF(context: Context, getResult: MethodChannel.Result) {
 
             ut.documentMergeMode = PDFMergerUtility.DocumentMergeMode.OPTIMIZE_RESOURCES_MODE
 
-            for (item in inputPaths) {
-                ut.addSource(item)
+            if (sources != null) {
+                for (source in sources) {
+                    val bytes = source["bytes"] as? ByteArray
+                    val path = source["path"] as? String
+                    
+                    if (bytes != null) {
+                        ut.addSource(ByteArrayInputStream(bytes))
+                    } else if (path != null) {
+                        ut.addSource(path)
+                    }
+                }
+            } else if (inputPaths != null) {
+                for (item in inputPaths) {
+                    ut.addSource(item)
+                }
             }
 
             val file = File(outputPath)
