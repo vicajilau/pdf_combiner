@@ -50,7 +50,6 @@ namespace pdf_combiner {
     }
 
     std::string ProcessHeic(const std::string& path) {
-#ifdef HAS_HEIF
         heif_context* ctx = heif_context_alloc();
         heif_error err = heif_context_read_from_file(ctx, path.c_str(), nullptr);
         if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
@@ -79,14 +78,6 @@ namespace pdf_combiner {
         heif_image_handle_release(handle);
         heif_context_free(ctx);
         return success ? out_jpg : "";
-#else
-        std::string out_jpg = path + ".tmp.jpg";
-        std::string command = "magick.exe \"" + path + "\" -quality 85 \"" + out_jpg + "\"";
-        if (system(command.c_str()) == 0) {
-            return out_jpg;
-        }
-        return "";
-#endif
     }
 
     void PdfCombinerPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar) {
