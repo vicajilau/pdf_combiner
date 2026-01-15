@@ -121,7 +121,7 @@ class DocumentUtils {
   static Future<bool> isImage(String filePath) async {
     try {
       final fileType =
-      await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
+          await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
       return fileType == FileMagicNumberType.png ||
           fileType == FileMagicNumberType.jpg ||
           fileType == FileMagicNumberType.heic;
@@ -138,7 +138,8 @@ class DocumentUtils {
       if (image == null) return filePath;
 
       final jpegBytes = img.encodeJpg(image);
-      final tempPath = "${getTemporalFolderPath()}/${DateTime.now().millisecondsSinceEpoch}.jpg";
+      final tempPath =
+          "${getTemporalFolderPath()}/${DateTime.now().millisecondsSinceEpoch}.jpg";
       final tempFile = File(tempPath);
       await tempFile.writeAsBytes(jpegBytes);
       return tempPath;
