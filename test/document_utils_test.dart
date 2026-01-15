@@ -51,10 +51,7 @@ void main() {
     0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, // JFIF...
   ];
 
-  // HEIC (fictional minimum signature for testing purposes if decoder allows it)
-  // Real HEIC signatures are more complex (ftypheic), 
-  // but for the sake of mocking a 'valid' image for the 'image' package:
-  // We'll use a valid tiny JPEG/PNG since the decoder handles several formats.
+  // Valid tiny PNG for decoders
   final tinyPng = [
     0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 
     0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 
@@ -241,8 +238,10 @@ void main() {
     test('converts valid image to JPEG and returns new path', () async {
       final tempDir =
           await Directory.systemTemp.createTemp('doc_utils_conv_');
+      // Set temporal folder to a controlled one for the test
+      DocumentUtils.setTemporalFolderPath(tempDir.path);
+      
       final inputPath = p.join(tempDir.path, 'input.heic');
-      // Using tinyPng as input because 'image' package decoders will recognize it
       await createFileWithBytes(inputPath, tinyPng);
 
       final outputPath = await DocumentUtils.convertHeicToJpeg(inputPath);
@@ -250,10 +249,13 @@ void main() {
       expect(outputPath, inputPath);
       expect(p.extension(outputPath), '.heic');
       expect(File(outputPath).existsSync(), isTrue);
+      
+      // Verify it's actually in our temp folder
+      expect(outputPath.startsWith(tempDir.path), isTrue);
 
       // Cleanup
-      if (File(outputPath).existsSync()) await File(outputPath).delete();
       await tempDir.delete(recursive: true);
+      // Reset temporal folder if needed or let tearDown handle state
     });
 
     test('returns original path if image decoding fails', () async {
