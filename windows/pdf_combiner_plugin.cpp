@@ -26,11 +26,9 @@
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
 
-#define STB_IMAGE_IMPLEMENTATION
+// Las implementaciones están en stb_implementation.cpp.
 #include "include/pdf_combiner/stb_image.h"
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "include/pdf_combiner/stb_image_resize2.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "include/pdf_combiner/stb_image_write.h"
 
 #ifdef HAS_HEIF
@@ -51,22 +49,6 @@ namespace pdf_combiner {
         return (written == size) ? 1 : 0;
     }
 
-    std::wstring Utf8ToWide(const std::string& utf8) {
-        if (utf8.empty()) return L"";
-        int size_needed = MultiByteToWideChar(CP_UTF8, 0, &utf8[0], (int)utf8.size(), NULL, 0);
-        std::wstring wstrTo(size_needed, 0);
-        MultiByteToWideChar(CP_UTF8, 0, &utf8[0], (int)utf8.size(), &wstrTo[0], size_needed);
-        return wstrTo;
-    }
-
-    std::string WideToUtf8(const std::wstring& wstr) {
-        if (wstr.empty()) return "";
-        int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-        std::string strTo(size_needed, 0);
-        WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-        return strTo;
-    }
-
     std::string ProcessHeic(const std::string& path) {
 #ifdef HAS_HEIF
         heif_context* ctx = heif_context_alloc();
@@ -74,9 +56,16 @@ namespace pdf_combiner {
         if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
 
         heif_image_handle* handle = nullptr;
-        heif_context_get_primary_image_handle(ctx, &handle);
+        err = heif_context_get_primary_image_handle(ctx, &handle);
+        if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
+
         heif_image* img = nullptr;
-        heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGBA, nullptr);
+        err = heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGBA, nullptr);
+        if (err.code != heif_error_Ok) {
+            heif_image_handle_release(handle);
+            heif_context_free(ctx);
+            return "";
+        }
 
         int width = heif_image_get_width(img, heif_channel_interleaved);
         int height = heif_image_get_height(img, heif_channel_interleaved);
@@ -84,13 +73,19 @@ namespace pdf_combiner {
         const uint8_t* data = heif_image_get_plane_readonly(img, heif_channel_interleaved, &stride);
 
         std::string out_png = path + ".tmp.png";
-        int success = stbi_write_png(out_png.c_str(), width, height, 4, data, width * 4);
+        int success = stbi_write_png(out_png.c_str(), width, height, 4, data, stride);
 
         heif_image_release(img);
         heif_image_handle_release(handle);
         heif_context_free(ctx);
         return success ? out_png : "";
 #else
+        // Si no tenemos HAS_HEIF, intentamos usar magick.exe si existe
+        std::string out_png = path + ".tmp.png";
+        std::string command = "magick.exe \"" + path + "\" \"" + out_png + "\"";
+        if (system(command.c_str()) == 0) {
+            return out_png;
+        }
         return "";
 #endif
     }
@@ -149,8 +144,8 @@ namespace pdf_combiner {
             FPDF_CloseDocument(doc);
         }
         MyFileWrite file_write;
-        file_write.version = 1; 
-        file_write.WriteBlock = MyWriteBlock; 
+        file_write.version = 1;
+        file_write.WriteBlock = MyWriteBlock;
         file_write.filename = output_path.c_str();
         file_write.file = nullptr;
         FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_NO_INCREMENTAL);
@@ -166,68 +161,88 @@ namespace pdf_combiner {
         auto width_it = args.find(flutter::EncodableValue("width"));
         auto height_it = args.find(flutter::EncodableValue("height"));
         auto keep_aspect_ratio_it = args.find(flutter::EncodableValue("keepAspectRatio"));
+        
         std::vector<std::string> input_paths;
         const auto& path_list = std::get<std::vector<flutter::EncodableValue>>(paths_it->second);
         for (const auto& path_value : path_list) input_paths.push_back(std::get<std::string>(path_value));
+        
         std::string output_path = std::get<std::string>(output_it->second);
         int max_width = std::get<int>(width_it->second);
         int max_height = std::get<int>(height_it->second);
         bool keep_aspect_ratio = std::get<bool>(keep_aspect_ratio_it->second);
+        
         FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
+        if (!new_doc) {
+            result->Error("PDF_ERROR", "Could not create PDF document");
+            return;
+        }
+
         for (const auto& path : input_paths) {
             std::string current_path = path;
             bool is_heic = (path.find(".heic") != std::string::npos || path.find(".HEIC") != std::string::npos ||
                            path.find(".heif") != std::string::npos || path.find(".HEIF") != std::string::npos);
+            
             if (is_heic) {
                 current_path = ProcessHeic(path);
                 if (current_path.empty()) continue;
             }
+            
             int w, h, c;
             unsigned char* pixels = stbi_load(current_path.c_str(), &w, &h, &c, 4);
-            if (!pixels) { if (is_heic) DeleteFileA(current_path.c_str()); continue; }
+            if (!pixels) {
+                if (is_heic && !current_path.empty()) DeleteFileA(current_path.c_str());
+                continue;
+            }
 
             int width = w;
             int height = h;
             unsigned char* image_data = pixels;
+            bool data_was_malloced = false;
 
             if (max_width != 0 || max_height != 0) {
                 int new_width = (max_width != 0) ? max_width : width;
                 int new_height = (max_height != 0) ? (keep_aspect_ratio ? static_cast<int>(max_width * (static_cast<double>(height) / width)) : max_height) : height;
                 unsigned char* resized_data = (unsigned char*)malloc(new_width * new_height * 4);
-                if (stbir_resize_uint8_linear(image_data, width, height, 0, resized_data, new_width, new_height, 0, STBIR_RGBA)) {
-                    stbi_image_free(image_data);
+                if (resized_data && stbir_resize_uint8_linear(image_data, width, height, 0, resized_data, new_width, new_height, 0, STBIR_RGBA)) {
+                    stbi_image_free(pixels);
                     image_data = resized_data;
                     width = new_width;
                     height = new_height;
+                    data_was_malloced = true;
                 }
             }
 
-            FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), width, height);
-            FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 1);
+            FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), (double)width, (double)height);
+            FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 1); // 1 = Alpha channel
             FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
+            
             unsigned char* buffer = (unsigned char*)FPDFBitmap_GetBuffer(bitmap);
             int stride = FPDFBitmap_GetStride(bitmap);
+            
+            // PDFium usa BGRA, stb_image carga RGBA
             for (int y = 0; y < height; y++) {
                 unsigned char* src = image_data + y * width * 4;
                 unsigned char* dst = buffer + y * stride;
                 for (int x = 0; x < width; x++) {
-                    dst[x * 4 + 0] = src[x * 4 + 2];
-                    dst[x * 4 + 1] = src[x * 4 + 1];
-                    dst[x * 4 + 2] = src[x * 4 + 0];
-                    dst[x * 4 + 3] = src[x * 4 + 3];
+                    dst[x * 4 + 0] = src[x * 4 + 2]; // B
+                    dst[x * 4 + 1] = src[x * 4 + 1]; // G
+                    dst[x * 4 + 2] = src[x * 4 + 0]; // R
+                    dst[x * 4 + 3] = src[x * 4 + 3]; // A
                 }
             }
+            
             FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
             FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
             FPDFPageObj_Transform(image_obj, (double)width, 0, 0, (double)height, 0, 0);
             FPDFPage_InsertObject(new_page, image_obj);
             FPDFPage_GenerateContent(new_page);
 
-            if (image_data != pixels) free(image_data); else stbi_image_free(pixels);
+            if (data_was_malloced) free(image_data); else stbi_image_free(pixels);
             FPDF_ClosePage(new_page);
             FPDFBitmap_Destroy(bitmap);
-            if (is_heic) DeleteFileA(current_path.c_str());
+            if (is_heic && !current_path.empty()) DeleteFileA(current_path.c_str());
         }
+
         MyFileWrite fw;
         fw.version = 1; fw.WriteBlock = MyWriteBlock; fw.filename = output_path.c_str(); fw.file = nullptr;
         FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&fw, FPDF_NO_INCREMENTAL);
@@ -244,9 +259,16 @@ namespace pdf_combiner {
         int max_height = std::get<int>(args.at(flutter::EncodableValue("height")));
         int compression = std::get<int>(args.at(flutter::EncodableValue("compression")));
         bool create_one_image = std::get<bool>(args.at(flutter::EncodableValue("createOneImage")));
+        
         FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
+        if (!doc) {
+            result->Error("PDF_ERROR", "Could not load PDF document");
+            return;
+        }
+        
         int page_count = FPDF_GetPageCount(doc);
         std::vector<flutter::EncodableValue> image_paths;
+        
         if (create_one_image) {
             int total_width = 0, total_height = 0;
             std::vector<FPDF_PAGE> pages(page_count);
@@ -259,23 +281,26 @@ namespace pdf_combiner {
                 total_width = (total_width > (int)w) ? total_width : (int)w;
                 total_height += (int)h;
             }
-            FPDF_BITMAP combined = FPDFBitmap_Create(total_width, total_height, 0xFFFFFFFF);
+            FPDF_BITMAP combined = FPDFBitmap_Create(total_width, total_height, 1);
+            FPDFBitmap_FillRect(combined, 0, 0, total_width, total_height, 0xFFFFFFFF);
+            
             int current_y = 0;
             for (int i = 0; i < page_count; ++i) {
                 FPDF_RenderPageBitmap(combined, pages[i], 0, current_y, (int)p_widths[i], (int)p_heights[i], 0, FPDF_ANNOT);
                 current_y += (int)p_heights[i];
+                FPDF_ClosePage(pages[i]);
             }
             std::string out_img = output_path + "/image.png";
             save_bitmap_to_png(combined, out_img, compression);
             image_paths.push_back(flutter::EncodableValue(out_img));
             FPDFBitmap_Destroy(combined);
-            for (auto p : pages) FPDF_ClosePage(p);
         } else {
             for (int i = 0; i < page_count; ++i) {
                 FPDF_PAGE page = FPDF_LoadPage(doc, i);
                 int w = (max_width != 0) ? max_width : (int)FPDF_GetPageWidth(page);
                 int h = (max_height != 0) ? max_height : (int)FPDF_GetPageHeight(page);
-                FPDF_BITMAP bitmap = FPDFBitmap_Create(w, h, 0xFFFFFFFF);
+                FPDF_BITMAP bitmap = FPDFBitmap_Create(w, h, 1);
+                FPDFBitmap_FillRect(bitmap, 0, 0, w, h, 0xFFFFFFFF);
                 FPDF_RenderPageBitmap(bitmap, page, 0, 0, w, h, 0, FPDF_ANNOT);
                 std::string out_img = output_path + "/image_" + std::to_string(i+1) + ".png";
                 save_bitmap_to_png(bitmap, out_img, compression);
