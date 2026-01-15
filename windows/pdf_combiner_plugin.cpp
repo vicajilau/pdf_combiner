@@ -5,7 +5,6 @@
 #endif
 
 #include <windows.h>
-#include <shlwapi.h>
 #include <objbase.h>
 
 #include <flutter/method_channel.h>
@@ -34,8 +33,6 @@
 #ifdef HAS_HEIF
 #include <libheif/heif.h>
 #endif
-
-#pragma comment(lib, "shlwapi.lib")
 
 namespace pdf_combiner {
 

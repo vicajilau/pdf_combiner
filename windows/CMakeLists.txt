@@ -7,8 +7,9 @@ cmake_policy(VERSION 3.14...3.25)
 
 set(PLUGIN_NAME "pdf_combiner_plugin")
 
-set(EXTERNAL_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-
+# =========================
+# Plugin Sources
+# =========================
 list(APPEND PLUGIN_SOURCES
         "pdf_combiner_plugin.cpp"
         "pdf_combiner_plugin.h"
@@ -24,83 +25,120 @@ add_library(${PLUGIN_NAME} SHARED
 
 apply_standard_settings(${PLUGIN_NAME})
 
-set_target_properties(${PLUGIN_NAME} PROPERTIES CXX_VISIBILITY_PRESET hidden)
-target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
-
-# Header search paths configuration (.h)
-target_include_directories(${PLUGIN_NAME} PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/include/pdfium"
-        "${CMAKE_CURRENT_SOURCE_DIR}/."
+set_target_properties(${PLUGIN_NAME} PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
 )
 
-# PUBLIC makes these paths available to library consumers (such as the example app)
+target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
+
+# =========================
+# Include paths
+# =========================
+target_include_directories(${PLUGIN_NAME} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/pdfium"
+)
+
 target_include_directories(${PLUGIN_NAME} INTERFACE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-# Si tienes libheif como dependencia externa real, descomenta y ajusta estas líneas:
-# target_include_directories(${PLUGIN_NAME} PRIVATE "../third_party/libheif/include")
-# target_link_libraries(${PLUGIN_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/libheif/lib/heif.lib")
+# =========================
+# PDFium (REQUIRED)
+# =========================
+set(PDFIUM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# === External Libraries ===
+find_library(PDFIUM_LIB
+        NAMES pdfium
+        PATHS "${PDFIUM_ROOT}"
+        NO_DEFAULT_PATH
+        REQUIRED
+)
 
-# 1. PDFium (Required)
-set(PDFIUM_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-find_library(PDFIUM_LIB NAMES pdfium PATHS ${PDFIUM_LIB_PATH} NO_DEFAULT_PATH)
+if (NOT EXISTS "${PDFIUM_ROOT}/pdfium.dll")
+    message(FATAL_ERROR "pdfium.dll not found in ${PDFIUM_ROOT}")
+endif()
 
+# =========================
+# Link libraries
+# =========================
 target_link_libraries(${PLUGIN_NAME} PRIVATE
         flutter
         flutter_wrapper_plugin
         ${PDFIUM_LIB}
 )
 
-# === Copy DLLs and Executables to output directory ===
-add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
-        # Copy PDFium (mandatory)
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/pdfium.dll"
+# =========================
+# Register DLLs for Bundling
+# =========================
 
-        COMMAND ${CMAKE_COMMAND} -E touch "dummy_file"
-        COMMAND if exist "${EXTERNAL_BIN_DIR}\\heif.dll" ${CMAKE_COMMAND} -E copy_if_different "${EXTERNAL_BIN_DIR}/heif.dll" "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/heif.dll"
-
-        # Backup copy for the development environment (Runner)
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" "${CMAKE_CURRENT_BINARY_DIR}/../../runner/$<CONFIG>/pdfium.dll"
-
-        COMMENT "Copying external binaries to the output folder..."
+# This variable is used by the generated flutter/generated_plugins.cmake
+# to include these files in the final application bundle.
+set(pdf_combiner_bundled_libraries
+  "${PDFIUM_ROOT}/pdfium.dll"
+  PARENT_SCOPE
 )
 
-# === Tests Configuration ===
+# Optional: libheif (only if present)
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/heif.dll")
+    set(pdf_combiner_bundled_libraries
+      ${pdf_combiner_bundled_libraries}
+      "${CMAKE_CURRENT_SOURCE_DIR}/heif.dll"
+      PARENT_SCOPE
+    )
+endif()
+
+# Copy to the plugin's output directory for local linkage/testing
+add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PDFIUM_ROOT}/pdfium.dll"
+        "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/pdfium.dll"
+        COMMENT "Copying pdfium.dll to plugin directory"
+)
+
+# =========================
+# Tests (optional)
+# =========================
 if (${include_${PROJECT_NAME}_tests})
     set(TEST_RUNNER "${PROJECT_NAME}_test")
     enable_testing()
+
     include(FetchContent)
-    FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip)
+    FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    )
+
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
 
-    add_executable(${TEST_RUNNER} test/pdf_combiner_plugin_test.cpp ${PLUGIN_SOURCES})
+    add_executable(${TEST_RUNNER}
+            test/pdf_combiner_plugin_test.cpp
+            ${PLUGIN_SOURCES}
+    )
+
     apply_standard_settings(${TEST_RUNNER})
 
-    # IMPORTANT: The test needs the same include paths as the plugin
     target_include_directories(${TEST_RUNNER} PRIVATE
-            "${CMAKE_CURRENT_SOURCE_DIR}/."
+            "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_SOURCE_DIR}/include"
             "${CMAKE_CURRENT_SOURCE_DIR}/include/pdfium"
     )
 
     target_link_libraries(${TEST_RUNNER} PRIVATE
+            flutter
             flutter_wrapper_plugin
             gtest_main
             gmock
-            flutter
             ${PDFIUM_LIB}
     )
 
-    # Also copy binaries for the test executable
     add_custom_command(TARGET ${TEST_RUNNER} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${FLUTTER_LIBRARY}" $<TARGET_FILE_DIR:${TEST_RUNNER}>
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" $<TARGET_FILE_DIR:${TEST_RUNNER}>/pdfium.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${PDFIUM_ROOT}/pdfium.dll"
+            "$<TARGET_FILE_DIR:${TEST_RUNNER}>/pdfium.dll"
     )
 
     include(GoogleTest)

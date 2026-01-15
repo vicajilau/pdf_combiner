@@ -38,3 +38,13 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
+
+# --- Manual PDFium DLL Copy ---
+# This ensures the DLL is available in the runner directory for Debug runs.
+set(PDFIUM_DLL_SOURCE "${CMAKE_SOURCE_DIR}/flutter/ephemeral/.plugin_symlinks/pdf_combiner/windows/pdfium.dll")
+add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PDFIUM_DLL_SOURCE}"
+        "$<TARGET_FILE_DIR:${BINARY_NAME}>/pdfium.dll"
+        COMMENT "Manually copying pdfium.dll to runner directory"
+)
