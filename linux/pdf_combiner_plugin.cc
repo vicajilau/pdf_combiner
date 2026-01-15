@@ -17,13 +17,7 @@
 
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
-#include <windows.h>
-#include <wincodec.h>
-#include <shlobj.h>
-#include <string>
-#include <optional>
 
-#pragma comment(lib, "windowscodecs.lib")
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \
                               PdfCombinerPlugin))
@@ -202,21 +196,12 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 
     // Process each image file in input_paths
     for (const auto& input_path : input_paths) {
+        // Load the image and get its dimensions
         int width, height, channels;
-        unsigned char* image_data = nullptr;
-
-        // Extension detection logic
-        if (input_path.length() > 5 && input_path.substr(input_path.length() - 5) == ".heic") {
-            image_data = convert_heic_to_temp_jpg(input_path.c_str());
-            channels = 4;
-        } else {
-            // Use stb_image for the rest (jpg, png, etc)
-            image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
-        }
-
+        unsigned char* image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
         if (!image_data) {
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image (Format not supported or file missing): " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image: " + input_path).c_str(), nullptr));
         }
 
         // Resize the image if necessary
@@ -511,129 +496,7 @@ static void pdf_combiner_plugin_class_init(PdfCombinerPluginClass* klass) {
 static void pdf_combiner_plugin_init(PdfCombinerPlugin* self) {
   FPDF_InitLibrary(); // Initialize the FPDF library
 }
-std::optional<std::wstring>
-convert_heic_to_temp_jpg(const std::wstring& heic_path) {
-    HRESULT hr;
-    IWICImagingFactory* factory = nullptr;
-    IWICBitmapDecoder* decoder = nullptr;
-    IWICBitmapFrameDecode* frame = nullptr;
-    IWICBitmapSource* bitmap_source = nullptr;
-    IWICBitmapEncoder* encoder = nullptr;
-    IWICBitmapFrameEncode* frame_encode = nullptr;
-    IPropertyBag2* prop_bag = nullptr;
-    IStream* stream = nullptr;
 
-    wchar_t temp_path[MAX_PATH];
-    wchar_t temp_file[MAX_PATH];
-
-    if (!GetTempPathW(MAX_PATH, temp_path)) {
-        return std::nullopt;
-    }
-
-    if (!GetTempFileNameW(temp_path, L"heic", 0, temp_file)) {
-        return std::nullopt;
-    }
-
-    // Change extension to .jpg
-    std::wstring jpg_path = temp_file;
-    size_t dot = jpg_path.find_last_of(L'.');
-    if (dot != std::wstring::npos) {
-        jpg_path.replace(dot, std::wstring::npos, L".jpg");
-    } else {
-        jpg_path += L".jpg";
-    }
-
-    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-
-    hr = CoCreateInstance(
-            CLSID_WICImagingFactory,
-            nullptr,
-            CLSCTX_INPROC_SERVER,
-            IID_PPV_ARGS(&factory)
-    );
-    if (FAILED(hr)) goto cleanup;
-
-    hr = factory->CreateDecoderFromFilename(
-            heic_path.c_str(),
-            nullptr,
-            GENERIC_READ,
-            WICDecodeMetadataCacheOnLoad,
-            &decoder
-    );
-    if (FAILED(hr)) goto cleanup;
-
-    hr = decoder->GetFrame(0, &frame);
-    if (FAILED(hr)) goto cleanup;
-
-    IWICFormatConverter* converter = nullptr;
-    hr = factory->CreateFormatConverter(&converter);
-    if (FAILED(hr)) goto cleanup;
-
-    hr = converter->Initialize(
-            frame,
-            GUID_WICPixelFormat24bppRGB,
-            WICBitmapDitherTypeNone,
-            nullptr,
-            0.0,
-            WICBitmapPaletteTypeCustom
-    );
-    if (FAILED(hr)) goto cleanup;
-
-    hr = SHCreateStreamOnFileW(jpg_path.c_str(), STGM_CREATE | STGM_WRITE, &stream);
-    if (FAILED(hr)) goto cleanup;
-
-    hr = factory->CreateEncoder(GUID_ContainerFormatJpeg, nullptr, &encoder);
-    if (FAILED(hr)) goto cleanup;
-
-    hr = encoder->Initialize(stream, WICBitmapEncoderNoCache);
-    if (FAILED(hr)) goto cleanup;
-
-    hr = encoder->CreateNewFrame(&frame_encode, &prop_bag);
-    if (FAILED(hr)) goto cleanup;
-
-    // JPG Quality
-    PROPBAG2 option = {};
-    option.pstrName = const_cast<wchar_t*>(L"ImageQuality");
-    VARIANT value;
-    VariantInit(&value);
-    value.vt = VT_R4;
-    value.fltVal = 0.9f;
-    prop_bag->Write(1, &option, &value);
-
-    hr = frame_encode->Initialize(prop_bag);
-    if (FAILED(hr)) goto cleanup;
-
-    UINT width, height;
-    converter->GetSize(&width, &height);
-    frame_encode->SetSize(width, height);
-
-    WICPixelFormatGUID format = GUID_WICPixelFormat24bppRGB;
-    frame_encode->SetPixelFormat(&format);
-
-    hr = frame_encode->WriteSource(converter, nullptr);
-    if (FAILED(hr)) goto cleanup;
-
-    frame_encode->Commit();
-    encoder->Commit();
-
-    cleanup:
-    if (stream) stream->Release();
-    if (frame_encode) frame_encode->Release();
-    if (encoder) encoder->Release();
-    if (bitmap_source) bitmap_source->Release();
-    if (frame) frame->Release();
-    if (decoder) decoder->Release();
-    if (factory) factory->Release();
-
-    CoUninitialize();
-
-    if (FAILED(hr)) {
-        DeleteFileW(jpg_path.c_str());
-        return std::nullopt;
-    }
-
-    return jpg_path;
-}
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call, gpointer user_data) {
   PdfCombinerPlugin* plugin = PDF_COMBINER_PLUGIN(user_data);
   pdf_combiner_plugin_handle_method_call(plugin, method_call);
