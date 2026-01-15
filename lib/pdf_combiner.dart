@@ -194,7 +194,7 @@ class PdfCombiner {
               PdfCombinerMessages.errorMessageImage(path));
         } else {
           final String? response =
-          await PdfFromMultipleImagesIsolate.createPDFFromMultipleImages(
+              await PdfFromMultipleImagesIsolate.createPDFFromMultipleImages(
             inputPaths: inputPaths,
             outputPath: outputPath,
             config: config,
