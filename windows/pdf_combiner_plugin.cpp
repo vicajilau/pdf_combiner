@@ -80,12 +80,6 @@ namespace pdf_combiner {
         heif_context_free(ctx);
         return success ? out_jpg : "";
 #else
-        // Fallback to ImageMagick if HAS_HEIF is not defined
-        std::string out_jpg = path + ".tmp.jpg";
-        std::string command = "magick.exe \"" + path + "\" -quality 85 \"" + out_jpg + "\"";
-        if (system(command.c_str()) == 0) {
-            return out_jpg;
-        }
         return "";
 #endif
     }
