@@ -31,11 +31,6 @@ class PdfCombiner {
   /// raw bytes ([Uint8List]), or [File] objects.
   /// It also takes an output file path (`outputPath`).
   ///
-  /// It first verifies that the provided inputs are valid and then processes them.
-  /// - If an input is an image, it is converted to a temporary PDF.
-  /// - If an input is a PDF, it remains unchanged.
-  /// - If an input is neither a PDF nor an image, the process stops with an error.
-  ///
   /// The final result is a merged PDF that includes all the input files.
   ///
   /// ### Parameters:
@@ -87,32 +82,12 @@ class PdfCombiner {
                 ? "document_$i.pdf"
                 : "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf";
 
-            // If it's bytes image, we might need a way to support bytes in createPDFFromMultipleImages
-            // For now, let's keep it simple and see if we can convert image bytes to PDF bytes
-            // BUT createPDFFromMultipleImages currently only takes paths.
-            // If the user passes bytes image, we might need to save it to a temp file first
-            // UNLESS we update createPDFFromMultipleImages too.
-            // User specifically asked for mergeMultiplePDFs to support bytes.
-            // Let's check if we can handle the image conversion if it's bytes.
-
             if (input is Uint8List) {
-              // We'll need to save bytes image to a temp file to use createPDFFromMultipleImages
-              // OR update createPDFFromMultipleImages to support bytes.
-              // Given the scope, saving to temp file for IMAGES might be acceptable for now
-              // if the primary goal is merging existing PDFs.
-              // BUT the user said "Android file-system shenanigans", so avoiding disk is better.
-              // However, createPDFFromMultipleImages is a separate issue.
-              // Let's stick to paths for generatePDFFromDocuments for now if it's an image,
-              // or handle it with temp files as it was doing before for images.
-              // Wait, if input is path, it already works. If input is bytes, we save it to temp file.
-
               if (!kIsWeb) {
                 final tempImageFile = File(
                     "${DocumentUtils.getTemporalFolderPath()}/temp_image_$i");
                 await tempImageFile.writeAsBytes(input);
                 input = tempImageFile.path;
-              } else {
-                // Web handles it differently, maybe?
               }
             }
 
@@ -123,7 +98,6 @@ class PdfCombiner {
 
             mutablePaths.add(response);
           } else {
-            // It's a PDF. If it's bytes, we keep it as bytes for mergeMultiplePDFs.
             mutablePaths.add(input);
           }
         }
