@@ -50,6 +50,7 @@ namespace pdf_combiner {
     }
 
     std::string ProcessHeic(const std::string& path) {
+#ifdef HAS_HEIF
         heif_context* ctx = heif_context_alloc();
         heif_error err = heif_context_read_from_file(ctx, path.c_str(), nullptr);
         if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
@@ -78,6 +79,15 @@ namespace pdf_combiner {
         heif_image_handle_release(handle);
         heif_context_free(ctx);
         return success ? out_jpg : "";
+#else
+        // Fallback to ImageMagick if HAS_HEIF is not defined
+        std::string out_jpg = path + ".tmp.jpg";
+        std::string command = "magick.exe \"" + path + "\" -quality 85 \"" + out_jpg + "\"";
+        if (system(command.c_str()) == 0) {
+            return out_jpg;
+        }
+        return "";
+#endif
     }
 
     void PdfCombinerPlugin::RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar) {
@@ -167,7 +177,6 @@ namespace pdf_combiner {
             std::string current_path = path;
             bool is_temp = false;
             
-            // Determine if it's an image that needs conversion or resizing
             bool is_heic = (path.find(".heic") != std::string::npos || path.find(".HEIC") != std::string::npos ||
                            path.find(".heif") != std::string::npos || path.find(".HEIF") != std::string::npos);
             
@@ -178,11 +187,10 @@ namespace pdf_combiner {
                 current_path = ProcessHeic(path);
                 if (current_path.empty()) continue;
                 is_temp = true;
-                is_jpg = true; // ProcessHeic result is now a temporary JPG
+                is_jpg = true;
             }
 
             int w, h, c;
-            // If we need to resize, load the image, process it and save a temporary JPG
             if (max_width != 0 || max_height != 0) {
                 unsigned char* pixels = stbi_load(current_path.c_str(), &w, &h, &c, 3);
                 if (pixels) {
@@ -203,7 +211,6 @@ namespace pdf_combiner {
                     stbi_image_free(pixels);
                 }
             } else if (!is_jpg) {
-                // If it's not JPG (e.g. PNG), convert it to JPG to save space in the PDF
                 unsigned char* pixels = stbi_load(current_path.c_str(), &w, &h, &c, 3);
                 if (pixels) {
                     std::string converted_path = path + ".conv.jpg";
@@ -216,7 +223,6 @@ namespace pdf_combiner {
                     stbi_image_free(pixels);
                 }
             } else {
-                // It's a JPG and no resizing is needed, we just need its dimensions
                 stbi_info(current_path.c_str(), &w, &h, &c);
             }
 
@@ -224,23 +230,24 @@ namespace pdf_combiner {
                 FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), (double)w, (double)h);
                 FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
                 
-                // Load the JPG file directly into the PDF image object (Native compression)
                 std::ifstream file(current_path, std::ios::binary | std::ios::ate);
-                std::streamsize size = file.tellg();
-                file.seekg(0, std::ios::beg);
-                std::vector<char> buffer(size);
-                if (file.read(buffer.data(), size)) {
-                    FPDF_FILEACCESS access;
-                    access.m_FileLen = (unsigned long)size;
-                    access.m_Param = buffer.data();
-                    access.m_GetBlock = [](void* param, unsigned long pos, unsigned char* buf, unsigned long sz) -> int {
-                        memcpy(buf, (char*)param + pos, sz);
-                        return 1;
-                    };
-                    FPDFImageObj_LoadJpegFileInline(nullptr, 0, image_obj, &access);
-                    FPDFPageObj_Transform(image_obj, (double)w, 0, 0, (double)h, 0, 0);
-                    FPDFPage_InsertObject(new_page, image_obj);
-                    FPDFPage_GenerateContent(new_page);
+                if (file.is_open()) {
+                    std::streamsize size = file.tellg();
+                    file.seekg(0, std::ios::beg);
+                    std::vector<char> buffer(size);
+                    if (file.read(buffer.data(), size)) {
+                        FPDF_FILEACCESS access;
+                        access.m_FileLen = (unsigned long)size;
+                        access.m_Param = buffer.data();
+                        access.m_GetBlock = [](void* param, unsigned long pos, unsigned char* buf, unsigned long sz) -> int {
+                            memcpy(buf, (char*)param + pos, sz);
+                            return 1;
+                        };
+                        FPDFImageObj_LoadJpegFileInline(nullptr, 0, image_obj, &access);
+                        FPDFPageObj_Transform(image_obj, (double)w, 0, 0, (double)h, 0, 0);
+                        FPDFPage_InsertObject(new_page, image_obj);
+                        FPDFPage_GenerateContent(new_page);
+                    }
                 }
                 FPDF_ClosePage(new_page);
             }

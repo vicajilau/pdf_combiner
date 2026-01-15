@@ -7,7 +7,6 @@ cmake_policy(VERSION 3.14...3.25)
 
 set(PLUGIN_NAME "pdf_combiner_plugin")
 
-# Directory where your external tools (HEIF/Magick EXEs/DLLs) are located
 set(EXTERNAL_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 list(APPEND PLUGIN_SOURCES
@@ -29,15 +28,20 @@ set_target_properties(${PLUGIN_NAME} PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
 
 # Header search paths configuration (.h)
+target_include_directories(${PLUGIN_NAME} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/pdfium"
+        "${CMAKE_CURRENT_SOURCE_DIR}/."
+)
+
 # PUBLIC makes these paths available to library consumers (such as the example app)
 target_include_directories(${PLUGIN_NAME} INTERFACE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-target_include_directories(${PLUGIN_NAME} PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/include/pdfium"
-        "${CMAKE_CURRENT_SOURCE_DIR}/."
-)
+# Si tienes libheif como dependencia externa real, descomenta y ajusta estas líneas:
+# target_include_directories(${PLUGIN_NAME} PRIVATE "../third_party/libheif/include")
+# target_link_libraries(${PLUGIN_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/libheif/lib/heif.lib")
 
 # === External Libraries ===
 
@@ -56,14 +60,11 @@ add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
         # Copy PDFium (mandatory)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/pdfium.dll"
 
-        # Copy HEIC conversion tool (Magick) only if they exist
         COMMAND ${CMAKE_COMMAND} -E touch "dummy_file"
-        COMMAND if exist "${EXTERNAL_BIN_DIR}\\magick.exe" ${CMAKE_COMMAND} -E copy_if_different "${EXTERNAL_BIN_DIR}/magick.exe" "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/magick.exe"
         COMMAND if exist "${EXTERNAL_BIN_DIR}\\heif.dll" ${CMAKE_COMMAND} -E copy_if_different "${EXTERNAL_BIN_DIR}/heif.dll" "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/heif.dll"
 
         # Backup copy for the development environment (Runner)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" "${CMAKE_CURRENT_BINARY_DIR}/../../runner/$<CONFIG>/pdfium.dll"
-        COMMAND if exist "${EXTERNAL_BIN_DIR}\\magick.exe" ${CMAKE_COMMAND} -E copy_if_different "${EXTERNAL_BIN_DIR}/magick.exe" "${CMAKE_CURRENT_BINARY_DIR}/../../runner/$<CONFIG>/magick.exe"
 
         COMMENT "Copying external binaries to the output folder..."
 )
@@ -82,7 +83,6 @@ if (${include_${PROJECT_NAME}_tests})
     apply_standard_settings(${TEST_RUNNER})
 
     # IMPORTANT: The test needs the same include paths as the plugin
-    # We place "." first so it finds the correct pdf_combiner_plugin.h
     target_include_directories(${TEST_RUNNER} PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/."
             "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -101,7 +101,6 @@ if (${include_${PROJECT_NAME}_tests})
     add_custom_command(TARGET ${TEST_RUNNER} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${FLUTTER_LIBRARY}" $<TARGET_FILE_DIR:${TEST_RUNNER}>
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" $<TARGET_FILE_DIR:${TEST_RUNNER}>/pdfium.dll
-            COMMAND if exist "${EXTERNAL_BIN_DIR}\\magick.exe" ${CMAKE_COMMAND} -E copy_if_different "${EXTERNAL_BIN_DIR}/magick.exe" $<TARGET_FILE_DIR:${TEST_RUNNER}>/magick.exe
     )
 
     include(GoogleTest)
