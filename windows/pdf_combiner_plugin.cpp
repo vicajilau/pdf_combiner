@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <vector>
 #include <iomanip>
+#include <fstream>
 
 #include "include/pdfium/fpdfview.h"
 #include "include/pdfium/fpdf_edit.h"
@@ -26,7 +27,6 @@
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
 
-// Las implementaciones están en stb_implementation.cpp.
 #include "include/pdf_combiner/stb_image.h"
 #include "include/pdf_combiner/stb_image_resize2.h"
 #include "include/pdf_combiner/stb_image_write.h"
@@ -60,7 +60,7 @@ namespace pdf_combiner {
         if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
 
         heif_image* img = nullptr;
-        err = heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGBA, nullptr);
+        err = heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGB, nullptr);
         if (err.code != heif_error_Ok) {
             heif_image_handle_release(handle);
             heif_context_free(ctx);
@@ -72,19 +72,18 @@ namespace pdf_combiner {
         int stride;
         const uint8_t* data = heif_image_get_plane_readonly(img, heif_channel_interleaved, &stride);
 
-        std::string out_png = path + ".tmp.png";
-        int success = stbi_write_png(out_png.c_str(), width, height, 4, data, stride);
+        std::string out_jpg = path + ".tmp.jpg";
+        int success = stbi_write_jpg(out_jpg.c_str(), width, height, 3, data, 85);
 
         heif_image_release(img);
         heif_image_handle_release(handle);
         heif_context_free(ctx);
-        return success ? out_png : "";
+        return success ? out_jpg : "";
 #else
-        // Si no tenemos HAS_HEIF, intentamos usar magick.exe si existe
-        std::string out_png = path + ".tmp.png";
-        std::string command = "magick.exe \"" + path + "\" \"" + out_png + "\"";
+        std::string out_jpg = path + ".tmp.jpg";
+        std::string command = "magick.exe \"" + path + "\" -quality 85 \"" + out_jpg + "\"";
         if (system(command.c_str()) == 0) {
-            return out_png;
+            return out_jpg;
         }
         return "";
 #endif
@@ -172,75 +171,90 @@ namespace pdf_combiner {
         bool keep_aspect_ratio = std::get<bool>(keep_aspect_ratio_it->second);
         
         FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
-        if (!new_doc) {
-            result->Error("PDF_ERROR", "Could not create PDF document");
-            return;
-        }
 
         for (const auto& path : input_paths) {
             std::string current_path = path;
+            bool is_temp = false;
+            
+            // Determinar si es una imagen que necesita conversión o redimensionamiento
             bool is_heic = (path.find(".heic") != std::string::npos || path.find(".HEIC") != std::string::npos ||
                            path.find(".heif") != std::string::npos || path.find(".HEIF") != std::string::npos);
             
+            bool is_jpg = (path.find(".jpg") != std::string::npos || path.find(".JPG") != std::string::npos ||
+                           path.find(".jpeg") != std::string::npos || path.find(".JPEG") != std::string::npos);
+
             if (is_heic) {
                 current_path = ProcessHeic(path);
                 if (current_path.empty()) continue;
+                is_temp = true;
+                is_jpg = true; // El resultado de ProcessHeic ahora es un JPG temporal
             }
-            
+
             int w, h, c;
-            unsigned char* pixels = stbi_load(current_path.c_str(), &w, &h, &c, 4);
-            if (!pixels) {
-                if (is_heic && !current_path.empty()) DeleteFileA(current_path.c_str());
-                continue;
-            }
-
-            int width = w;
-            int height = h;
-            unsigned char* image_data = pixels;
-            bool data_was_malloced = false;
-
+            // Si necesitamos redimensionar, cargamos la imagen, la procesamos y guardamos un JPG temporal
             if (max_width != 0 || max_height != 0) {
-                int new_width = (max_width != 0) ? max_width : width;
-                int new_height = (max_height != 0) ? (keep_aspect_ratio ? static_cast<int>(max_width * (static_cast<double>(height) / width)) : max_height) : height;
-                unsigned char* resized_data = (unsigned char*)malloc(new_width * new_height * 4);
-                if (resized_data && stbir_resize_uint8_linear(image_data, width, height, 0, resized_data, new_width, new_height, 0, STBIR_RGBA)) {
+                unsigned char* pixels = stbi_load(current_path.c_str(), &w, &h, &c, 3);
+                if (pixels) {
+                    int new_width = (max_width != 0) ? max_width : w;
+                    int new_height = (max_height != 0) ? (keep_aspect_ratio ? static_cast<int>(max_width * (static_cast<double>(h) / w)) : max_height) : h;
+                    unsigned char* resized_data = (unsigned char*)malloc(new_width * new_height * 3);
+                    if (resized_data && stbir_resize_uint8_linear(pixels, w, h, 0, resized_data, new_width, new_height, 0, STBIR_RGB)) {
+                        std::string resized_path = path + ".resized.jpg";
+                        if (stbi_write_jpg(resized_path.c_str(), new_width, new_height, 3, resized_data, 80)) {
+                            if (is_temp) DeleteFileA(current_path.c_str());
+                            current_path = resized_path;
+                            is_temp = true;
+                            is_jpg = true;
+                            w = new_width; h = new_height;
+                        }
+                        free(resized_data);
+                    }
                     stbi_image_free(pixels);
-                    image_data = resized_data;
-                    width = new_width;
-                    height = new_height;
-                    data_was_malloced = true;
                 }
+            } else if (!is_jpg) {
+                // Si no es JPG (ej: PNG), lo convertimos a JPG para que ocupe menos en el PDF
+                unsigned char* pixels = stbi_load(current_path.c_str(), &w, &h, &c, 3);
+                if (pixels) {
+                    std::string converted_path = path + ".conv.jpg";
+                    if (stbi_write_jpg(converted_path.c_str(), w, h, 3, pixels, 80)) {
+                        if (is_temp) DeleteFileA(current_path.c_str());
+                        current_path = converted_path;
+                        is_temp = true;
+                        is_jpg = true;
+                    }
+                    stbi_image_free(pixels);
+                }
+            } else {
+                // Es un JPG y no hay que redimensionar, solo necesitamos sus dimensiones
+                stbi_info(current_path.c_str(), &w, &h, &c);
             }
 
-            FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), (double)width, (double)height);
-            FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 1); // 1 = Alpha channel
-            FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
-            
-            unsigned char* buffer = (unsigned char*)FPDFBitmap_GetBuffer(bitmap);
-            int stride = FPDFBitmap_GetStride(bitmap);
-            
-            // PDFium usa BGRA, stb_image carga RGBA
-            for (int y = 0; y < height; y++) {
-                unsigned char* src = image_data + y * width * 4;
-                unsigned char* dst = buffer + y * stride;
-                for (int x = 0; x < width; x++) {
-                    dst[x * 4 + 0] = src[x * 4 + 2]; // B
-                    dst[x * 4 + 1] = src[x * 4 + 1]; // G
-                    dst[x * 4 + 2] = src[x * 4 + 0]; // R
-                    dst[x * 4 + 3] = src[x * 4 + 3]; // A
+            if (is_jpg && !current_path.empty()) {
+                FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), (double)w, (double)h);
+                FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
+                
+                // Cargar el archivo JPG directamente en el objeto de imagen del PDF (Compresión nativa)
+                std::ifstream file(current_path, std::ios::binary | std::ios::ate);
+                std::streamsize size = file.tellg();
+                file.seekg(0, std::ios::beg);
+                std::vector<char> buffer(size);
+                if (file.read(buffer.data(), size)) {
+                    FPDF_FILEACCESS access;
+                    access.m_FileLen = (unsigned long)size;
+                    access.m_Param = buffer.data();
+                    access.m_GetBlock = [](void* param, unsigned long pos, unsigned char* buf, unsigned long sz) -> int {
+                        memcpy(buf, (char*)param + pos, sz);
+                        return 1;
+                    };
+                    FPDFImageObj_LoadJpegFileInline(nullptr, 0, image_obj, &access);
+                    FPDFPageObj_Transform(image_obj, (double)w, 0, 0, (double)h, 0, 0);
+                    FPDFPage_InsertObject(new_page, image_obj);
+                    FPDFPage_GenerateContent(new_page);
                 }
+                FPDF_ClosePage(new_page);
             }
-            
-            FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
-            FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
-            FPDFPageObj_Transform(image_obj, (double)width, 0, 0, (double)height, 0, 0);
-            FPDFPage_InsertObject(new_page, image_obj);
-            FPDFPage_GenerateContent(new_page);
 
-            if (data_was_malloced) free(image_data); else stbi_image_free(pixels);
-            FPDF_ClosePage(new_page);
-            FPDFBitmap_Destroy(bitmap);
-            if (is_heic && !current_path.empty()) DeleteFileA(current_path.c_str());
+            if (is_temp) DeleteFileA(current_path.c_str());
         }
 
         MyFileWrite fw;
