@@ -17,7 +17,6 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> mergeMultiplePDFs({
-    List<Map<String, dynamic>>? sources,
     List<String>? inputPaths,
     required String outputPath,
   }) {
@@ -48,7 +47,6 @@ class MockPdfCombinerPlatformNullResponse
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    List<Map<String, dynamic>>? sources,
     List<String>? inputPaths,
     required String outputPath,
   }) {
@@ -116,7 +114,7 @@ void main() {
             outputPath: 'output.pdf',
           ),
           throwsA(isA<PdfCombinerException>().having(
-              (e) => e.message, 'message', PdfCombinerMessages.errorMessage)),
+              (e) => e.message, 'message', 'Unknown error during merge')),
         );
       });
     });

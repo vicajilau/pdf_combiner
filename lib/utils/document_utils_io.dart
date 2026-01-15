@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/foundation.dart';
@@ -85,7 +84,7 @@ class DocumentUtils {
   static Future<bool> isPDF(dynamic input) async {
     try {
       if (input is Uint8List) {
-        return await FileMagicNumber.detectFileTypeFromBytes(input) ==
+        return FileMagicNumber.detectFileTypeFromBytes(input) ==
             FileMagicNumberType.pdf;
       }
       return await FileMagicNumber.detectFileTypeFromPathOrBlob(input) ==
@@ -124,12 +123,32 @@ class DocumentUtils {
   static Future<bool> isImage(dynamic input) async {
     try {
       final fileType = input is Uint8List
-          ? await FileMagicNumber.detectFileTypeFromBytes(input)
+          ? FileMagicNumber.detectFileTypeFromBytes(input)
           : await FileMagicNumber.detectFileTypeFromPathOrBlob(input);
       return fileType == FileMagicNumberType.png ||
           fileType == FileMagicNumberType.jpg;
     } catch (e) {
       return false;
     }
+  }
+
+  /// Checks if the given input is a [File] object.
+  static bool isFileSystemFile(dynamic input) => input is File;
+
+  /// Returns the absolute path from a [File] or [String] input.
+  static String getFilePath(dynamic input) {
+    if (input is File) return input.path;
+    if (input is String) return input;
+    throw ArgumentError("Expected File or String, got ${input.runtimeType}");
+  }
+
+  /// Writes a sequence of [bytes] to a file at the specified [path].
+  static Future<void> writeBytesToFile(String path, Uint8List bytes) async {
+    await File(path).writeAsBytes(bytes);
+  }
+
+  /// Throws [UnsupportedError] on non-web platforms.
+  static String createBlobUrl(Uint8List bytes) {
+    throw UnsupportedError("createBlobUrl is only supported on Web");
   }
 }

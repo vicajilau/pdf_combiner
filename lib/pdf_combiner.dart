@@ -3,15 +3,13 @@ import 'dart:async';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
+import 'package:pdf_combiner/isolates/merge_pdfs_isolate.dart';
+import 'package:pdf_combiner/isolates/pdf_from_multiple_images_isolate.dart';
 
-import 'isolates/merge_pdfs_isolate.dart';
-import 'isolates/pdf_from_multiple_images_isolate.dart';
 import 'models/image_from_pdf_config.dart';
-import 'models/pdf_source.dart';
-import 'dart:io' show File;
+import 'models/pdf_from_multiple_image_config.dart';
 import 'dart:typed_data' show Uint8List;
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
@@ -62,8 +60,8 @@ class PdfCombiner {
 
       for (int i = 0; i < mutableInputs.length; i++) {
         var input = mutableInputs[i];
-        if (input is File) {
-          input = input.path;
+        if (DocumentUtils.isFileSystemFile(input)) {
+          input = DocumentUtils.getFilePath(input);
         }
 
         final isPDF = await DocumentUtils.isPDF(input);
@@ -84,10 +82,10 @@ class PdfCombiner {
 
             if (input is Uint8List) {
               if (!kIsWeb) {
-                final tempImageFile = File(
-                    "${DocumentUtils.getTemporalFolderPath()}/temp_image_$i");
-                await tempImageFile.writeAsBytes(input);
-                input = tempImageFile.path;
+                final tempPath =
+                    "${DocumentUtils.getTemporalFolderPath()}/temp_image_$i";
+                await DocumentUtils.writeBytesToFile(tempPath, input);
+                input = tempPath;
               }
             }
 
@@ -136,58 +134,21 @@ class PdfCombiner {
     if (inputs.isEmpty) {
       throw PdfCombinerException(
           PdfCombinerMessages.emptyParameterMessage("inputs"));
-    } else {
-      try {
-        final List<PdfSource> sources = [];
-        for (var input in inputs) {
-          if (input is String) {
-            sources.add(PdfSource.fromPath(input));
-          } else if (input is Uint8List) {
-            sources.add(PdfSource.fromBytes(input));
-          } else if (input is File) {
-            sources.add(PdfSource.fromPath(input.path));
-          } else {
-            throw PdfCombinerException(
-                "Invalid input type: ${input.runtimeType}. Expected String, Uint8List or File.");
-          }
-        }
+    }
 
-        bool allArePDF = true;
-        dynamic failingInput;
+    final List<String> temporalFiles = [];
+    try {
+      final inputPaths = await _preparePdfSources(inputs, temporalFiles);
+      await _validateMergeInputs(inputPaths, outputPath);
 
-        for (final source in sources) {
-          final isPDF = await DocumentUtils.isPDF(
-              source.isBytes ? source.bytes : source.path!);
-          if (!isPDF) {
-            allArePDF = false;
-            failingInput = source.isBytes ? "Bytes" : source.path;
-            break;
-          }
-        }
+      final response = await MergePdfsIsolate.mergeMultiplePDFs(
+          inputPaths: inputPaths, outputPath: outputPath);
 
-        final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
-        if (!outputPathIsPDF) {
-          throw PdfCombinerException(
-              PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath));
-        } else if (!allArePDF) {
-          throw PdfCombinerException(
-              PdfCombinerMessages.errorMessagePDF(failingInput.toString()));
-        } else {
-          final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
-              sources: sources, outputPath: outputPath);
-
-          if (response != null &&
-              (response == outputPath || response.startsWith("blob:http"))) {
-            return response;
-          }
-
-          final exception = PdfCombinerException(
-              response ?? PdfCombinerMessages.errorMessage);
-          throw exception;
-        }
-      } catch (e) {
-        throw e is Exception ? e : PdfCombinerException(e.toString());
-      }
+      return _handleMergeResponse(response, outputPath);
+    } catch (e) {
+      throw e is Exception ? e : PdfCombinerException(e.toString());
+    } finally {
+      DocumentUtils.removeTemporalFiles(temporalFiles);
     }
   }
 
@@ -312,6 +273,67 @@ class PdfCombiner {
       } catch (e) {
         throw e is Exception ? e : PdfCombinerException(e.toString());
       }
+    }
+  }
+
+  static Future<List<String>> _preparePdfSources(
+      List<dynamic> inputs, List<String> temporalFiles) async {
+    final List<String> sources = [];
+    for (int i = 0; i < inputs.length; i++) {
+      var input = inputs[i];
+      if (input is String) {
+        sources.add(input);
+      } else if (input is Uint8List) {
+        if (!kIsWeb) {
+          final tempPath =
+              "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_$i.pdf";
+          await DocumentUtils.writeBytesToFile(tempPath, input);
+          temporalFiles.add(tempPath);
+          sources.add(tempPath);
+        } else {
+          sources.add(DocumentUtils.createBlobUrl(input));
+        }
+      } else if (DocumentUtils.isFileSystemFile(input)) {
+        sources.add(DocumentUtils.getFilePath(input));
+      } else {
+        throw PdfCombinerException(
+            "Invalid input type: ${input.runtimeType}. Expected String, Uint8List or File.");
+      }
+    }
+    return sources;
+  }
+
+  static Future<void> _validateMergeInputs(
+      List<String> sources, String outputPath) async {
+    bool allArePDF = true;
+    String? failingInput;
+
+    for (final path in sources) {
+      if (kIsWeb && path.startsWith("blob:")) continue;
+      final isPDF = await DocumentUtils.isPDF(path);
+      if (!isPDF) {
+        allArePDF = false;
+        failingInput = path;
+        break;
+      }
+    }
+
+    final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+    if (!outputPathIsPDF) {
+      throw PdfCombinerException(
+          PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath));
+    } else if (!allArePDF) {
+      throw PdfCombinerException(
+          PdfCombinerMessages.errorMessagePDF(failingInput.toString()));
+    }
+  }
+
+  static String _handleMergeResponse(String? response, String outputPath) {
+    if (response != null &&
+        (response == outputPath || response.startsWith("blob:http"))) {
+      return response;
+    } else {
+      throw PdfCombinerException(response ?? "Unknown error during merge");
     }
   }
 }

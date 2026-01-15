@@ -21,7 +21,6 @@ class MockPdfCombinerPlatform
   /// [outputPath] The path where the merged PDF should be saved.
   @override
   Future<String?> mergeMultiplePDFs({
-    List<Map<String, dynamic>>? sources,
     List<String>? inputPaths,
     required String outputPath,
   }) {

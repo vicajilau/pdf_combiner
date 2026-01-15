@@ -1,6 +1,8 @@
 import 'dart:typed_data';
+import 'dart:js_interop';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
+import 'package:web/web.dart' as web;
 
 /// Utility class for handling document-related checks in a web environment.
 ///
@@ -34,7 +36,7 @@ class DocumentUtils {
   static Future<bool> isPDF(dynamic input) async {
     try {
       if (input is Uint8List) {
-        return await FileMagicNumber.detectFileTypeFromBytes(input) ==
+        return FileMagicNumber.detectFileTypeFromBytes(input) ==
             FileMagicNumberType.pdf;
       }
       return await FileMagicNumber.detectFileTypeFromPathOrBlob(input) ==
@@ -52,12 +54,33 @@ class DocumentUtils {
   static Future<bool> isImage(dynamic input) async {
     try {
       final fileType = input is Uint8List
-          ? await FileMagicNumber.detectFileTypeFromBytes(input)
+          ? FileMagicNumber.detectFileTypeFromBytes(input)
           : await FileMagicNumber.detectFileTypeFromPathOrBlob(input);
       return fileType == FileMagicNumberType.png ||
           fileType == FileMagicNumberType.jpg;
     } catch (e) {
       return false;
     }
+  }
+
+  /// Checks if the given input is a File object.
+  /// Always returns `false` on web as `dart:io` Files are not supported.
+  static bool isFileSystemFile(dynamic input) => false;
+
+  /// Returns the path string. On web, it only supports [String] inputs.
+  static String getFilePath(dynamic input) {
+    if (input is String) return input;
+    throw ArgumentError("Expected String on Web, got ${input.runtimeType}");
+  }
+
+  /// No-op on web.
+  static Future<void> writeBytesToFile(String path, Uint8List bytes) async {
+    // No-op on web
+  }
+
+  /// Creates a Blob URL from the given bytes.
+  static String createBlobUrl(Uint8List bytes) {
+    final blob = web.Blob([bytes.toJS].toJS);
+    return web.URL.createObjectURL(blob);
   }
 }

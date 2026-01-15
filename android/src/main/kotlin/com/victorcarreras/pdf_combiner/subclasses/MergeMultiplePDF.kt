@@ -20,11 +20,10 @@ class MergeMultiplePDF(context: Context, getResult: MethodChannel.Result) {
     private var result: MethodChannel.Result = getResult
 
     // Method Merge multiple PDF file into one File
-    // [sources] List of sources (path or bytes)
-    // [inputPaths] List of paths (for backward compatibility)
+    // [inputPaths] List of paths
     // [outputPath] Output directory path with file name added with it Ex . usr/android/download/ABC.pdf
     @OptIn(DelicateCoroutinesApi::class)
-    fun merge(context: Context, sources: List<Map<String, Any>>?, inputPaths: List<String>?, outputPath: String) {
+    fun merge(context: Context, inputPaths: List<String>, outputPath: String) {
         var status = ""
 
         PDFBoxResourceLoader.init(context.applicationContext)
@@ -36,21 +35,8 @@ class MergeMultiplePDF(context: Context, getResult: MethodChannel.Result) {
 
             ut.documentMergeMode = PDFMergerUtility.DocumentMergeMode.OPTIMIZE_RESOURCES_MODE
 
-            if (sources != null) {
-                for (source in sources) {
-                    val bytes = source["bytes"] as? ByteArray
-                    val path = source["path"] as? String
-                    
-                    if (bytes != null) {
-                        ut.addSource(ByteArrayInputStream(bytes))
-                    } else if (path != null) {
-                        ut.addSource(path)
-                    }
-                }
-            } else if (inputPaths != null) {
-                for (item in inputPaths) {
-                    ut.addSource(item)
-                }
+            for (item in inputPaths) {
+                ut.addSource(item)
             }
 
             val file = File(outputPath)

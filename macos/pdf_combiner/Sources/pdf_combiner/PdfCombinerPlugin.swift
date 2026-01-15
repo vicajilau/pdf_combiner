@@ -69,46 +69,23 @@ private extension PdfCombinerPlugin {
 
     // MARK: Merge multiple pdf.
     func mergeMultiplePDF(args: Dictionary<String, Any>, completionHandler: @escaping (Result<String, PDFCombinerErrors>) -> Void) {
-        let sources = args["sources"] as? [[String: Any]]
-        let inputPaths = args["paths"] as? [String]
-        
-        guard let outputDirPath = args["outputDirPath"] as? String else {
-            completionHandler(.failure(PDFCombinerErrors.wrongArguments(["outputDirPath"]))); return
+        guard let paths = args["paths"] as? [String],
+              let outputDirPath = args["outputDirPath"] as? String
+        else {
+            completionHandler(.failure(PDFCombinerErrors.wrongArguments(["paths", "outputDirPath"]))); return
         }
 
         let mergedPDF = PDFDocument()
         var pageIndex = 0
         
-        if let sources = sources {
-            for source in sources {
-                var pdfDocument: PDFDocument?
-                
-                if let bytes = source["bytes"] as? FlutterStandardTypedData {
-                    pdfDocument = PDFDocument(data: bytes.data)
-                } else if let path = source["path"] as? String {
-                    pdfDocument = PDFDocument(url: URL(fileURLWithPath: path))
-                }
-                
-                if let pdfDocument = pdfDocument {
-                    for index in 0..<pdfDocument.pageCount {
-                        guard let page = pdfDocument.page(at: index) else { continue }
-                        mergedPDF.insert(page, at: pageIndex)
-                        pageIndex += 1
-                    }
-                }
-            }
-        } else if let inputPaths = inputPaths {
-            for path in inputPaths {
-                guard let pdfDocument = PDFDocument(url: URL(fileURLWithPath: path)) else { continue }
+        for path in paths {
+            guard let pdfDocument = PDFDocument(url: URL(fileURLWithPath: path)) else { continue }
 
-                for index in 0..<pdfDocument.pageCount {
-                    guard let page = pdfDocument.page(at: index) else { continue }
+            for index in 0..<pdfDocument.pageCount {
+                guard let page = pdfDocument.page(at: index) else { continue }
                     mergedPDF.insert(page, at: pageIndex)
                     pageIndex += 1
-                }
             }
-        } else {
-            completionHandler(.failure(PDFCombinerErrors.wrongArguments(["sources or paths"]))); return
         }
 
         guard mergedPDF.write(to: URL(fileURLWithPath: outputDirPath)) else {
