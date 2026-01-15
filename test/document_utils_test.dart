@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
@@ -222,46 +221,6 @@ void main() {
           p.join(Directory.systemTemp.path, 'no_such_image.png');
       final result = await DocumentUtils.isImage(nonExistent);
       expect(result, isFalse);
-    });
-  });
-
-  group('convertHeicToJpeg', () {
-    test('converts valid image to JPEG and returns new path', () async {
-      final tempDir =
-          await Directory.systemTemp.createTemp('doc_utils_conv_');
-      // Set temporal folder to ensure the logic uses a writable path
-      DocumentUtils.setTemporalFolderPath(tempDir.path);
-      
-      final inputPath = p.join(tempDir.path, 'input.png');
-      
-      // Generate a guaranteed valid image for the 'image' package
-      final image = img.Image(width: 5, height: 5);
-      img.fill(image, color: img.ColorRgb8(255, 0, 0));
-      final validPngBytes = img.encodePng(image);
-      await createFileWithBytes(inputPath, validPngBytes);
-
-      final outputPath = await DocumentUtils.convertHeicToJpeg(inputPath);
-
-      // Assertions to ensure code path execution
-      expect(outputPath, isNot(inputPath), reason: "Lines for JPEG encoding should have been executed");
-      expect(p.extension(outputPath), '.jpg');
-      expect(File(outputPath).existsSync(), isTrue);
-      expect(outputPath.contains(tempDir.path), isTrue);
-
-      await tempDir.delete(recursive: true);
-    });
-
-    test('returns original path if image decoding fails', () async {
-      final tempDir =
-          await Directory.systemTemp.createTemp('doc_utils_conv_fail_');
-      final inputPath = p.join(tempDir.path, 'corrupt.heic');
-      await createFileWithBytes(inputPath, [0, 1, 2, 3]); // Invalid data
-
-      final outputPath = await DocumentUtils.convertHeicToJpeg(inputPath);
-
-      expect(outputPath, inputPath);
-
-      await tempDir.delete(recursive: true);
     });
   });
 }

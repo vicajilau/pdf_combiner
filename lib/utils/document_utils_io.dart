@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
 
@@ -127,25 +126,6 @@ class DocumentUtils {
           fileType == FileMagicNumberType.heic;
     } catch (e) {
       return false;
-    }
-  }
-
-  /// Converts a HEIC image to a temporary JPEG file.
-  static Future<String> convertHeicToJpeg(String filePath) async {
-    try {
-      final bytes = await File(filePath).readAsBytes();
-      final image = img.decodeImage(bytes);
-      if (image == null) return filePath;
-
-      final jpegBytes = img.encodeJpg(image);
-      final tempPath =
-          "${getTemporalFolderPath()}/${DateTime.now().millisecondsSinceEpoch}.jpg";
-      final tempFile = File(tempPath);
-      await tempFile.writeAsBytes(jpegBytes);
-      return tempPath;
-    } catch (e) {
-      debugPrint("Error converting HEIC to JPEG: $e");
-      return filePath;
     }
   }
 }
