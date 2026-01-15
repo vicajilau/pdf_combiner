@@ -70,11 +70,11 @@ void PdfCombinerPlugin::merge_multiple_pdfs(
     const flutter::EncodableMap& args,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
 
-    auto paths_it = args.find(flutter::EncodableValue("paths"));
+    auto paths_it = args.find(flutter::EncodableValue("sources"));
     auto output_it = args.find(flutter::EncodableValue("outputDirPath"));
 
     if (paths_it == args.end() || output_it == args.end()) {
-        result->Error("invalid_arguments", "Expected a map with inputPaths and outputPath");
+        result->Error("invalid_arguments", "Expected a map with sources and outputPath");
         return;
     }
 

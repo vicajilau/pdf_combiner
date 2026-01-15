@@ -52,8 +52,8 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
     }
 
-    // Get inputPaths (List<String>)
-    FlValue* input_paths_value = fl_value_lookup_string(args, "paths");
+    // Get sources (List<String>)
+    FlValue* input_paths_value = fl_value_lookup_string(args, "sources");
     if (!input_paths_value || fl_value_get_type(input_paths_value) != FL_VALUE_TYPE_LIST) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "inputPaths must be a list of strings", nullptr));
     }
