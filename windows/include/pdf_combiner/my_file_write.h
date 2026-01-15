@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "../pdfium/fpdf_save.h"
 
-// Estructura compatible con FPDF_FILEWRITE
+// Structure compatible with FPDF_FILEWRITE
 typedef struct MyFileWrite {
     int version;
     int (*WriteBlock)(struct FPDF_FILEWRITE_* pThis, const void* pData, unsigned long size);
@@ -12,11 +12,11 @@ typedef struct MyFileWrite {
     FILE* file;
 } MyFileWrite;
 
-// Declaración para el plugin
+// Declaration for the plugin
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int MyWriteBlock(struct FPDF_FILEWRITE_* pThis, const void* pData, unsigned long size);
+int MyWriteBlock(struct FPDF_FILEWRITE_* pThis, const void* pData, unsigned long size);
 #ifdef __cplusplus
 }
 #endif

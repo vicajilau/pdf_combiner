@@ -7,7 +7,7 @@ cmake_policy(VERSION 3.14...3.25)
 
 set(PLUGIN_NAME "pdf_combiner_plugin")
 
-# Directorio donde se encuentran tus herramientas externas (EXE/DLLs de HEIF/Magick)
+# Directory where your external tools (HEIF/Magick EXEs/DLLs) are located
 set(EXTERNAL_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 list(APPEND PLUGIN_SOURCES
@@ -28,8 +28,8 @@ apply_standard_settings(${PLUGIN_NAME})
 set_target_properties(${PLUGIN_NAME} PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
 
-# Configuración de rutas de cabeceras (.h)
-# PUBLIC hace que estas rutas estén disponibles para quienes consumen la librería (como el example)
+# Header search paths configuration (.h)
+# PUBLIC makes these paths available to library consumers (such as the example app)
 target_include_directories(${PLUGIN_NAME} INTERFACE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
@@ -39,9 +39,9 @@ target_include_directories(${PLUGIN_NAME} PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/."
 )
 
-# === Librerías Externas ===
+# === External Libraries ===
 
-# 1. PDFium (Requerido)
+# 1. PDFium (Required)
 set(PDFIUM_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 find_library(PDFIUM_LIB NAMES pdfium PATHS ${PDFIUM_LIB_PATH} NO_DEFAULT_PATH)
 
@@ -51,24 +51,24 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE
         ${PDFIUM_LIB}
 )
 
-# === Copia de DLLs y Ejecutables al directorio de salida ===
+# === Copy DLLs and Executables to output directory ===
 add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
-        # Copiar PDFium (obligatorio)
+        # Copy PDFium (mandatory)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/pdfium.dll"
-        
-        # Copiar herramienta de conversión HEIC (Magick) solo si existen
+
+        # Copy HEIC conversion tool (Magick) only if they exist
         COMMAND ${CMAKE_COMMAND} -E touch "dummy_file"
         COMMAND if exist "${EXTERNAL_BIN_DIR}\\magick.exe" ${CMAKE_COMMAND} -E copy_if_different "${EXTERNAL_BIN_DIR}/magick.exe" "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/magick.exe"
         COMMAND if exist "${EXTERNAL_BIN_DIR}\\heif.dll" ${CMAKE_COMMAND} -E copy_if_different "${EXTERNAL_BIN_DIR}/heif.dll" "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/heif.dll"
 
-        # Copia de respaldo para el entorno de desarrollo (Runner)
+        # Backup copy for the development environment (Runner)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" "${CMAKE_CURRENT_BINARY_DIR}/../../runner/$<CONFIG>/pdfium.dll"
         COMMAND if exist "${EXTERNAL_BIN_DIR}\\magick.exe" ${CMAKE_COMMAND} -E copy_if_different "${EXTERNAL_BIN_DIR}/magick.exe" "${CMAKE_CURRENT_BINARY_DIR}/../../runner/$<CONFIG>/magick.exe"
-        
-        COMMENT "Copiando binarios externos a la carpeta de salida..."
+
+        COMMENT "Copying external binaries to the output folder..."
 )
 
-# === Configuración de Tests ===
+# === Tests Configuration ===
 if (${include_${PROJECT_NAME}_tests})
     set(TEST_RUNNER "${PROJECT_NAME}_test")
     enable_testing()
@@ -81,8 +81,8 @@ if (${include_${PROJECT_NAME}_tests})
     add_executable(${TEST_RUNNER} test/pdf_combiner_plugin_test.cpp ${PLUGIN_SOURCES})
     apply_standard_settings(${TEST_RUNNER})
 
-    # IMPORTANTE: El test necesita las mismas rutas de include que el plugin
-    # Ponemos "." primero para que encuentre el pdf_combiner_plugin.h correcto
+    # IMPORTANT: The test needs the same include paths as the plugin
+    # We place "." first so it finds the correct pdf_combiner_plugin.h
     target_include_directories(${TEST_RUNNER} PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/."
             "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -97,7 +97,7 @@ if (${include_${PROJECT_NAME}_tests})
             ${PDFIUM_LIB}
     )
 
-    # Copiar binarios también para el ejecutable de test
+    # Also copy binaries for the test executable
     add_custom_command(TARGET ${TEST_RUNNER} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${FLUTTER_LIBRARY}" $<TARGET_FILE_DIR:${TEST_RUNNER}>
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll" $<TARGET_FILE_DIR:${TEST_RUNNER}>/pdfium.dll
