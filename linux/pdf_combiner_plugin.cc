@@ -207,9 +207,8 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 
         // Extension detection logic
         if (input_path.length() > 5 && input_path.substr(input_path.length() - 5) == ".heic") {
-            // Use WIC for HEIC
             image_data = convert_heic_to_temp_jpg(input_path.c_str());
-            channels = 4; // WIC returns RGBA directly
+            channels = 4;
         } else {
             // Use stb_image for the rest (jpg, png, etc)
             image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
