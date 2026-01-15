@@ -49,7 +49,7 @@ extern "C" {
 //  1.19           6            7             2             1            1            1
 //  1.20           7            7             2             1            1            1
 
-#if (defined(_WIN32) || defined __CYGWIN__) && 1
+#if (defined(_WIN32) || defined __CYGWIN__) && 0
 #ifdef LIBHEIF_EXPORTS
 #define LIBHEIF_API __declspec(dllexport)
 #else

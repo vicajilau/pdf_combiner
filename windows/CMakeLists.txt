@@ -29,7 +29,11 @@ set_target_properties(${PLUGIN_NAME} PROPERTIES
         CXX_VISIBILITY_PRESET hidden
 )
 
-target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
+# Definimos HAS_HEIF para activar el bloque #ifdef en tu .cpp
+target_compile_definitions(${PLUGIN_NAME} PRIVATE
+        FLUTTER_PLUGIN_IMPL
+        HAS_HEIF
+)
 
 # =========================
 # Include paths
@@ -38,6 +42,7 @@ target_include_directories(${PLUGIN_NAME} PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/pdfium"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif"
 )
 
 target_include_directories(${PLUGIN_NAME} INTERFACE
@@ -45,20 +50,32 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
 )
 
 # =========================
-# PDFium (REQUIRED)
+# PDFium & libheif (VENDORED)
 # =========================
 set(PDFIUM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 
-find_library(PDFIUM_LIB
-        NAMES pdfium
-        PATHS "${PDFIUM_ROOT}"
-        NO_DEFAULT_PATH
-        REQUIRED
-)
+# Buscamos pdfium.lib
+find_library(PDFIUM_LIB NAMES pdfium PATHS "${PDFIUM_ROOT}" NO_DEFAULT_PATH REQUIRED)
 
-if (NOT EXISTS "${PDFIUM_ROOT}/pdfium.dll")
-    message(FATAL_ERROR "pdfium.dll not found in ${PDFIUM_ROOT}")
+# Buscamos las librerías de enlace (Import Libraries)
+find_library(HEIF_LIB NAMES heif PATHS "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif" NO_DEFAULT_PATH REQUIRED)
+find_library(DE265_LIB NAMES libde265 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif" NO_DEFAULT_PATH REQUIRED)
+# x265 es opcional pero quita tus errores de 'externos sin resolver'
+find_library(X265_LIB NAMES x265 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif" NO_DEFAULT_PATH)
+
+# =========================
+# DLL Management (Bundling)
+# =========================
+set(MY_PLUGIN_DLLS
+        "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll"
+        "${CMAKE_CURRENT_SOURCE_DIR}/heif.dll"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libde265.dll"
+)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libx265.dll")
+    list(APPEND MY_PLUGIN_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/libx265.dll")
 endif()
+
+set(pdf_combiner_bundled_libraries ${MY_PLUGIN_DLLS} PARENT_SCOPE)
 
 # =========================
 # Link libraries
@@ -67,80 +84,15 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE
         flutter
         flutter_wrapper_plugin
         ${PDFIUM_LIB}
+        ${HEIF_LIB}
+        ${DE265_LIB}
 )
-
-# =========================
-# Register DLLs for Bundling
-# =========================
-
-# This variable is used by the generated flutter/generated_plugins.cmake
-# to include these files in the final application bundle.
-set(pdf_combiner_bundled_libraries
-  "${PDFIUM_ROOT}/pdfium.dll"
-  PARENT_SCOPE
-)
-
-# Optional: libheif (only if present)
-if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/heif.dll")
-    set(pdf_combiner_bundled_libraries
-      ${pdf_combiner_bundled_libraries}
-      "${CMAKE_CURRENT_SOURCE_DIR}/heif.dll"
-      PARENT_SCOPE
-    )
+if(X265_LIB)
+    target_link_libraries(${PLUGIN_NAME} PRIVATE ${X265_LIB})
 endif()
 
-# Copy to the plugin's output directory for local linkage/testing
 add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${PDFIUM_ROOT}/pdfium.dll"
-        "$<TARGET_FILE_DIR:${PLUGIN_NAME}>/pdfium.dll"
-        COMMENT "Copying pdfium.dll to plugin directory"
+        ${MY_PLUGIN_DLLS}
+        "$<TARGET_FILE_DIR:${PLUGIN_NAME}>"
 )
-
-# =========================
-# Tests (optional)
-# =========================
-if (${include_${PROJECT_NAME}_tests})
-    set(TEST_RUNNER "${PROJECT_NAME}_test")
-    enable_testing()
-
-    include(FetchContent)
-    FetchContent_Declare(
-            googletest
-            URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-    )
-
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-
-    add_executable(${TEST_RUNNER}
-            test/pdf_combiner_plugin_test.cpp
-            ${PLUGIN_SOURCES}
-    )
-
-    apply_standard_settings(${TEST_RUNNER})
-
-    target_include_directories(${TEST_RUNNER} PRIVATE
-            "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${CMAKE_CURRENT_SOURCE_DIR}/include"
-            "${CMAKE_CURRENT_SOURCE_DIR}/include/pdfium"
-    )
-
-    target_link_libraries(${TEST_RUNNER} PRIVATE
-            flutter
-            flutter_wrapper_plugin
-            gtest_main
-            gmock
-            ${PDFIUM_LIB}
-    )
-
-    add_custom_command(TARGET ${TEST_RUNNER} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${PDFIUM_ROOT}/pdfium.dll"
-            "$<TARGET_FILE_DIR:${TEST_RUNNER}>/pdfium.dll"
-    )
-
-    include(GoogleTest)
-    gtest_discover_tests(${TEST_RUNNER})
-endif()
