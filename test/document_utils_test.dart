@@ -51,6 +51,19 @@ void main() {
     0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, // JFIF...
   ];
 
+  // HEIC (fictional minimum signature for testing purposes if decoder allows it)
+  // Real HEIC signatures are more complex (ftypheic), 
+  // but for the sake of mocking a 'valid' image for the 'image' package:
+  // We'll use a valid tiny JPEG/PNG since the decoder handles several formats.
+  final tinyPng = [
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 
+    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 
+    0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xDE, 0x00, 0x00, 0x00, 
+    0x0C, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0xF8, 0xFF, 0xFF, 0x3F, 
+    0x00, 0x05, 0xFE, 0x02, 0xFE, 0xDC, 0x44, 0x74, 0x8E, 0x00, 0x00, 0x00, 
+    0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+  ];
+
   group('getTemporalFolderPath', () {
     test('returns mock path when PdfCombiner.isMock = true', () {
       PdfCombiner.isMock = true;
@@ -221,6 +234,39 @@ void main() {
           p.join(Directory.systemTemp.path, 'no_such_image.png');
       final result = await DocumentUtils.isImage(nonExistent);
       expect(result, isFalse);
+    });
+  });
+
+  group('convertHeicToJpeg', () {
+    test('converts valid image to JPEG and returns new path', () async {
+      final tempDir =
+          await Directory.systemTemp.createTemp('doc_utils_conv_');
+      final inputPath = p.join(tempDir.path, 'input.heic');
+      // Using tinyPng as input because 'image' package decoders will recognize it
+      await createFileWithBytes(inputPath, tinyPng);
+
+      final outputPath = await DocumentUtils.convertHeicToJpeg(inputPath);
+
+      expect(outputPath, inputPath);
+      expect(p.extension(outputPath), '.heic');
+      expect(File(outputPath).existsSync(), isTrue);
+
+      // Cleanup
+      if (File(outputPath).existsSync()) await File(outputPath).delete();
+      await tempDir.delete(recursive: true);
+    });
+
+    test('returns original path if image decoding fails', () async {
+      final tempDir =
+          await Directory.systemTemp.createTemp('doc_utils_conv_fail_');
+      final inputPath = p.join(tempDir.path, 'corrupt.heic');
+      await createFileWithBytes(inputPath, [0, 1, 2, 3]); // Invalid image data
+
+      final outputPath = await DocumentUtils.convertHeicToJpeg(inputPath);
+
+      expect(outputPath, inputPath);
+
+      await tempDir.delete(recursive: true);
     });
   });
 }
