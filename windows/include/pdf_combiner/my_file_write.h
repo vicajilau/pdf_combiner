@@ -12,7 +12,7 @@ typedef struct MyFileWrite {
     FILE* file;
 } MyFileWrite;
 
-// Solo declaración, la implementación irá en el .cpp para evitar LNK2005
+// Declaración para el plugin
 #ifdef __cplusplus
 extern "C" {
 #endif
