@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
@@ -49,16 +50,6 @@ void main() {
   final jpgBytes = <int>[
     0xFF, 0xD8, 0xFF, // JPEG signature
     0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, // JFIF...
-  ];
-
-  // Valid tiny PNG for decoders
-  final tinyPng = [
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 
-    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 
-    0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xDE, 0x00, 0x00, 0x00, 
-    0x0C, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0xF8, 0xFF, 0xFF, 0x3F, 
-    0x00, 0x05, 0xFE, 0x02, 0xFE, 0xDC, 0x44, 0x74, 0x8E, 0x00, 0x00, 0x00, 
-    0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
   ];
 
   group('getTemporalFolderPath', () {
@@ -238,31 +229,33 @@ void main() {
     test('converts valid image to JPEG and returns new path', () async {
       final tempDir =
           await Directory.systemTemp.createTemp('doc_utils_conv_');
-      // Set temporal folder to a controlled one for the test
+      // Set temporal folder to ensure the logic uses a writable path
       DocumentUtils.setTemporalFolderPath(tempDir.path);
       
-      final inputPath = p.join(tempDir.path, 'input.heic');
-      await createFileWithBytes(inputPath, tinyPng);
+      final inputPath = p.join(tempDir.path, 'input.png');
+      
+      // Generate a guaranteed valid image for the 'image' package
+      final image = img.Image(width: 5, height: 5);
+      img.fill(image, color: img.ColorRgb8(255, 0, 0));
+      final validPngBytes = img.encodePng(image);
+      await createFileWithBytes(inputPath, validPngBytes);
 
       final outputPath = await DocumentUtils.convertHeicToJpeg(inputPath);
 
-      expect(outputPath, inputPath);
-      expect(p.extension(outputPath), '.heic');
+      // Assertions to ensure code path execution
+      expect(outputPath, isNot(inputPath), reason: "Lines for JPEG encoding should have been executed");
+      expect(p.extension(outputPath), '.jpg');
       expect(File(outputPath).existsSync(), isTrue);
-      
-      // Verify it's actually in our temp folder
-      expect(outputPath.startsWith(tempDir.path), isTrue);
+      expect(outputPath.contains(tempDir.path), isTrue);
 
-      // Cleanup
       await tempDir.delete(recursive: true);
-      // Reset temporal folder if needed or let tearDown handle state
     });
 
     test('returns original path if image decoding fails', () async {
       final tempDir =
           await Directory.systemTemp.createTemp('doc_utils_conv_fail_');
       final inputPath = p.join(tempDir.path, 'corrupt.heic');
-      await createFileWithBytes(inputPath, [0, 1, 2, 3]); // Invalid image data
+      await createFileWithBytes(inputPath, [0, 1, 2, 3]); // Invalid data
 
       final outputPath = await DocumentUtils.convertHeicToJpeg(inputPath);
 
