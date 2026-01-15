@@ -194,6 +194,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                           ),
                           ElevatedButton(
                             onPressed: _viewModel.selectedFiles.isNotEmpty
+                                ? _combinePdfsInMemory
+                                : null,
+                            child: const Text('Combine in-memory PDFs'),
+                          ),
+                          ElevatedButton(
+                            onPressed: _viewModel.selectedFiles.isNotEmpty
                                 ? _createPdfFromImages
                                 : null,
                             child: const Text('PDF from images'),
@@ -255,6 +261,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   Future<void> _combinePdfs() async {
     await _runSafely(() async {
       await _viewModel.combinePdfs();
+    });
+  }
+
+  Future<void> _combinePdfsInMemory() async {
+    await _runSafely(() async {
+      await _viewModel.combinePdfsInMemory();
     });
   }
 

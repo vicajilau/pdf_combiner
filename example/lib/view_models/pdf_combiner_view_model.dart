@@ -71,6 +71,25 @@ class PdfCombinerViewModel {
     }
   }
 
+  /// Function to combine selected PDF files in bytes into a single output file
+  Future<String> combinePdfsInMemory() async {
+    if (selectedFiles.length < 2) {
+      throw PdfCombinerException('You need to select more than one document.');
+    } else {
+      final directory = await _getOutputDirectory();
+      String outputFilePath = '${directory?.path}/combined_output.pdf';
+
+      final files = selectedFiles.map((file) => File(file)).toList();
+
+      final response = await PdfCombiner.mergeMultiplePDFs(
+        inputs: files,
+        outputPath: outputFilePath,
+      ); // Combine the PDFs
+      outputFiles = [response];
+      return response;
+    }
+  }
+
   /// Function to create a PDF file from a list of images
   Future<String> createPDFFromImages() async {
     final directory = await _getOutputDirectory();
