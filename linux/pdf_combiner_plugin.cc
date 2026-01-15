@@ -205,13 +205,13 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
         int width, height, channels;
         unsigned char* image_data = nullptr;
 
-        // Lógica de detección de extensión
+        // Extension detection logic
         if (input_path.length() > 5 && input_path.substr(input_path.length() - 5) == ".heic") {
-            // Usar WIC para HEIC
+            // Use WIC for HEIC
             image_data = convert_heic_to_temp_jpg(input_path.c_str());
-            channels = 4; // WIC nos devuelve RGBA directamente
+            channels = 4; // WIC returns RGBA directly
         } else {
-            // Usar stb_image para el resto (jpg, png, etc)
+            // Use stb_image for the rest (jpg, png, etc)
             image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
         }
 
@@ -535,7 +535,7 @@ convert_heic_to_temp_jpg(const std::wstring& heic_path) {
         return std::nullopt;
     }
 
-    // Cambiar extensión a .jpg
+    // Change extension to .jpg
     std::wstring jpg_path = temp_file;
     size_t dot = jpg_path.find_last_of(L'.');
     if (dot != std::wstring::npos) {
@@ -592,7 +592,7 @@ convert_heic_to_temp_jpg(const std::wstring& heic_path) {
     hr = encoder->CreateNewFrame(&frame_encode, &prop_bag);
     if (FAILED(hr)) goto cleanup;
 
-    // Calidad JPG
+    // JPG Quality
     PROPBAG2 option = {};
     option.pstrName = const_cast<wchar_t*>(L"ImageQuality");
     VARIANT value;

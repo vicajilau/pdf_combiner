@@ -176,7 +176,7 @@ namespace pdf_combiner {
             std::string current_path = path;
             bool is_temp = false;
             
-            // Determinar si es una imagen que necesita conversión o redimensionamiento
+            // Determine if it's an image that needs conversion or resizing
             bool is_heic = (path.find(".heic") != std::string::npos || path.find(".HEIC") != std::string::npos ||
                            path.find(".heif") != std::string::npos || path.find(".HEIF") != std::string::npos);
             
@@ -187,11 +187,11 @@ namespace pdf_combiner {
                 current_path = ProcessHeic(path);
                 if (current_path.empty()) continue;
                 is_temp = true;
-                is_jpg = true; // El resultado de ProcessHeic ahora es un JPG temporal
+                is_jpg = true; // ProcessHeic result is now a temporary JPG
             }
 
             int w, h, c;
-            // Si necesitamos redimensionar, cargamos la imagen, la procesamos y guardamos un JPG temporal
+            // If we need to resize, load the image, process it and save a temporary JPG
             if (max_width != 0 || max_height != 0) {
                 unsigned char* pixels = stbi_load(current_path.c_str(), &w, &h, &c, 3);
                 if (pixels) {
@@ -212,7 +212,7 @@ namespace pdf_combiner {
                     stbi_image_free(pixels);
                 }
             } else if (!is_jpg) {
-                // Si no es JPG (ej: PNG), lo convertimos a JPG para que ocupe menos en el PDF
+                // If it's not JPG (e.g. PNG), convert it to JPG to save space in the PDF
                 unsigned char* pixels = stbi_load(current_path.c_str(), &w, &h, &c, 3);
                 if (pixels) {
                     std::string converted_path = path + ".conv.jpg";
@@ -225,7 +225,7 @@ namespace pdf_combiner {
                     stbi_image_free(pixels);
                 }
             } else {
-                // Es un JPG y no hay que redimensionar, solo necesitamos sus dimensiones
+                // It's a JPG and no resizing is needed, we just need its dimensions
                 stbi_info(current_path.c_str(), &w, &h, &c);
             }
 
@@ -233,7 +233,7 @@ namespace pdf_combiner {
                 FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), (double)w, (double)h);
                 FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
                 
-                // Cargar el archivo JPG directamente en el objeto de imagen del PDF (Compresión nativa)
+                // Load the JPG file directly into the PDF image object (Native compression)
                 std::ifstream file(current_path, std::ios::binary | std::ios::ate);
                 std::streamsize size = file.tellg();
                 file.seekg(0, std::ios::beg);
