@@ -86,6 +86,8 @@ class PdfCombiner {
                     "${DocumentUtils.getTemporalFolderPath()}/temp_image_$i";
                 await DocumentUtils.writeBytesToFile(tempPath, input);
                 input = tempPath;
+              } else {
+                input = DocumentUtils.createBlobUrl(input);
               }
             }
 
@@ -291,7 +293,8 @@ class PdfCombiner {
           temporalFiles.add(tempPath);
           sources.add(tempPath);
         } else {
-          sources.add(DocumentUtils.createBlobUrl(input));
+          final blobPath = DocumentUtils.createBlobUrl(input);
+          sources.add(blobPath);
         }
       } else if (DocumentUtils.isFileSystemFile(input)) {
         sources.add(DocumentUtils.getFilePath(input));

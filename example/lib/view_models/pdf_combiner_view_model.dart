@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_magic_number/file_magic_number.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -79,10 +80,17 @@ class PdfCombinerViewModel {
       final directory = await _getOutputDirectory();
       String outputFilePath = '${directory?.path}/combined_output.pdf';
 
-      final files = selectedFiles.map((file) => File(file)).toList();
+      final fileBytes = await Future.wait<Uint8List>(
+        selectedFiles.map((file) {
+          if (kIsWeb) {
+            return FileMagicNumber.getBytesFromPathOrBlob(file);
+          }
+          return File(file).readAsBytes();
+        }),
+      );
 
       final response = await PdfCombiner.mergeMultiplePDFs(
-        inputs: files,
+        inputs: fileBytes,
         outputPath: outputFilePath,
       ); // Combine the PDFs
       outputFiles = [response];
