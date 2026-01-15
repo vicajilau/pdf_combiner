@@ -51,22 +51,27 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
 
   /// Merges multiple PDF files into a single PDF.
   ///
-  /// This method sends a request to the native platform to merge the PDF files
-  /// specified in the `paths` parameter and saves the result in the `outputPath`.
-  ///
   /// Parameters:
+  /// - `sources`: A list of maps representing the PDFs to be merged.
   /// - `inputPaths`: A list of file paths of the PDFs to be merged.
   /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
-  /// - A `Future<String?>` representing the result of the operation. If the operation
-  ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
+  /// - A `Future<String?>` representing the result of the operation.
   @override
   Future<String> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    List<Map<String, dynamic>>? sources,
+    List<String>? inputPaths,
     required String outputPath,
   }) async {
-    final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
+    final List<String> paths = sources
+            ?.map((e) => e['path'] as String?)
+            .whereType<String>()
+            .toList() ??
+        inputPaths ??
+        [];
+
+    final JSArray<JSString> jsInputPaths = paths.toJSArray();
     final JSString result =
         (await combinePDFs(jsInputPaths).toDart) as JSString;
     return result.toDart;

@@ -63,7 +63,7 @@ class PdfCombinerViewModel {
       String outputFilePath = '${directory?.path}/combined_output.pdf';
 
       final response = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: selectedFiles,
+        inputs: selectedFiles,
         outputPath: outputFilePath,
       ); // Combine the PDFs
       outputFiles = [response];
@@ -88,7 +88,7 @@ class PdfCombinerViewModel {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     final response = await PdfCombiner.generatePDFFromDocuments(
-      inputPaths: selectedFiles,
+      inputs: selectedFiles,
       outputPath: outputFilePath,
     );
     outputFiles = [response];

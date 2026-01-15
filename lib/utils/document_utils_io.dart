@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/foundation.dart';
@@ -70,20 +71,24 @@ class DocumentUtils {
   /// ```
   static void setTemporalFolderPath(String path) => _temporalDir = path;
 
-  /// Determines whether the given file path corresponds to a PDF file.
+  /// Determines whether the given file path or bytes corresponds to a PDF file.
   ///
   /// This method uses the file's magic number (file signature) to accurately
   /// detect if the file is a PDF, regardless of its extension. This is more
   /// reliable than checking only the file extension.
   ///
   /// **Parameters:**
-  /// - [filePath]: The absolute path to the file to check
+  /// - [input]: The absolute path to the file or [Uint8List] bytes to check
   ///
   /// **Returns:** `true` if the file is a valid PDF, `false` otherwise
   /// (including when an error occurs during detection)
-  static Future<bool> isPDF(String filePath) async {
+  static Future<bool> isPDF(dynamic input) async {
     try {
-      return await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath) ==
+      if (input is Uint8List) {
+        return await FileMagicNumber.detectFileTypeFromBytes(input) ==
+            FileMagicNumberType.pdf;
+      }
+      return await FileMagicNumber.detectFileTypeFromPathOrBlob(input) ==
           FileMagicNumberType.pdf;
     } catch (e) {
       return false;
@@ -102,7 +107,7 @@ class DocumentUtils {
   static bool hasPDFExtension(String filePath) =>
       p.extension(filePath) == ".pdf";
 
-  /// Determines whether the given file path corresponds to an image file.
+  /// Determines whether the given file path or bytes corresponds to an image file.
   ///
   /// This method uses the file's magic number (file signature) to detect if
   /// the file is a PNG or JPEG/JPG image, regardless of its extension.
@@ -112,14 +117,15 @@ class DocumentUtils {
   /// - JPEG/JPG
   ///
   /// **Parameters:**
-  /// - [filePath]: The absolute path to the file to check
+  /// - [input]: The absolute path to the file or [Uint8List] bytes to check
   ///
   /// **Returns:** `true` if the file is a PNG or JPEG image, `false` otherwise
   /// (including when an error occurs during detection)
-  static Future<bool> isImage(String filePath) async {
+  static Future<bool> isImage(dynamic input) async {
     try {
-      final fileType =
-          await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
+      final fileType = input is Uint8List
+          ? await FileMagicNumber.detectFileTypeFromBytes(input)
+          : await FileMagicNumber.detectFileTypeFromPathOrBlob(input);
       return fileType == FileMagicNumberType.png ||
           fileType == FileMagicNumberType.jpg;
     } catch (e) {

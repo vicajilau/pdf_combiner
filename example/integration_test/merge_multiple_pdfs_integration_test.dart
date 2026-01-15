@@ -20,7 +20,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: inputPaths,
+        inputs: inputPaths,
         outputPath: outputPath,
       );
 
@@ -33,7 +33,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: inputPaths,
+        inputs: inputPaths,
         outputPath: outputPath,
       );
 
@@ -46,7 +46,7 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [],
+          inputs: [],
           outputPath: outputPath,
         ),
         throwsA(
@@ -67,7 +67,7 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: inputPaths,
+          inputs: inputPaths,
           outputPath: outputPath,
         ),
         throwsA(
@@ -89,7 +89,7 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: inputPaths,
+          inputs: inputPaths,
           outputPath: outputPath,
         ),
         throwsA(

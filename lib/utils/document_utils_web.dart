@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
 
@@ -29,10 +30,14 @@ class DocumentUtils {
   /// implementation.
   static void setTemporalFolderPath(String path) => _temporalDir = path;
 
-  /// Determines whether the given file path/blob corresponds to a PDF file.
-  static Future<bool> isPDF(String filePath) async {
+  /// Determines whether the given file path/blob/bytes corresponds to a PDF file.
+  static Future<bool> isPDF(dynamic input) async {
     try {
-      return await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath) ==
+      if (input is Uint8List) {
+        return await FileMagicNumber.detectFileTypeFromBytes(input) ==
+            FileMagicNumberType.pdf;
+      }
+      return await FileMagicNumber.detectFileTypeFromPathOrBlob(input) ==
           FileMagicNumberType.pdf;
     } catch (e) {
       return false;
@@ -43,11 +48,12 @@ class DocumentUtils {
   static bool hasPDFExtension(String filePath) =>
       p.extension(filePath).toLowerCase() == ".pdf";
 
-  /// Determines whether the given file path/blob corresponds to an image file.
-  static Future<bool> isImage(String filePath) async {
+  /// Determines whether the given file path/blob/bytes corresponds to an image file.
+  static Future<bool> isImage(dynamic input) async {
     try {
-      final fileType =
-          await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
+      final fileType = input is Uint8List
+          ? await FileMagicNumber.detectFileTypeFromBytes(input)
+          : await FileMagicNumber.detectFileTypeFromPathOrBlob(input);
       return fileType == FileMagicNumberType.png ||
           fileType == FileMagicNumberType.jpg;
     } catch (e) {

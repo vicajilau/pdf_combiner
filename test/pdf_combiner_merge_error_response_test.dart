@@ -17,7 +17,8 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    List<Map<String, dynamic>>? sources,
+    List<String>? inputPaths,
     required String outputPath,
   }) {
     return Future.value(errorMessage);
@@ -47,7 +48,8 @@ class MockPdfCombinerPlatformNullResponse
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    List<Map<String, dynamic>>? sources,
+    List<String>? inputPaths,
     required String outputPath,
   }) {
     return Future.value(null);
@@ -88,7 +90,7 @@ void main() {
         // Use real PDF files that pass magic number validation
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: [
+            inputs: [
               'example/assets/document_1.pdf',
               'example/assets/document_2.pdf'
             ],
@@ -107,7 +109,7 @@ void main() {
         // Use real PDF files that pass magic number validation
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: [
+            inputs: [
               'example/assets/document_1.pdf',
               'example/assets/document_2.pdf'
             ],

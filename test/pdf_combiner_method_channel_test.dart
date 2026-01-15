@@ -23,7 +23,10 @@ void main() {
         .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
       if (methodCall.method == 'mergeMultiplePDF') {
         expect(methodCall.arguments, {
-          'paths': ['file1.pdf', 'file2.pdf'],
+          'sources': [
+            {'path': 'file1.pdf', 'bytes': null},
+            {'path': 'file2.pdf', 'bytes': null},
+          ],
           'outputDirPath': '/output/path',
         });
         return 'merged.pdf';

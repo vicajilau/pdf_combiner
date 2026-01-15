@@ -38,14 +38,16 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// multiple PDFs and return the result.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
-  /// - `outputDirPath`: The directory path where the merged PDF should be saved.
+  /// - `sources`: A list of maps representing the PDFs to be merged.
+  ///   Each map contains 'path' (String?) and 'bytes' (Uint8List?).
+  /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. By default,
   ///   this throws an [UnimplementedError].
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    List<Map<String, dynamic>>? sources,
+    List<String>? inputPaths, // Keep for backward compatibility
     required String outputPath,
   }) {
     throw UnimplementedError('mergeMultiplePDF() has not been implemented.');

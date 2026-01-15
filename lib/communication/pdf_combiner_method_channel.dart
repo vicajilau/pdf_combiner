@@ -30,12 +30,17 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    List<Map<String, dynamic>>? sources,
+    List<String>? inputPaths,
     required String outputPath,
   }) async {
+    final List<Map<String, dynamic>> finalSources = sources ??
+        inputPaths?.map((e) => {'path': e, 'bytes': null}).toList() ??
+        [];
+
     final result = await methodChannel.invokeMethod<String>(
       'mergeMultiplePDF',
-      {'paths': inputPaths, 'outputDirPath': outputPath},
+      {'sources': finalSources, 'outputDirPath': outputPath},
     );
     return result;
   }
