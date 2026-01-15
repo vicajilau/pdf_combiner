@@ -74,7 +74,6 @@ namespace pdf_combiner {
         }
 
         heif_image* img = nullptr;
-        // Decodificamos siempre a RGBA para PDFium
         err = heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGBA, nullptr);
         if (err.code != heif_error_Ok) {
             heif_image_handle_release(handle);
@@ -87,10 +86,7 @@ namespace pdf_combiner {
         int stride;
         const uint8_t* data = heif_image_get_plane_readonly(img, heif_channel_interleaved, &stride);
 
-        // Generar ruta temporal .png
         std::string output_png = heic_path + ".temp.png";
-
-        // Guardar usando stb_image_write
         int success = stbi_write_png(output_png.c_str(), width, height, 4, data, stride);
 
         heif_image_release(img);
@@ -99,7 +95,7 @@ namespace pdf_combiner {
 
         return success ? output_png : "";
 #else
-        return ""; // HEIC no soportado si no se encuentra la librería
+        return ""; 
 #endif
     }
 
@@ -156,9 +152,19 @@ namespace pdf_combiner {
             total_pages += page_count;
             FPDF_CloseDocument(doc);
         }
+        
         MyFileWrite file_write;
-        file_write.version = 1; file_write.WriteBlock = MyWriteBlock; file_write.filename = output_path.c_str();
-        FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL);
+        file_write.version = 1; 
+        file_write.WriteBlock = MyWriteBlock; 
+        file_write.filename = output_path.c_str();
+        file_write.file = nullptr; // Importante: inicializar a null
+
+        FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_NO_INCREMENTAL);
+        
+        if (file_write.file) {
+            fclose(file_write.file); // Cerrar para asegurar que se escribe el trailer del PDF
+        }
+
         FPDF_CloseDocument(new_doc);
         result->Success(flutter::EncodableValue(output_path));
     }
@@ -209,7 +215,7 @@ namespace pdf_combiner {
             if (max_width != 0 || max_height != 0) {
                 int new_width = (max_width != 0) ? max_width : width;
                 int new_height = (max_height != 0) ? (keep_aspect_ratio ? static_cast<int>(max_width * (static_cast<double>(height) / width)) : max_height) : height;
-                unsigned char* resized_data = new unsigned char[new_width * new_height * 4];
+                unsigned char* resized_data = (unsigned char*)malloc(new_width * new_height * 4);
                 if (stbir_resize_uint8_linear(image_data, width, height, 0, resized_data, new_width, new_height, 0, STBIR_RGBA)) {
                     stbi_image_free(image_data);
                     image_data = resized_data;
@@ -228,7 +234,6 @@ namespace pdf_combiner {
             for (int y = 0; y < height; y++) {
                 unsigned char* src = image_data + y * width * 4;
                 unsigned char* dst = buffer + y * stride;
-
                 for (int x = 0; x < width; x++) {
                     dst[x * 4 + 0] = src[x * 4 + 2]; // B
                     dst[x * 4 + 1] = src[x * 4 + 1]; // G
@@ -239,10 +244,8 @@ namespace pdf_combiner {
 
             FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
             FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
-
             FPDFPageObj_Transform(image_obj, (double)width, 0, 0, (double)height, 0, 0);
             FPDFPage_InsertObject(new_page, image_obj);
-
             FPDFPage_GenerateContent(new_page);
 
             stbi_image_free(image_data);
@@ -256,10 +259,15 @@ namespace pdf_combiner {
         file_write.version = 1;
         file_write.WriteBlock = MyWriteBlock;
         file_write.filename = output_path.c_str();
+        file_write.file = nullptr;
 
         FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_NO_INCREMENTAL);
-        FPDF_CloseDocument(new_doc);
+        
+        if (file_write.file) {
+            fclose(file_write.file);
+        }
 
+        FPDF_CloseDocument(new_doc);
         result->Success(flutter::EncodableValue(output_path));
     }
 
