@@ -7,6 +7,7 @@ import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'dart:io' as java;
+import 'dart:typed_data';
 
 class MockPdfCombinerPlatformCustomError
     with MockPlatformInterfaceMixin
@@ -115,6 +116,37 @@ void main() {
           ),
           throwsA(isA<PdfCombinerException>().having(
               (e) => e.message, 'message', 'Unknown error during merge')),
+        );
+      });
+
+      test('successfully merge with Uint8List and File inputs (PdfCombiner)',
+          () async {
+        PdfCombiner.isMock = true;
+        MockPdfCombinerPlatformCustomError mockPlatform =
+            MockPdfCombinerPlatformCustomError('output.pdf');
+        PdfCombinerPlatform.instance = mockPlatform;
+
+        final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
+        final file = java.File('example/assets/document_1.pdf');
+
+        final result = await PdfCombiner.mergeMultiplePDFs(
+          inputs: [pdfBytes, file],
+          outputPath: 'output.pdf',
+        );
+
+        expect(result, 'output.pdf');
+      });
+
+      test('throws PdfCombinerException for invalid input type (PdfCombiner)',
+          () async {
+        PdfCombiner.isMock = true;
+        expect(
+          () async => await PdfCombiner.mergeMultiplePDFs(
+            inputs: [123],
+            outputPath: 'output.pdf',
+          ),
+          throwsA(isA<PdfCombinerException>().having((e) => e.message,
+              'message', contains('Invalid input type: int'))),
         );
       });
     });
