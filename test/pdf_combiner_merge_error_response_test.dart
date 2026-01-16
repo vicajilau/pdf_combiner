@@ -120,51 +120,72 @@ void main() {
     });
 
     group('createPDFFromMultipleImages', () {
-      test('throws exception when platform returns a custom error string',
-          () async {
-        const customError = 'Custom platform error';
-        final mockPlatform = MockPdfCombinerPlatformCustomError(customError);
-        PdfCombinerPlatform.instance = mockPlatform;
+      group('createPDFFromMultipleImages', () {
+        test('throws exception when platform returns a custom error string',
+                () async {
+              const customError = 'Custom platform error';
+              final mockPlatform = MockPdfCombinerPlatformCustomError(customError);
+              PdfCombinerPlatform.instance = mockPlatform;
 
-        final file1 = await java.File('image1.png').create();
-        // PNG magic number: 89 50 4E 47 0D 0A 1A 0A
-        await file1
-            .writeAsBytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+              final file1 = java.File('image_test_custom.png');
+              // PNG magic number: 89 50 4E 47 0D 0A 1A 0A
+              await file1.writeAsBytes(
+                [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
+                flush: true,
+              );
 
-        try {
-          expect(
-            () async => await PdfCombiner.createPDFFromMultipleImages(
-              inputPaths: ['image1.png'],
-              outputPath: 'output_images.pdf',
-            ),
-            throwsA(isA<PdfCombinerException>()
-                .having((e) => e.message, 'message', customError)),
+              try {
+                await expectLater(
+                      () => PdfCombiner.createPDFFromMultipleImages(
+                    inputPaths: [file1.path],
+                    outputPath: 'output_images.pdf',
+                  ),
+                  throwsA(isA<PdfCombinerException>()
+                      .having((e) => e.message, 'message', customError)),
+                );
+              } finally {
+                if (await file1.exists()) {
+                  try {
+                    await file1.delete();
+                  } catch (_) {
+                    // Windows sometimes needs a moment to release the file lock
+                    await Future.delayed(const Duration(milliseconds: 100));
+                    if (await file1.exists()) await file1.delete();
+                  }
+                }
+              }
+            });
+
+        test('throws default exception when platform returns null', () async {
+          final mockPlatform = MockPdfCombinerPlatformNullResponse();
+          PdfCombinerPlatform.instance = mockPlatform;
+
+          final file1 = java.File('image_test_null.png');
+          await file1.writeAsBytes(
+            [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
+            flush: true,
           );
-        } finally {
-          if (await file1.exists()) await file1.delete();
-        }
-      });
 
-      test('throws default exception when platform returns null', () async {
-        final mockPlatform = MockPdfCombinerPlatformNullResponse();
-        PdfCombinerPlatform.instance = mockPlatform;
-
-        final file1 = await java.File('image_null.png').create();
-        await file1
-            .writeAsBytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
-
-        try {
-          expect(
-            () async => await PdfCombiner.createPDFFromMultipleImages(
-              inputPaths: ['image_null.png'],
-              outputPath: 'output_images.pdf',
-            ),
-            throwsA(isA<PdfCombinerException>().having(
-                (e) => e.message, 'message', PdfCombinerMessages.errorMessage)),
-          );
-        } finally {
-          if (await file1.exists()) await file1.delete();
-        }
+          try {
+            await expectLater(
+                  () => PdfCombiner.createPDFFromMultipleImages(
+                inputPaths: [file1.path],
+                outputPath: 'output_images.pdf',
+              ),
+              throwsA(isA<PdfCombinerException>().having(
+                      (e) => e.message, 'message', PdfCombinerMessages.errorMessage)),
+            );
+          } finally {
+            if (await file1.exists()) {
+              try {
+                await file1.delete();
+              } catch (_) {
+                await Future.delayed(const Duration(milliseconds: 100));
+                if (await file1.exists()) await file1.delete();
+              }
+            }
+          }
+        });
       });
     });
 
@@ -189,7 +210,15 @@ void main() {
                 .having((e) => e.message, 'message', customError)),
           );
         } finally {
-          if (await file1.exists()) await file1.delete();
+          if (await file1.exists()) {
+            try {
+              await file1.delete();
+            } catch (_) {
+              // Windows sometimes needs a moment to release the file lock
+              await Future.delayed(const Duration(milliseconds: 100));
+              if (await file1.exists()) await file1.delete();
+            }
+          }
         }
       });
     });
