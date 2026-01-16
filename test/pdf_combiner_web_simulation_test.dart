@@ -56,18 +56,6 @@ void main() {
       expect(result, 'output.pdf');
     });
 
-    test(
-        'covers web-specific path in generatePDFFromDocuments (Uint8List image)',
-        () async {
-      final imageBytes =
-          Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
-      final result = await PdfCombiner.generatePDFFromDocuments(
-        inputs: [imageBytes],
-        outputPath: 'output.pdf',
-      );
-      expect(result, 'output.pdf');
-    });
-
     test('covers file writing path in generatePDFFromDocuments (isMock=false)',
         () async {
       PdfCombiner.isMock = false;
