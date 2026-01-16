@@ -18,7 +18,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> mergeMultiplePDFs({
-    List<String>? inputPaths,
+    required List<dynamic> inputPaths,
     required String outputPath,
   }) {
     return Future.value(errorMessage);
@@ -48,7 +48,7 @@ class MockPdfCombinerPlatformNullResponse
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    List<String>? inputPaths,
+    required List<dynamic> inputPaths,
     required String outputPath,
   }) {
     return Future.value(null);

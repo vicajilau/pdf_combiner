@@ -45,7 +45,7 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// - A `Future<String?>` representing the result of the operation. By default,
   ///   this throws an [UnimplementedError].
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<dynamic> inputPaths,
     required String outputPath,
   }) {
     throw UnimplementedError('mergeMultiplePDF() has not been implemented.');

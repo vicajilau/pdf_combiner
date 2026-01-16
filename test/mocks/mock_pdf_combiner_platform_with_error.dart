@@ -22,7 +22,7 @@ class MockPdfCombinerPlatformWithError
   /// [outputPath] The path where the merged PDF should be saved.
   @override
   Future<String?> mergeMultiplePDFs({
-    List<String>? inputPaths,
+    required List<dynamic> inputPaths,
     required String outputPath,
   }) {
     throw PdfCombinerException('error');

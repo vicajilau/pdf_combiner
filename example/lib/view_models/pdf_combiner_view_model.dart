@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:file_magic_number/file_magic_number.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +11,7 @@ import 'package:platform_detail/platform_detail.dart';
 
 class PdfCombinerViewModel {
   List<String> selectedFiles = []; // List to store selected PDF file paths
+  List<Uint8List> selectedFileBytes = []; // List to store file bytes (for Web)
   List<String> outputFiles = []; // Path for the combined output file
 
   /// Function to pick PDF files from the device (old method)
@@ -20,23 +20,30 @@ class PdfCombinerViewModel {
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png'],
       allowMultiple: true, // Allow picking multiple files
+      withData: true, // Required for Web to get bytes
     );
 
     if (result != null && result.files.isNotEmpty) {
       for (var element in result.files) {
         debugPrint("${element.name}, ");
       }
-      final files = result.files
-          .where((file) => file.path != null)
-          .map((file) => File(file.path!))
-          .toList();
-      _addFiles(files);
+      if (kIsWeb) {
+        selectedFiles = result.files.map((e) => e.name).toList();
+        selectedFileBytes = result.files.map((e) => e.bytes!).toList();
+      } else {
+        final files = result.files
+            .where((file) => file.path != null)
+            .map((file) => File(file.path!))
+            .toList();
+        _addFiles(files);
+      }
     }
   }
 
   /// Function to pick PDF files from the device
   Future<void> addFilesDragAndDrop(List<DropItem> files) async {
     selectedFiles += files.map((file) => file.path).toList();
+    selectedFileBytes += await Future.wait(files.map((e) => e.readAsBytes()));
     outputFiles = [];
   }
 
@@ -52,6 +59,7 @@ class PdfCombinerViewModel {
   /// Function to restart the selected files
   void restart() {
     selectedFiles = [];
+    selectedFileBytes = [];
     outputFiles = [];
   }
 
@@ -80,14 +88,16 @@ class PdfCombinerViewModel {
       final directory = await _getOutputDirectory();
       String outputFilePath = '${directory?.path}/combined_output.pdf';
 
-      final fileBytes = await Future.wait<Uint8List>(
-        selectedFiles.map((file) {
-          if (kIsWeb) {
-            return FileMagicNumber.getBytesFromPathOrBlob(file);
-          }
-          return File(file).readAsBytes();
-        }),
-      );
+      List<Uint8List> fileBytes;
+      if (kIsWeb && selectedFileBytes.isNotEmpty) {
+        fileBytes = selectedFileBytes;
+      } else {
+        fileBytes = await Future.wait<Uint8List>(
+          selectedFiles.map((file) {
+            return File(file).readAsBytes();
+          }),
+        );
+      }
 
       final response = await PdfCombiner.mergeMultiplePDFs(
         inputs: fileBytes,
@@ -170,5 +180,8 @@ class PdfCombinerViewModel {
   /// Function to remove the selected files
   void removeFileAt(int index) {
     selectedFiles.removeAt(index);
+    if (selectedFileBytes.isNotEmpty && selectedFileBytes.length > index) {
+      selectedFileBytes.removeAt(index);
+    }
   }
 }

@@ -29,10 +29,19 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// - A `Future<String?>` representing the result of the operation. If the operation
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
+  @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<dynamic> inputPaths,
     required String outputPath,
   }) async {
+    // Validate that all inputs are Strings as native platforms expect paths
+    for (final input in inputPaths) {
+      if (input is! String) {
+        throw ArgumentError(
+            'MethodChannelPdfCombiner only supports String paths. Got ${input.runtimeType}.');
+      }
+    }
+
     final result = await methodChannel.invokeMethod<String>(
       'mergeMultiplePDF',
       {'paths': inputPaths, 'outputDirPath': outputPath},

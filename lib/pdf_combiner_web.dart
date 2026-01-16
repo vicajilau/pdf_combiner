@@ -9,6 +9,9 @@ import 'package:web/web.dart';
 import 'communication/pdf_combiner_platform_interface.dart';
 import 'models/image_from_pdf_config.dart';
 import 'models/pdf_from_multiple_image_config.dart';
+import 'package:pdf_combiner/utils/document_utils.dart';
+import 'dart:typed_data';
+import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 
 /// Web implementation of the PdfCombinerPlatform.
 /// This class handles the interaction between the Flutter app and JavaScript functions
@@ -63,10 +66,23 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<dynamic> inputPaths,
     required String outputPath,
   }) async {
-    final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
+    final List<String> processedPaths = [];
+
+    for (final input in inputPaths) {
+      if (input is String) {
+        processedPaths.add(input);
+      } else if (input is Uint8List) {
+        processedPaths.add(DocumentUtils.createBlobUrl(input));
+      } else {
+        throw PdfCombinerException(
+            'PdfCombinerWeb only supports String paths or Uint8List bytes. Got ${input.runtimeType}.');
+      }
+    }
+
+    final JSArray<JSString> jsInputPaths = processedPaths.toJSArray();
     final JSString result =
         (await combinePDFs(jsInputPaths).toDart) as JSString;
     return result.toDart;

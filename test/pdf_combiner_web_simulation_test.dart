@@ -11,7 +11,7 @@ class MockPdfCombinerPlatformSuccess
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    List<String>? inputPaths,
+    required List<dynamic> inputPaths,
     required String outputPath,
   }) {
     return Future.value(outputPath);
