@@ -33,14 +33,13 @@ class TestFileHelper {
     for (String assetPath in assetPaths) {
       final byteData = await rootBundle.load(assetPath);
       final fileName = p.basename(assetPath);
-      // Usamos un prefijo único para evitar que Windows bloquee el archivo si otro test lo está usando
       final filePath = p.join(basePath, '${_uniquePrefix}_$fileName');
       final file = File(filePath);
-      
+
       if (await file.exists()) {
         await file.delete();
       }
-      
+
       await file.writeAsBytes(byteData.buffer.asUint8List(), flush: true);
       filePaths.add(filePath);
     }
@@ -53,6 +52,20 @@ class TestFileHelper {
     if (outputFileName.isEmpty) {
       return basePath;
     }
-    return p.join(basePath, '${_uniquePrefix}_$outputFileName');
+    return p.join(basePath, outputFileName);
+  }
+
+  Future<void> deleteFiles() async {
+    for (String assetPath in assetPaths) {
+      final fileName = p.basename(assetPath);
+      final filePath = p.join(basePath, '${_uniquePrefix}_$fileName');
+      final file = File(filePath);
+
+      if (await file.exists()) {
+        await file.delete();
+      }
+
+      print("Deleted file: $filePath");
+    }
   }
 }
