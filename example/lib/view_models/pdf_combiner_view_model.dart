@@ -115,7 +115,7 @@ class PdfCombinerViewModel {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     final response = await PdfCombiner.generatePDFFromDocuments(
-      inputs: selectedFiles,
+      inputPaths: selectedFiles,
       outputPath: outputFilePath,
     );
     outputFiles = [response];

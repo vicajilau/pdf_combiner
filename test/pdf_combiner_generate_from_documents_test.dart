@@ -51,7 +51,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
-        inputs: [
+        inputPaths: [
           'example/assets/document_1.pdf',
           'example/assets/document_2.pdf'
         ],
@@ -73,7 +73,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
-        inputs: [
+        inputPaths: [
           'example/assets/image_1.jpeg',
           'example/assets/document_1.pdf',
         ],
@@ -92,7 +92,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [
+          inputPaths: [
             'example/assets/image_1.jpeg',
             'example/assets/document_1.pdf',
           ],
@@ -115,7 +115,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [
+          inputPaths: [
             'example/assets/document_5.pdf',
             'example/assets/image_1.jpeg'
           ],
@@ -139,7 +139,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [
+          inputPaths: [
             'example/assets/document_5.pdf',
             'example/assets/image_1.jpeg'
           ],
@@ -162,7 +162,10 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: ['example/assets/image_5.jpeg', 'example/assets/image_2.png'],
+          inputPaths: [
+            'example/assets/image_5.jpeg',
+            'example/assets/image_2.png'
+          ],
           outputPath: 'path.pdf',
         ),
         throwsA(
@@ -184,7 +187,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [
+          inputPaths: [
             'example/assets/document_1.pdf',
             'example/assets/image_1.jpeg'
           ],
@@ -207,14 +210,14 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [],
+          inputPaths: [],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
           predicate(
             (e) =>
                 e is PdfCombinerException &&
-                e.message == 'The parameter (inputs) cannot be empty',
+                e.message == 'The parameter (inputPaths) cannot be empty',
           ),
         ),
       );
@@ -227,7 +230,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: ['path1', 'path2'],
+          inputPaths: ['path1', 'path2'],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
@@ -247,7 +250,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: ['path1.pdf', 'path2.pdf'],
+          inputPaths: ['path1.pdf', 'path2.pdf'],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
@@ -268,7 +271,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [
+          inputPaths: [
             'example/assets/document_1.pdf',
             'example/assets/document_2.pdf'
           ],
@@ -289,7 +292,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [
+          inputPaths: [
             'example/assets/document_1.pdf',
             'example/assets/document_2.pdf'
           ],
@@ -310,7 +313,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [
+          inputPaths: [
             'example/assets/image_1.jpeg',
           ],
           outputPath: 'output/path.pdf',
@@ -321,48 +324,6 @@ void main() {
           ),
         ),
       );
-    });
-
-    test('generatePDFFromDocuments with File inputs (PdfCombiner)', () async {
-      PdfCombiner.isMock = true;
-      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
-      PdfCombinerPlatform.instance = fakePlatform;
-
-      // We use real files but in mock mode it won't call native
-      final file1 = File('example/assets/document_1.pdf');
-      final file2 = File('example/assets/document_2.pdf');
-
-      final result = await PdfCombiner.generatePDFFromDocuments(
-        inputs: [file1, file2],
-        outputPath: 'output/path.pdf',
-      );
-
-      expect(result, "output/path.pdf");
-    });
-
-    test('generatePDFFromDocuments with Uint8List image (PdfCombiner)',
-        () async {
-      PdfCombiner.isMock = true;
-      final tempDir = Directory.systemTemp;
-      DocumentUtils.setTemporalFolderPath(tempDir.path);
-      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
-      PdfCombinerPlatform.instance = fakePlatform;
-
-      // Pre-create the expected temporal PDF so that _validateMergeInputs passes
-      final tempPdf = File('${tempDir.path}/document_0.pdf');
-      await tempPdf.writeAsBytes([0x25, 0x50, 0x44, 0x46]);
-
-      final imageBytes = Uint8List.fromList([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // signature
-        0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-      ]);
-
-      final result = await PdfCombiner.generatePDFFromDocuments(
-        inputs: [imageBytes],
-        outputPath: 'output/path.pdf',
-      );
-
-      expect(result, "output/path.pdf");
     });
   });
 }

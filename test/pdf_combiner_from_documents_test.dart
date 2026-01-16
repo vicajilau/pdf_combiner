@@ -10,7 +10,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: const [],
+          inputPaths: const [],
           outputPath: 'out.pdf',
         ),
         throwsA(
@@ -18,7 +18,7 @@ void main() {
             (e) =>
                 e is PdfCombinerException &&
                 e.message.contains(
-                  PdfCombinerMessages.emptyParameterMessage('inputs'),
+                  PdfCombinerMessages.emptyParameterMessage('inputPaths'),
                 ),
           ),
         ),
@@ -30,7 +30,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: const ['any'],
+          inputPaths: const ['any'],
           outputPath: '   ',
         ),
         throwsA(
@@ -51,7 +51,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: const ['foo.xyz'],
+          inputPaths: const ['foo.xyz'],
           outputPath: 'out.PDF',
         ),
         throwsA(
@@ -72,7 +72,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [firstPath],
+          inputPaths: [firstPath],
           outputPath: 'out.pdf',
         ),
         throwsA(
