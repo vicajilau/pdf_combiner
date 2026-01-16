@@ -50,14 +50,15 @@ set(FLUTTER_MANAGED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/flutter")
 add_subdirectory(${FLUTTER_MANAGED_DIR})
 
 # Application build; see runner/CMakeLists.txt.
+# This must come before generated_plugins.cmake so the target exists for plugins to link to.
 add_subdirectory("runner")
-
-# Enable the test target.
-set(include_pdf_combiner_tests FALSE)
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
 include(flutter/generated_plugins.cmake)
+
+# Enable the test target.
+set(include_pdf_combiner_tests FALSE)
 
 
 # === Installation ===
