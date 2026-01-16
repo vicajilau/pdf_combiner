@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 
 /// A helper class to manage test file preparation and output file path creation.
+/// This class is used to handle the loading of assets, writing files to disk,
+/// and generating output file paths for integration tests.
 class TestFileHelper {
   static late String basePath;
 
@@ -15,57 +15,43 @@ class TestFileHelper {
   }
 
   final List<String> assetPaths;
-  final String _uniquePrefix;
 
-  /// Constructor with a unique prefix to avoid file locking issues on Windows
-  TestFileHelper(this.assetPaths) : _uniquePrefix = _generateRandomString(5);
+  /// Constructor to initialize the helper with a list of asset paths.
+  ///
+  /// [assetPaths] List of paths to asset files that will be loaded into the test environment.
+  TestFileHelper(this.assetPaths);
 
-  static String _generateRandomString(int len) {
-    var r = Random();
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    return List.generate(len, (index) => chars[r.nextInt(chars.length)]).join();
-  }
-
-  /// Prepares input files with unique names
+  /// Prepares input files by loading them from assets and saving them to the application
+  /// document directory for testing purposes.
+  ///
+  /// Returns a list of file paths for the assets that were loaded and saved.
   Future<List<String>> prepareInputFiles() async {
     List<String> filePaths = [];
 
     for (String assetPath in assetPaths) {
+      // Load the asset data from the root bundle.
       final byteData = await rootBundle.load(assetPath);
-      final fileName = p.basename(assetPath);
-      final filePath = p.join(basePath, '${_uniquePrefix}_$fileName');
+      // Define the full file path to save the asset in the documents directory.
+      final filePath = '$basePath/${assetPath.split('/').last}';
       final file = File(filePath);
-
-      if (await file.exists()) {
-        await file.delete();
-      }
-
-      await file.writeAsBytes(byteData.buffer.asUint8List(), flush: true);
-      filePaths.add(filePath);
+      // Write the asset bytes to a file.
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      filePaths
+          .add(filePath); // Add the file path to the list of prepared files.
     }
 
     return filePaths;
   }
 
-  /// Generates a unique full output file path
+  /// Generates a full output file path in the application document directory.
+  ///
+  /// [outputFileName] The name of the output file to be generated (e.g., 'merged_output.pdf'). If not provided is empty
+  ///
+  /// Returns the full path where the output file will be saved.
   Future<String> getOutputFilePath([String outputFileName = ""]) async {
     if (outputFileName.isEmpty) {
       return basePath;
     }
-    return p.join(basePath, outputFileName);
-  }
-
-  Future<void> deleteFiles() async {
-    for (String assetPath in assetPaths) {
-      final fileName = p.basename(assetPath);
-      final filePath = p.join(basePath, '${_uniquePrefix}_$fileName');
-      final file = File(filePath);
-
-      if (await file.exists()) {
-        await file.delete();
-      }
-
-      print("Deleted file: $filePath");
-    }
+    return '$basePath/$outputFileName'; // Return the full output file path.
   }
 }

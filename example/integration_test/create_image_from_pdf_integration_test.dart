@@ -93,7 +93,6 @@ void main() {
           config: ImageFromPdfConfig(createOneImage: false));
 
       expect(result.length, 4);
-      await helper.deleteFiles();
     }, timeout: Timeout.none);
   });
 }

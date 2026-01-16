@@ -101,7 +101,6 @@ void main() {
           ),
         ),
       );
-      await helper.deleteFiles();
     });
   });
 }
