@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "pdf_combiner_plugin.h"
 
 #ifndef NOMINMAX
@@ -17,6 +18,8 @@
 #include <vector>
 #include <iomanip>
 #include <fstream>
+#include <io.h>
+#include <fcntl.h>
 
 #include "include/pdfium/fpdfview.h"
 #include "include/pdfium/fpdf_edit.h"
@@ -48,8 +51,27 @@ namespace pdf_combiner {
 
     std::string ProcessHeic(const std::string& path) {
 #ifdef HAS_HEIF
+        // Suppress stderr during HEIF initialization to hide "LoadLibraryA error: 193"
+        // This error usually happens because libheif scans for plugins and finds incompatible (32-bit) DLLs,
+        // but it doesn't affect functionality since the built-in decoder works.
+        int saved_stderr = _dup(_fileno(stderr));
+        int null_fd = _open("NUL", _O_WRONLY);
+        if (null_fd != -1) {
+            fflush(stderr);
+            _dup2(null_fd, _fileno(stderr));
+        }
+
         heif_context* ctx = heif_context_alloc();
         heif_error err = heif_context_read_from_file(ctx, path.c_str(), nullptr);
+        
+        // Restore stderr
+        if (null_fd != -1) {
+            fflush(stderr);
+            _dup2(saved_stderr, _fileno(stderr));
+            _close(null_fd);
+        }
+        _close(saved_stderr);
+
         if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
 
         heif_image_handle* handle = nullptr;
@@ -91,7 +113,17 @@ namespace pdf_combiner {
         registrar->AddPlugin(std::move(plugin));
     }
 
-    PdfCombinerPlugin::PdfCombinerPlugin() { FPDF_InitLibrary(); }
+    PdfCombinerPlugin::PdfCombinerPlugin() {
+        // Prevent libheif from loading incompatible plugins from system path
+        // by pointing the plugin path to a non-existent directory.
+        // We use both SetEnvironmentVariableA (Windows API) and _putenv (C runtime)
+        // to ensure the library sees the change regardless of how it checks env vars.
+        SetEnvironmentVariableA("LIBHEIF_PLUGIN_PATH", "HeifPlugins_Disabled");
+        SetEnvironmentVariableW(L"LIBHEIF_PLUGIN_PATH", L"HeifPlugins_Disabled");
+        _putenv("LIBHEIF_PLUGIN_PATH=HeifPlugins_Disabled");
+        
+        FPDF_InitLibrary(); 
+    }
     PdfCombinerPlugin::~PdfCombinerPlugin() { FPDF_DestroyLibrary(); }
 
     void PdfCombinerPlugin::HandleMethodCall(const flutter::MethodCall<flutter::EncodableValue> &method_call,
