@@ -83,9 +83,7 @@ class DocumentUtils {
   /// (including when an error occurs during detection)
   static Future<bool> isPDF(dynamic input) async {
     try {
-      if (PdfCombiner.isMockWeb &&
-          input is String &&
-          input.startsWith('blob:')) {
+      if (PdfCombiner.isMock && input is String && input.startsWith('blob:')) {
         return true;
       }
       if (input is Uint8List) {
@@ -127,9 +125,7 @@ class DocumentUtils {
   /// (including when an error occurs during detection)
   static Future<bool> isImage(dynamic input) async {
     try {
-      if (PdfCombiner.isMockWeb &&
-          input is String &&
-          input.startsWith('blob:')) {
+      if (PdfCombiner.isMock && input is String && input.startsWith('blob:')) {
         return true;
       }
       final fileType = input is Uint8List
@@ -157,9 +153,9 @@ class DocumentUtils {
     await File(path).writeAsBytes(bytes);
   }
 
-  /// Throws [UnsupportedError] on non-web platforms, unless [PdfCombiner.isMockWeb] is true.
+  /// Throws [UnsupportedError] on non-web platforms, unless [PdfCombiner.isMock] is true.
   static String createBlobUrl(Uint8List bytes) {
-    if (PdfCombiner.isMockWeb) return "blob:mock_url";
+    if (PdfCombiner.isMock) return "blob:mock_url";
     throw UnsupportedError("createBlobUrl is only supported on Web");
   }
 }

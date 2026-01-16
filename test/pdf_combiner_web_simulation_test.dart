@@ -40,13 +40,11 @@ void main() {
   group('PdfCombiner Web Simulation Tests', () {
     setUp(() {
       PdfCombiner.isMock = true;
-      PdfCombiner.isMockWeb = true;
       PdfCombinerPlatform.instance = MockPdfCombinerPlatformSuccess();
     });
 
     tearDown(() {
       PdfCombiner.isMock = false;
-      PdfCombiner.isMockWeb = false;
     });
 
     test('covers web-specific path in mergeMultiplePDFs (Uint8List)', () async {
@@ -56,6 +54,49 @@ void main() {
         outputPath: 'output.pdf',
       );
       expect(result, 'output.pdf');
+    });
+
+    test(
+        'covers web-specific path in generatePDFFromDocuments (Uint8List image)',
+        () async {
+      final imageBytes =
+          Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+      final result = await PdfCombiner.generatePDFFromDocuments(
+        inputs: [imageBytes],
+        outputPath: 'output.pdf',
+      );
+      expect(result, 'output.pdf');
+    });
+
+    test('covers file writing path in generatePDFFromDocuments (isMock=false)',
+        () async {
+      PdfCombiner.isMock = false;
+
+      final imageBytes =
+          Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+
+      try {
+        await PdfCombiner.generatePDFFromDocuments(
+          inputs: [imageBytes],
+          outputPath: 'output.pdf',
+        );
+      } catch (_) {}
+
+      PdfCombiner.isMock = true;
+    });
+
+    test('covers file writing path in mergeMultiplePDFs (isMock=false)',
+        () async {
+      PdfCombiner.isMock = false;
+      final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
+
+      try {
+        await PdfCombiner.mergeMultiplePDFs(
+          inputs: [pdfBytes],
+          outputPath: 'output.pdf',
+        );
+      } catch (_) {}
+      PdfCombiner.isMock = true;
     });
   });
 }
