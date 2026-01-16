@@ -82,8 +82,8 @@ private extension PdfCombinerPlugin {
 
             for index in 0..<pdfDocument.pageCount {
                 guard let page = pdfDocument.page(at: index) else { continue }
-                mergedPDF.insert(page, at: pageIndex)
-                pageIndex += 1
+                    mergedPDF.insert(page, at: pageIndex)
+                    pageIndex += 1
             }
         }
 

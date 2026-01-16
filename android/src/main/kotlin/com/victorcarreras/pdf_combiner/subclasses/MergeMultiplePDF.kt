@@ -9,7 +9,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileOutputStream
 
@@ -20,10 +19,10 @@ class MergeMultiplePDF(context: Context, getResult: MethodChannel.Result) {
     private var result: MethodChannel.Result = getResult
 
     // Method Merge multiple PDF file into one File
-    // [inputPaths] List of paths
-    // [outputPath] Output directory path with file name added with it Ex . usr/android/download/ABC.pdf
+    // [paths] List of paths
+    // [outputDirPath] Output directory path with file name added with it Ex . usr/android/download/ABC.pdf
     @OptIn(DelicateCoroutinesApi::class)
-    fun merge(context: Context, inputPaths: List<String>, outputPath: String) {
+    fun merge(context:Context,inputPaths: List<String>, outputPath: String) {
         var status = ""
 
         PDFBoxResourceLoader.init(context.applicationContext)
