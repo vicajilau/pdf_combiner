@@ -60,8 +60,7 @@ find_library(PDFIUM_LIB NAMES pdfium PATHS "${PDFIUM_ROOT}" NO_DEFAULT_PATH REQU
 # Buscamos las librerías de enlace (Import Libraries)
 find_library(HEIF_LIB NAMES heif PATHS "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif" NO_DEFAULT_PATH REQUIRED)
 find_library(DE265_LIB NAMES libde265 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif" NO_DEFAULT_PATH REQUIRED)
-# x265 es opcional pero quita tus errores de 'externos sin resolver'
-find_library(X265_LIB NAMES x265 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif" NO_DEFAULT_PATH)
+
 
 # =========================
 # DLL Management (Bundling)
@@ -71,9 +70,7 @@ set(MY_PLUGIN_DLLS
         "${CMAKE_CURRENT_SOURCE_DIR}/heif.dll"
         "${CMAKE_CURRENT_SOURCE_DIR}/libde265.dll"
 )
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libx265.dll")
-    list(APPEND MY_PLUGIN_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/libx265.dll")
-endif()
+
 
 set(pdf_combiner_bundled_libraries ${MY_PLUGIN_DLLS} PARENT_SCOPE)
 
@@ -87,9 +84,7 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE
         ${HEIF_LIB}
         ${DE265_LIB}
 )
-if(X265_LIB)
-    target_link_libraries(${PLUGIN_NAME} PRIVATE ${X265_LIB})
-endif()
+
 
 add_custom_command(TARGET ${PLUGIN_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
