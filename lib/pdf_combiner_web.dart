@@ -51,14 +51,18 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
 
   /// Merges multiple PDF files into a single PDF.
   ///
+  /// This method sends a request to the native platform to merge the PDF files
+  /// specified in the `paths` parameter and saves the result in the `outputPath`.
+  ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths (or blob URLs) of the PDFs to be merged.
+  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
   /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
-  /// - A `Future<String?>` representing the result of the operation.
+  /// - A `Future<String?>` representing the result of the operation. If the operation
+  ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
-  Future<String?> mergeMultiplePDFs({
+  Future<String> mergeMultiplePDFs({
     required List<String> inputPaths,
     required String outputPath,
   }) async {
