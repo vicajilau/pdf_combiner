@@ -12,12 +12,13 @@ import 'package:web/web.dart' as web;
 class DocumentUtils {
   static String _temporalDir = '';
 
-  /// Removes a list of temporary files.
-  ///
-  /// **Note:** This is a no-op on web platforms as they do not have direct
-  /// file system access for deletion.
+  /// Removes a list of temporary files (blob URLs) on web.
   static void removeTemporalFiles(List<String> paths) {
-    // No-op on web
+    for (final path in paths) {
+      if (path.startsWith('blob:')) {
+        web.URL.revokeObjectURL(path);
+      }
+    }
   }
 
   /// Returns the temporary directory path.

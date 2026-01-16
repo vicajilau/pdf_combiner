@@ -23,6 +23,9 @@ class PdfCombiner {
   /// without performing actual PDF merging operations.
   static bool isMock = false;
 
+  /// A boolean flag to simulate web environment for testing.
+  static bool isMockWeb = false;
+
   /// Combines multiple documents into a single PDF. The input files can be either PDFs or images.
   ///
   /// This method takes a list of inputs (`inputs`) which can be file paths ([String]),
@@ -81,13 +84,14 @@ class PdfCombiner {
                 : "${DocumentUtils.getTemporalFolderPath()}/document_$i.pdf";
 
             if (input is Uint8List) {
-              if (!kIsWeb) {
+              if (!kIsWeb && !PdfCombiner.isMockWeb) {
                 final tempPath =
                     "${DocumentUtils.getTemporalFolderPath()}/temp_image_$i";
                 await DocumentUtils.writeBytesToFile(tempPath, input);
                 input = tempPath;
               } else {
                 input = DocumentUtils.createBlobUrl(input);
+                mutablePaths.add(input);
               }
             }
 
@@ -286,7 +290,7 @@ class PdfCombiner {
       if (input is String) {
         sources.add(input);
       } else if (input is Uint8List) {
-        if (!kIsWeb) {
+        if (!kIsWeb && !PdfCombiner.isMockWeb) {
           final tempPath =
               "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_$i.pdf";
           await DocumentUtils.writeBytesToFile(tempPath, input);
@@ -294,6 +298,7 @@ class PdfCombiner {
           sources.add(tempPath);
         } else {
           final blobPath = DocumentUtils.createBlobUrl(input);
+          temporalFiles.add(blobPath);
           sources.add(blobPath);
         }
       } else if (DocumentUtils.isFileSystemFile(input)) {
@@ -312,7 +317,6 @@ class PdfCombiner {
     String? failingInput;
 
     for (final path in sources) {
-      if (kIsWeb && path.startsWith("blob:")) continue;
       final isPDF = await DocumentUtils.isPDF(path);
       if (!isPDF) {
         allArePDF = false;
