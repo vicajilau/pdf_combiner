@@ -75,16 +75,16 @@ Combine several PDF files into a single document.
 
 **Required Parameters:**
 
-- `inputPaths`: A list of strings representing the paths of the PDF files to combine.
+- `inputs`: A list of inputs representing the PDF files to combine. It accepts `String` (file paths) and `Uint8List` (bytes).
 - `outputPath`: A string representing the absolute path of the file where the combined PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
 ```dart
-final filesPath = ["path/to/file1.pdf", "path/to/file2.pdf"];
+final inputs = ["path/to/file1.pdf", fileinBytes];
 final outputPath = "path/to/output.pdf";
 
 try {
   String response = await PdfCombiner.mergeMultiplePDFs(
-    inputPaths: filesPath,
+    inputs: inputs,
     outputPath: outputPath,
   );
   print("File saved to: $response");
