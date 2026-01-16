@@ -54,10 +54,10 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
 # =========================
 set(PDFIUM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Buscamos pdfium.lib
+# We are looking for pdfium.lib
 find_library(PDFIUM_LIB NAMES pdfium PATHS "${PDFIUM_ROOT}" NO_DEFAULT_PATH REQUIRED)
 
-# Buscamos las librerías de enlace (Import Libraries)
+# We are looking for pdfium.lib
 find_library(HEIF_LIB NAMES heif PATHS "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif" NO_DEFAULT_PATH REQUIRED)
 find_library(DE265_LIB NAMES libde265 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/include/libheif" NO_DEFAULT_PATH REQUIRED)
 
