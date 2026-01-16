@@ -40,6 +40,14 @@
 
 This plugin supports **Android**, **iOS**, **Linux**, **macOS** and **web** directly, no additional setup is required.
 
+### Use HEIF on Linux
+
+To use HEIF images on Linux, you need to install the `libheif-dev` library.
+
+```bash
+sudo apt-get install libheif-dev
+```
+
 ## Features
 
 ### Create PDF From Multiple Documents

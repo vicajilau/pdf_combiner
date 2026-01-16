@@ -17,6 +17,11 @@
 
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
+#include <cstdio>
+
+#ifdef HAS_HEIF
+#include <libheif/heif.h>
+#endif
 
 #define PDF_COMBINER_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(), \
@@ -129,6 +134,41 @@ FlMethodResponse* merge_multiple_pdfs(FlValue* args) {
     return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
 }
 
+std::string ProcessHeic(const std::string& path) {
+#ifdef HAS_HEIF
+    heif_context* ctx = heif_context_alloc();
+    heif_error err = heif_context_read_from_file(ctx, path.c_str(), nullptr);
+    if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
+
+    heif_image_handle* handle = nullptr;
+    err = heif_context_get_primary_image_handle(ctx, &handle);
+    if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
+
+    heif_image* img = nullptr;
+    err = heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGB, nullptr);
+    if (err.code != heif_error_Ok) {
+        heif_image_handle_release(handle);
+        heif_context_free(ctx);
+        return "";
+    }
+
+    int width = heif_image_get_width(img, heif_channel_interleaved);
+    int height = heif_image_get_height(img, heif_channel_interleaved);
+    int stride;
+    const uint8_t* data = heif_image_get_plane_readonly(img, heif_channel_interleaved, &stride);
+
+    std::string out_jpg = path + ".tmp.jpg";
+    int success = stbi_write_jpg(out_jpg.c_str(), width, height, 3, data, 85);
+
+    heif_image_release(img);
+    heif_image_handle_release(handle);
+    heif_context_free(ctx);
+    return success ? out_jpg : "";
+#else
+    return "";
+#endif
+}
+
 FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
         return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
@@ -195,13 +235,26 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
     }
 
     // Process each image file in input_paths
-    for (const auto& input_path : input_paths) {
+    for (const auto& path : input_paths) {
+        std::string current_path = path;
+        bool is_temp = false;
+        
+        bool is_heic = (path.find(".heic") != std::string::npos || path.find(".HEIC") != std::string::npos ||
+                       path.find(".heif") != std::string::npos || path.find(".HEIF") != std::string::npos);
+        
+        if (is_heic) {
+            current_path = ProcessHeic(path);
+            if (current_path.empty()) continue;
+            is_temp = true;
+        }
+
         // Load the image and get its dimensions
         int width, height, channels;
-        unsigned char* image_data = stbi_load(input_path.c_str(), &width, &height, &channels, 4);
+        unsigned char* image_data = stbi_load(current_path.c_str(), &width, &height, &channels, 4);
         if (!image_data) {
+            if (is_temp) remove(current_path.c_str());
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image: " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image: " + current_path).c_str(), nullptr));
         }
 
         // Resize the image if necessary
@@ -241,9 +294,10 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 
         FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), width, height);
         if (!new_page) {
+            if (is_temp) remove(current_path.c_str());
             stbi_image_free(image_data);
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new("page_creation_failed", ("Failed to create page for image: " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("page_creation_failed", ("Failed to create page for image: " + current_path).c_str(), nullptr));
         }
 
         // Crate bitmap of the image
@@ -266,9 +320,10 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 
         FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
         if (!image_obj) {
+            if (is_temp) remove(current_path.c_str());
             stbi_image_free(image_data);
             FPDF_CloseDocument(new_doc);
-            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_object_creation_failed", ("Failed to create image object for: " + input_path).c_str(), nullptr));
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_object_creation_failed", ("Failed to create image object for: " + current_path).c_str(), nullptr));
         }
 
         FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
@@ -278,6 +333,7 @@ FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
 
         stbi_image_free(image_data);
         FPDFBitmap_Destroy(bitmap);
+        if (is_temp) remove(current_path.c_str());
     }
 
     MyFileWrite file_write;
