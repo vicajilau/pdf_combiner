@@ -46,7 +46,7 @@ The plugin supports the following image formats:
 
 - **JPEG**
 - **PNG**
-- **HEIC / HEIF**
+- **HEIC**
 
 ### Use HEIF on Linux
 
