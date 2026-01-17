@@ -28,19 +28,15 @@ void main() {
     }
 
     // Call the plugin
-    final result = await PdfCombiner.createPDFFromMultipleImages(
+    await PdfCombiner.createPDFFromMultipleImages(
       inputPaths: [sampleHeicPath],
       outputPath: outputPath,
     );
-
-    print('Plugin result: $result');
 
     final outputFile = File(outputPath);
     expect(outputFile.existsSync(), true,
         reason: 'Output PDF should be created');
     expect(outputFile.lengthSync(), greaterThan(0),
         reason: 'Output PDF should not be empty');
-
-    print('PDF created successfully at $outputPath');
   });
 }
