@@ -49,7 +49,8 @@ class DocumentUtils {
       final fileType =
           await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
       return fileType == FileMagicNumberType.png ||
-          fileType == FileMagicNumberType.jpg;
+          fileType == FileMagicNumberType.jpg ||
+          fileType == FileMagicNumberType.heic;
     } catch (e) {
       return false;
     }
