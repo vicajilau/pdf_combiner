@@ -5,19 +5,22 @@ import 'package:integration_test/integration_test.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'test_file_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('createPdfFromMultipleImages parses HEIC',
       (WidgetTester tester) async {
-    // We expect sample.heic to be in the assets directory.
-    // In integration tests on Linux, we can access the file system.
+    // Initialize the helper
+    await TestFileHelper.init();
 
-    final sampleHeicPath =
-        '/home/vicajilau/Developer/Flutter/pdf_combiner/example/assets/sample.heic';
-    final File heicFile = File(sampleHeicPath);
+    // Prepare input file from assets
+    final helper = TestFileHelper(['assets/sample.heic']);
+    final filePaths = await helper.prepareInputFiles();
+    final sampleHeicPath = filePaths.first;
 
+    final heicFile = File(sampleHeicPath);
     expect(heicFile.existsSync(), true,
         reason: 'sample.heic must exist at $sampleHeicPath');
 
