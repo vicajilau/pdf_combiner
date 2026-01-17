@@ -69,6 +69,7 @@ set(MY_PLUGIN_DLLS
         "${CMAKE_CURRENT_SOURCE_DIR}/pdfium.dll"
         "${CMAKE_CURRENT_SOURCE_DIR}/heif.dll"
         "${CMAKE_CURRENT_SOURCE_DIR}/libde265.dll"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libx265.dll"
 )
 
 
