@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
+import 'package:pdf_combiner/models/pdf_source.dart';
 
 class MockPdfCombinerPlatform extends PdfCombinerPlatform {}
 
@@ -14,7 +15,7 @@ void main() {
     test('mergeMultiplePDFs throws UnimplementedError', () async {
       expect(
         () async => await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-          inputPaths: ['path/to/pdf1.pdf', 'path/to/pdf2.pdf'],
+          inputs: [PdfSource.path('path/to/pdf1.pdf'), PdfSource.path('path/to/pdf2.pdf')],
           outputPath: 'path/to/output.pdf',
         ),
         throwsA(isA<UnimplementedError>()),

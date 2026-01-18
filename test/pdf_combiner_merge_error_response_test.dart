@@ -18,7 +18,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<dynamic> inputPaths,
+    required List<PdfSource> inputs,
     required String outputPath,
   }) {
     return Future.value(errorMessage);
@@ -48,7 +48,7 @@ class MockPdfCombinerPlatformNullResponse
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<dynamic> inputPaths,
+    required List<PdfSource> inputs,
     required String outputPath,
   }) {
     return Future.value(null);
@@ -90,8 +90,8 @@ void main() {
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
             inputs: [
-              'example/assets/document_1.pdf',
-              'example/assets/document_2.pdf'
+              PdfSource.path('example/assets/document_1.pdf'),
+              PdfSource.path('example/assets/document_2.pdf')
             ],
             outputPath: 'output.pdf',
           ),
@@ -109,8 +109,8 @@ void main() {
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
             inputs: [
-              'example/assets/document_1.pdf',
-              'example/assets/document_2.pdf'
+              PdfSource.path('example/assets/document_1.pdf'),
+              PdfSource.path('example/assets/document_2.pdf')
             ],
             outputPath: 'output.pdf',
           ),
@@ -130,24 +130,11 @@ void main() {
         final file = java.File('example/assets/document_1.pdf');
 
         final result = await PdfCombiner.mergeMultiplePDFs(
-          inputs: [pdfBytes, file],
+          inputs: [PdfSource.bytes(pdfBytes), PdfSource.file(file)],
           outputPath: 'output.pdf',
         );
 
         expect(result, 'output.pdf');
-      });
-
-      test('throws PdfCombinerException for invalid input type (PdfCombiner)',
-          () async {
-        PdfCombiner.isMock = true;
-        expect(
-          () async => await PdfCombiner.mergeMultiplePDFs(
-            inputs: [123],
-            outputPath: 'output.pdf',
-          ),
-          throwsA(isA<PdfCombinerException>().having((e) => e.message,
-              'message', contains('Invalid input type: int'))),
-        );
       });
     });
 

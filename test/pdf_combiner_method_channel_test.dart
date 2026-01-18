@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/image_scale.dart';
+import 'package:pdf_combiner/models/pdf_source.dart';
+import 'package:pdf_combiner/utils/document_utils.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +22,7 @@ void main() {
         .setMockMethodCallHandler(testChannel, null);
   });
 
-  test('mergeMultiplePDFs calls method channel correctly', () async {
+  test('mergeMultiplePDFs calls method channel correctly with path', () async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
       if (methodCall.method == 'mergeMultiplePDF') {
@@ -32,7 +36,59 @@ void main() {
     });
 
     final result = await platform.mergeMultiplePDFs(
-      inputPaths: ['file1.pdf', 'file2.pdf'],
+      inputs: [PdfSource.path('file1.pdf'), PdfSource.path('file2.pdf')],
+      outputPath: '/output/path',
+    );
+
+    expect(result, 'merged.pdf');
+  });
+
+  test('mergeMultiplePDFs handles PdfSource.bytes correctly', () async {
+    final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
+    final tempPath =
+        "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_0.pdf";
+
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
+      if (methodCall.method == 'mergeMultiplePDF') {
+        final paths = methodCall.arguments['paths'] as List;
+        expect(paths.length, 1);
+        expect(paths[0], tempPath);
+        return 'merged.pdf';
+      }
+      return null;
+    });
+
+    final result = await platform.mergeMultiplePDFs(
+      inputs: [PdfSource.bytes(pdfBytes)],
+      outputPath: '/output/path',
+    );
+
+    expect(result, 'merged.pdf');
+
+    // Clean up temp file
+    final tempFile = File(tempPath);
+    if (await tempFile.exists()) {
+      await tempFile.delete();
+    }
+  });
+
+  test('mergeMultiplePDFs handles PdfSource.file correctly', () async {
+    final testFile = File('test_file_for_merge.pdf');
+
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
+      if (methodCall.method == 'mergeMultiplePDF') {
+        final paths = methodCall.arguments['paths'] as List;
+        expect(paths.length, 1);
+        expect(paths[0], testFile.path);
+        return 'merged.pdf';
+      }
+      return null;
+    });
+
+    final result = await platform.mergeMultiplePDFs(
+      inputs: [PdfSource.file(testFile)],
       outputPath: '/output/path',
     );
 

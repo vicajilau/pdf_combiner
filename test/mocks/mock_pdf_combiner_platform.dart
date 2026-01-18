@@ -1,6 +1,7 @@
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
+import 'package:pdf_combiner/models/pdf_source.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 /// A mock implementation of the [PdfCombinerPlatform] interface for testing purposes.
@@ -17,11 +18,11 @@ class MockPdfCombinerPlatform
   /// Simulates combining multiple PDFs into a single PDF. It returns a mock result
   /// indicating a successful merge.
   ///
-  /// [inputPaths] A list of file paths to the PDF files to be merged.
+  /// [inputs] A list of [PdfSource] representing the PDF files to be merged.
   /// [outputPath] The path where the merged PDF should be saved.
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<dynamic> inputPaths,
+    required List<PdfSource> inputs,
     required String outputPath,
   }) {
     return Future.value(outputPath);

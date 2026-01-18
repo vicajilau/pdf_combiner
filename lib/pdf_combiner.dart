@@ -10,7 +10,10 @@ import 'package:pdf_combiner/isolates/pdf_from_multiple_images_isolate.dart';
 
 import 'models/image_from_pdf_config.dart';
 import 'models/pdf_from_multiple_image_config.dart';
+import 'models/pdf_source.dart';
 import 'dart:typed_data' show Uint8List;
+
+export 'models/pdf_source.dart';
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
 ///
@@ -84,7 +87,7 @@ class PdfCombiner {
         }
       }
       final response = await PdfCombiner.mergeMultiplePDFs(
-        inputs: mutablePaths,
+        inputs: mutablePaths.map((p) => PdfSource.path(p)).toList(),
         outputPath: outputPath,
       );
       DocumentUtils.removeTemporalFiles(mutablePaths);
@@ -95,21 +98,21 @@ class PdfCombiner {
 
   /// Combines multiple PDF files into a single PDF.
   ///
-  /// This method takes a list of inputs (`inputs`) which can be file paths ([String]),
-  /// raw bytes ([Uint8List]), or [File] objects.
+  /// This method takes a list of [PdfSource] inputs which can be created from
+  /// file paths, raw bytes ([Uint8List]), or [File] objects.
   /// It also takes an `outputPath` where the resulting combined PDF should be saved.
   ///
   /// If the operation is successful, it returns the result from the platform-specific implementation.
   /// If an error occurs, it returns a message describing the error.
   ///
   /// Parameters:
-  /// - `inputs`: A list representing the PDF files or bytes to be combined.
+  /// - `inputs`: A list of [PdfSource] representing the PDF files or bytes to be combined.
   /// - `outputPath`: A string representing the directory where the combined PDF should be saved.
   ///
   /// Returns:
   /// - A `Future<String>` representing the result of the operation (either the success message or an error message).
   static Future<String> mergeMultiplePDFs({
-    required List<dynamic> inputs,
+    required List<PdfSource> inputs,
     required String outputPath,
   }) async {
     if (inputs.isEmpty) {
@@ -263,29 +266,26 @@ class PdfCombiner {
   }
 
   static Future<List<String>> _preparePdfSources(
-      List<dynamic> inputs, List<String> temporalFiles) async {
+      List<PdfSource> inputs, List<String> temporalFiles) async {
     final List<String> sources = [];
     for (int i = 0; i < inputs.length; i++) {
-      var input = inputs[i];
-      if (input is String) {
-        sources.add(input);
-      } else if (input is Uint8List) {
+      final input = inputs[i];
+      if (input.path != null) {
+        sources.add(input.path!);
+      } else if (input.bytes != null) {
         if (!kIsWeb && !PdfCombiner.isMock) {
           final tempPath =
               "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_$i.pdf";
-          await DocumentUtils.writeBytesToFile(tempPath, input);
+          await DocumentUtils.writeBytesToFile(tempPath, input.bytes!);
           temporalFiles.add(tempPath);
           sources.add(tempPath);
         } else {
-          final blobPath = DocumentUtils.createBlobUrl(input);
+          final blobPath = DocumentUtils.createBlobUrl(input.bytes!);
           temporalFiles.add(blobPath);
           sources.add(blobPath);
         }
-      } else if (DocumentUtils.isFileSystemFile(input)) {
-        sources.add(DocumentUtils.getFilePath(input));
-      } else {
-        throw PdfCombinerException(
-            "Invalid input type: ${input.runtimeType}. Expected String, Uint8List or File.");
+      } else if (input.file != null) {
+        sources.add(input.file!.path);
       }
     }
     return sources;
