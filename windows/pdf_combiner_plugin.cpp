@@ -21,10 +21,10 @@
 #include <io.h>
 #include <fcntl.h>
 
-#include "include/pdfium/fpdf_edit.h"
-#include "include/pdfium/fpdf_ppo.h"
-#include "include/pdfium/fpdf_save.h"
 #include "include/pdfium/fpdfview.h"
+#include "include/pdfium/fpdf_edit.h"
+#include "include/pdfium/fpdf_save.h"
+#include "include/pdfium/fpdf_ppo.h"
 
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
@@ -48,10 +48,6 @@ namespace pdf_combiner {
         size_t written = fwrite(pData, 1, size, pMe->file);
         return (written == size) ? 1 : 0;
     }
-  } else {
-    result->Error("invalid_arguments", "inputPaths must be a list of strings");
-    return;
-  }
 
     std::string ProcessHeic(const std::string& path) {
 #ifdef HAS_HEIF
