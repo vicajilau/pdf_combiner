@@ -17,6 +17,11 @@
 
 #include "include/pdf_combiner/my_file_write.h"
 #include "include/pdf_combiner/save_bitmap_to_png.h"
+#include <cstdio>
+
+#ifdef HAS_HEIF
+#include <libheif/heif.h>
+#endif
 
 #define PDF_COMBINER_PLUGIN(obj)                                               \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), pdf_combiner_plugin_get_type(),           \
@@ -98,10 +103,336 @@ FlMethodResponse *merge_multiple_pdfs(FlValue *args) {
 
   int total_pages = 0; // Variable to track total pages
 
-  // Process each PDF file in input_paths
-  for (const auto &input_path : input_paths) {
-    // Load the PDF file
-    FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
+    // Cast outputPath to C-string
+    const char* output_path = fl_value_get_string(output_path_value);
+
+    // Cast inputPaths to a strings vector
+    int num_pdfs = fl_value_get_length(input_paths_value);
+    std::vector<std::string> input_paths;
+    for (int i = 0; i < num_pdfs; i++) {
+        FlValue* path_value = fl_value_get_list_value(input_paths_value, i);
+        if (!path_value || fl_value_get_type(path_value) != FL_VALUE_TYPE_STRING) {
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Each item in inputPaths must be a string", nullptr));
+        }
+        input_paths.push_back(std::string(fl_value_get_string(path_value)));
+    }
+
+    // Create an empty document
+    FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
+    if (!new_doc) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("document_creation_failed", "Failed to create new PDF document", nullptr));
+    }
+
+    int total_pages = 0;  // Variable to track total pages
+
+    // Process each PDF file in input_paths
+    for (const auto& input_path : input_paths) {
+        // Load the PDF file
+        FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path.c_str(), nullptr);
+        if (!doc) {
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("document_loading_failed", ("Failed to load document: " + input_path).c_str(), nullptr));
+        }
+
+        // Get the number of pages in the loaded document
+        int page_count = FPDF_GetPageCount(doc);
+
+        // Import the page into the new document
+        if (!FPDF_ImportPages(new_doc, doc, nullptr, total_pages)) {
+            FPDF_CloseDocument(doc);
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("page_import_failed", "Failed to import page into new document", nullptr));
+        }
+        total_pages += page_count;
+
+        // Close the loaded document
+        FPDF_CloseDocument(doc);
+    }
+
+    MyFileWrite file_write;
+    file_write.version = 1;
+    file_write.WriteBlock = MyWriteBlock;
+    file_write.filename = output_path;
+
+    // Save the new document
+    if (!FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL)) {
+        FPDF_CloseDocument(new_doc);
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("document_save_failed", "Failed to save the new PDF document", nullptr));
+    }
+
+    // Close the new document
+    FPDF_CloseDocument(new_doc);
+
+    // Return success response with the output path
+    g_autoptr(FlValue) result = fl_value_new_string(output_path);
+    return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+}
+
+std::string ProcessHeic(const std::string& path) {
+#ifdef HAS_HEIF
+    heif_context* ctx = heif_context_alloc();
+    heif_error err = heif_context_read_from_file(ctx, path.c_str(), nullptr);
+    if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
+
+    heif_image_handle* handle = nullptr;
+    err = heif_context_get_primary_image_handle(ctx, &handle);
+    if (err.code != heif_error_Ok) { heif_context_free(ctx); return ""; }
+
+    heif_image* img = nullptr;
+    err = heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGB, nullptr);
+    if (err.code != heif_error_Ok) {
+        heif_image_handle_release(handle);
+        heif_context_free(ctx);
+        return "";
+    }
+
+    int width = heif_image_get_width(img, heif_channel_interleaved);
+    int height = heif_image_get_height(img, heif_channel_interleaved);
+    int stride;
+    const uint8_t* data = heif_image_get_plane_readonly(img, heif_channel_interleaved, &stride);
+
+    std::string out_jpg = path + ".tmp.jpg";
+    int success = stbi_write_jpg(out_jpg.c_str(), width, height, 3, data, 85);
+
+    heif_image_release(img);
+    heif_image_handle_release(handle);
+    heif_context_free(ctx);
+    return success ? out_jpg : "";
+#else
+    return "";
+#endif
+}
+
+FlMethodResponse* create_pdf_from_multiple_images(FlValue* args) {
+    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Expected a map with inputPaths and outputPath", nullptr));
+    }
+
+    // Get inputPaths (List<String>)
+    FlValue* input_paths_value = fl_value_lookup_string(args, "paths");
+    if (!input_paths_value || fl_value_get_type(input_paths_value) != FL_VALUE_TYPE_LIST) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "inputPaths must be a list of strings", nullptr));
+    }
+
+    // Get width (String)
+    FlValue* max_width_value = fl_value_lookup_string(args, "width");
+    if (!max_width_value || fl_value_get_type(max_width_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "width must be an int", nullptr));
+    }
+
+    // Cast width to C-int
+    int64_t max_width = fl_value_get_int(max_width_value);
+
+    // Get height (String)
+    FlValue* max_height_value = fl_value_lookup_string(args, "height");
+    if (!max_height_value || fl_value_get_type(max_height_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "maxHeight must be an int", nullptr));
+    }
+
+    // Cast height to C-int
+    int64_t max_height = fl_value_get_int(max_height_value);
+
+    // Get keepAspectRatio (Bool)
+    FlValue* keep_aspect_ratio_value = fl_value_lookup_string(args, "keepAspectRatio");
+    if (!keep_aspect_ratio_value || fl_value_get_type(keep_aspect_ratio_value) != FL_VALUE_TYPE_BOOL) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "keepAspectRatio must be a boolean", nullptr));
+    }
+
+    // Get boolean value
+    bool keep_aspect_ratio = fl_value_get_bool(keep_aspect_ratio_value);
+
+    // Get outputPath (String)
+    FlValue* output_path_value = fl_value_lookup_string(args, "outputDirPath");
+    if (!output_path_value || fl_value_get_type(output_path_value) != FL_VALUE_TYPE_STRING) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "outputPath must be a string", nullptr));
+    }
+
+    // Cast outputPath to C-string
+    const char* output_path = fl_value_get_string(output_path_value);
+
+    // Cast inputPaths to a strings vector
+    int num_images = fl_value_get_length(input_paths_value);
+    std::vector<std::string> input_paths;
+
+    for (int i = 0; i < num_images; i++) {
+        FlValue* path_value = fl_value_get_list_value(input_paths_value, i);
+        if (!path_value || fl_value_get_type(path_value) != FL_VALUE_TYPE_STRING) {
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "Each item in inputPaths must be a string", nullptr));
+        }
+        input_paths.push_back(std::string(fl_value_get_string(path_value)));
+    }
+
+    // Create an empty document
+    FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
+    if (!new_doc) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("document_creation_failed", "Failed to create new PDF document", nullptr));
+    }
+
+    // Process each image file in input_paths
+    for (const auto& path : input_paths) {
+        std::string current_path = path;
+        bool is_temp = false;
+        
+        bool is_heic = (path.find(".heic") != std::string::npos || path.find(".HEIC") != std::string::npos ||
+                       path.find(".heif") != std::string::npos || path.find(".HEIF") != std::string::npos);
+        
+        if (is_heic) {
+            current_path = ProcessHeic(path);
+            if (current_path.empty()) continue;
+            is_temp = true;
+        }
+
+        // Load the image and get its dimensions
+        int width, height, channels;
+        unsigned char* image_data = stbi_load(current_path.c_str(), &width, &height, &channels, 4);
+        if (!image_data) {
+            if (is_temp) remove(current_path.c_str());
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_loading_failed", ("Failed to load image: " + current_path).c_str(), nullptr));
+        }
+
+        // Resize the image if necessary
+        if (max_width != 0 || max_height != 0) {
+            int new_width = width;
+            int new_height = height;
+
+            if (max_width != 0) {
+                new_width = max_width;
+            }
+
+            if (max_height != 0) {
+                if (keep_aspect_ratio) {
+                    double aspectRatio = static_cast<double>(height) / width;
+                    new_height = static_cast<int>(max_width * aspectRatio);
+                } else {
+                    new_height = max_height;
+                }
+            }
+
+            unsigned char* resized_image_data = new unsigned char[new_width * new_height * 4];
+
+            if (!stbir_resize_uint8_linear(image_data, width, height, 0, resized_image_data, new_width, new_height, 0, STBIR_RGBA)) {
+                stbi_image_free(image_data);
+                FPDF_CloseDocument(new_doc);
+                return FL_METHOD_RESPONSE(fl_method_error_response_new("image_resize_failed", "Failed to resize image", nullptr));
+            }
+
+            // Free only the original image, not the resized one
+            stbi_image_free(image_data);
+
+            // Assigning the new values
+            image_data = resized_image_data;
+            width = new_width;
+            height = new_height;
+        }
+
+        FPDF_PAGE new_page = FPDFPage_New(new_doc, FPDF_GetPageCount(new_doc), width, height);
+        if (!new_page) {
+            if (is_temp) remove(current_path.c_str());
+            stbi_image_free(image_data);
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("page_creation_failed", ("Failed to create page for image: " + current_path).c_str(), nullptr));
+        }
+
+        // Crate bitmap of the image
+        FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0);
+        FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
+        unsigned char* bitmap_buffer = (unsigned char*)FPDFBitmap_GetBuffer(bitmap);
+        int stride = FPDFBitmap_GetStride(bitmap);
+
+        for (int y = 0; y < height; y++) {
+            unsigned char* src_row = image_data + y * width * 4;
+            unsigned char* dst_row = bitmap_buffer + (height - 1 - y) * stride;
+
+            for (int x = 0; x < width; x++) {
+                dst_row[x * 4 + 0] = src_row[x * 4 + 2]; // Blue  <- Red
+                dst_row[x * 4 + 1] = src_row[x * 4 + 1]; // Green <- Green
+                dst_row[x * 4 + 2] = src_row[x * 4 + 0]; // Red   <- Blue
+                dst_row[x * 4 + 3] = src_row[x * 4 + 3]; // Alpha <- Alpha
+            }
+        }
+
+        FPDF_PAGEOBJECT image_obj = FPDFPageObj_NewImageObj(new_doc);
+        if (!image_obj) {
+            if (is_temp) remove(current_path.c_str());
+            stbi_image_free(image_data);
+            FPDF_CloseDocument(new_doc);
+            return FL_METHOD_RESPONSE(fl_method_error_response_new("image_object_creation_failed", ("Failed to create image object for: " + current_path).c_str(), nullptr));
+        }
+
+        FPDFImageObj_SetBitmap(&new_page, 1, image_obj, bitmap);
+        FPDFImageObj_SetMatrix(image_obj, width, 0, 0, -height, 0, height);
+        FPDFPage_InsertObject(new_page, image_obj);
+        FPDFPage_GenerateContent(new_page);
+
+        stbi_image_free(image_data);
+        FPDFBitmap_Destroy(bitmap);
+        if (is_temp) remove(current_path.c_str());
+    }
+
+    MyFileWrite file_write;
+    file_write.version = 1;
+    file_write.WriteBlock = MyWriteBlock;
+    file_write.filename = output_path;
+
+    // Save the new document
+    if (!FPDF_SaveAsCopy(new_doc, (FPDF_FILEWRITE*)&file_write, FPDF_INCREMENTAL)) {
+        FPDF_CloseDocument(new_doc);
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("document_save_failed", "Failed to save the new PDF document", nullptr));
+    }
+
+    // Close the new document
+    FPDF_CloseDocument(new_doc);
+
+    // Return success response with the output path
+    g_autoptr(FlValue) result = fl_value_new_string(output_path);
+    return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+}
+
+FlMethodResponse* create_image_from_pdf(FlValue* args) {
+    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "Expected a map with inputPath, outputDirPath, width, height, compression and createOneImage keys", nullptr));
+    }
+
+    // Get params from the map
+    const char* input_path = fl_value_get_string(fl_value_lookup_string(args, "path"));
+
+    // Get width (String)
+    FlValue* max_width_value = fl_value_lookup_string(args, "width");
+    if (!max_width_value || fl_value_get_type(max_width_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "width must be an int", nullptr));
+    }
+
+    // Cast width to C-int
+    int64_t max_width = fl_value_get_int(max_width_value);
+
+    // Get height (String)
+    FlValue* max_height_value = fl_value_lookup_string(args, "height");
+    if (!max_height_value || fl_value_get_type(max_height_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "height must be an int", nullptr));
+    }
+
+    // Cast height to C-int
+    int64_t max_height = fl_value_get_int(max_height_value);
+
+    // Get compression (String)
+    FlValue* compression_value = fl_value_lookup_string(args, "compression");
+    if (!compression_value || fl_value_get_type(compression_value) != FL_VALUE_TYPE_INT) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new("invalid_arguments", "compression must be an int", nullptr));
+    }
+
+    // Cast height to C-int
+    int compression = (int)fl_value_get_int(compression_value);
+
+    const char* output_path = fl_value_get_string(fl_value_lookup_string(args, "outputDirPath"));
+    if (!input_path || !output_path) {
+        return FL_METHOD_RESPONSE(fl_method_error_response_new(
+                "invalid_arguments", "Missing path or outputDirPath", nullptr));
+    }
+
+    // Load the PDF document
+    FPDF_DOCUMENT doc = FPDF_LoadDocument(input_path, nullptr);
     if (!doc) {
       FPDF_CloseDocument(new_doc);
       return FL_METHOD_RESPONSE(fl_method_error_response_new(

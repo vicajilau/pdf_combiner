@@ -12,12 +12,12 @@ void main() {
   late bool originalIsMock;
 
   setUp(() {
-    // Guardamos el valor original para restaurarlo en tearDown
+    // Save original value to restore it in tearDown
     originalIsMock = PdfCombiner.isMock;
   });
 
   tearDown(() {
-    // Restauramos el valor original aunque la prueba cambie el flag
+    // Restore original value even if the test changes the flag
     PdfCombiner.isMock = originalIsMock;
   });
 
@@ -30,30 +30,30 @@ void main() {
     return file;
   }
 
-  // Firmas mínimas por "magic number"
+  // Minimum signatures by "magic number"
   // PDF: "%PDF-1.4" + ... + "%%EOF"
   final pdfBytes = <int>[
     0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, // %PDF-1.4
     0x0A,
-    // cuerpo mínimo ficticio
+    // dummy minimum body
     0x25, 0x25, 0x45, 0x4F, 0x46, // %%EOF
   ];
 
-  // PNG: firma de 8 bytes + algo de relleno
+  // PNG: 8-byte signature + some padding
   final pngBytes = <int>[
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // firma PNG
-    // Relleno para evitar falsos negativos
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+    // Padding to avoid false negatives
     0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
   ];
 
-  // JPEG: FF D8 FF + relleno
+  // JPEG: FF D8 FF + padding
   final jpgBytes = <int>[
-    0xFF, 0xD8, 0xFF, // firma JPEG
+    0xFF, 0xD8, 0xFF, // JPEG signature
     0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, // JFIF...
   ];
 
   group('getTemporalFolderPath', () {
-    test('devuelve ruta mock cuando PdfCombiner.isMock = true', () {
+    test('returns mock path when PdfCombiner.isMock = true', () {
       PdfCombiner.isMock = true;
 
       final path = MockDocumentUtils.getTemporalFolderPath();
@@ -61,7 +61,7 @@ void main() {
       expect(path, './example/assets/temp');
     });
 
-    test('devuelve Directory.systemTemp.path cuando PdfCombiner.isMock = false',
+    test('returns Directory.systemTemp.path when PdfCombiner.isMock = false',
         () {
       PdfCombiner.isMock = false;
 
@@ -72,23 +72,23 @@ void main() {
   });
 
   group('removeTemporalFiles', () {
-    test('no elimina nada cuando isMock = true (se salta el bucle)', () async {
+    test('does not delete anything when isMock = true (skips the loop)', () async {
       PdfCombiner.isMock = true;
       final mockTemp = MockDocumentUtils.getTemporalFolderPath();
       final fileInMockTemp = p.join(mockTemp, 'will_not_be_deleted.tmp');
 
       final file = await createFileWithBytes(fileInMockTemp, [1, 2, 3]);
 
-      // Aun cuando el path está dentro de la carpeta temporal mock, no debe borrarlo
+      // Even when the path is inside the mock temporal folder, it should not delete it
       DocumentUtils.removeTemporalFiles([fileInMockTemp]);
 
       expect(File(fileInMockTemp).existsSync(), isTrue);
 
-      // Limpieza
+      // Cleanup
       await file.delete();
     });
 
-    test('elimina archivo cuando isMock = false y el archivo existe', () async {
+    test('deletes file when isMock = false and the file exists', () async {
       PdfCombiner.isMock = false;
       final tempDir =
           await Directory.systemTemp.createTemp('doc_utils_test_delete_');
@@ -96,62 +96,62 @@ void main() {
       final file = await createFileWithBytes(filePath, [1, 2, 3]);
 
       expect(file.existsSync(), isTrue,
-          reason: "El archivo debería existir antes de la eliminación");
+          reason: "File should exist before deletion");
 
       DocumentUtils.removeTemporalFiles([filePath]);
 
       expect(file.existsSync(), isFalse,
-          reason: "El archivo debería haber sido eliminado");
+          reason: "File should have been deleted");
 
       await tempDir.delete(recursive: true);
     });
 
-    test('elimina solo archivos dentro de systemTemp cuando isMock = false',
+    test('deletes only files inside systemTemp when isMock = false',
         () async {
       PdfCombiner.isMock = false;
 
-      // Dentro de /tmp (o la ruta equivalente en el SO)
+      // Inside /tmp (or the equivalent path in the OS)
       final tempDir = await Directory.systemTemp.createTemp('doc_utils_test_');
       final insidePath = p.join(tempDir.path, 'to_delete.tmp');
 
-      // Fuera de system temp: usamos el directorio actual del proyecto
+      // Outside system temp: we use the current project directory
       final outsidePath =
           p.join(Directory.current.path, 'should_not_be_deleted.tmp');
       final outsideFile = await createFileWithBytes(outsidePath, [9, 9, 9]);
 
-      // También probamos una ruta inexistente que SÍ comienza por systemTemp
+      // We also test a non-existent path that DOES start with systemTemp
       final nonExistentInside = p.join(tempDir.path, 'non_existent.tmp');
 
       DocumentUtils.removeTemporalFiles(
           [insidePath, outsidePath, nonExistentInside]);
 
-      // Debe haberse eliminado el de dentro del systemTemp
+      // It should have deleted the one inside systemTemp
       expect(File(insidePath).existsSync(), isFalse);
 
-      // No debe eliminar el de fuera
+      // It should not delete the one outside
       expect(File(outsidePath).existsSync(), isTrue);
 
-      // La inexistente no debe lanzar error
+      // The non-existent one should not throw an error
       expect(File(nonExistentInside).existsSync(), isFalse);
 
-      // Limpieza
+      // Cleanup
       await outsideFile.delete();
       await tempDir.delete(recursive: true);
     });
   });
 
   group('hasPDFExtension', () {
-    test('true para ".pdf"', () {
+    test('true for ".pdf"', () {
       expect(DocumentUtils.hasPDFExtension('foo.pdf'), isTrue);
     });
 
-    test('false para ".PDF" (comparación sensible a mayúsculas)', () {
+    test('false for ".PDF" (case-sensitive comparison)', () {
       expect(DocumentUtils.hasPDFExtension('bar.PDF'), isFalse);
     });
   });
 
   group('isPDF', () {
-    test('true para un archivo con magic number de PDF', () async {
+    test('true for a file with PDF magic number', () async {
       final tempDir = await Directory.systemTemp.createTemp('doc_utils_pdf_');
       final pdfPath = p.join(tempDir.path, 'test.pdf');
       await createFileWithBytes(pdfPath, pdfBytes);
@@ -162,7 +162,7 @@ void main() {
       await Directory(tempDir.path).delete(recursive: true);
     });
 
-    test('false para un archivo que no es PDF (ej. PNG)', () async {
+    test('false for a file that is not PDF (e.g. PNG)', () async {
       final tempDir = await Directory.systemTemp.createTemp('doc_utils_pdf2_');
       final pngPath = p.join(tempDir.path, 'image.png');
       await createFileWithBytes(pngPath, pngBytes);
@@ -173,7 +173,7 @@ void main() {
       await Directory(tempDir.path).delete(recursive: true);
     });
 
-    test('false cuando hay excepción (ruta inexistente)', () async {
+    test('false when there is an exception (non-existent path)', () async {
       final nonExistent = p.join(Directory.systemTemp.path, 'no_such_file.pdf');
       final result = await DocumentUtils.isPDF(nonExistent);
       expect(result, isFalse);
@@ -186,7 +186,7 @@ void main() {
   });
 
   group('isImage', () {
-    test('true para PNG', () async {
+    test('true for PNG', () async {
       final tempDir =
           await Directory.systemTemp.createTemp('doc_utils_img_png_');
       final pngPath = p.join(tempDir.path, 'img.png');
@@ -198,7 +198,7 @@ void main() {
       await Directory(tempDir.path).delete(recursive: true);
     });
 
-    test('true para JPG/JPEG', () async {
+    test('true for JPG/JPEG', () async {
       final tempDir =
           await Directory.systemTemp.createTemp('doc_utils_img_jpg_');
       final jpgPath = p.join(tempDir.path, 'img.jpg');
@@ -210,7 +210,7 @@ void main() {
       await Directory(tempDir.path).delete(recursive: true);
     });
 
-    test('false para PDF', () async {
+    test('false for PDF', () async {
       final tempDir =
           await Directory.systemTemp.createTemp('doc_utils_img_pdf_');
       final pdfPath = p.join(tempDir.path, 'doc.pdf');
@@ -222,7 +222,7 @@ void main() {
       await Directory(tempDir.path).delete(recursive: true);
     });
 
-    test('false cuando hay excepción (ruta inexistente)', () async {
+    test('false when there is an exception (non-existent path)', () async {
       final nonExistent =
           p.join(Directory.systemTemp.path, 'no_such_image.png');
       final result = await DocumentUtils.isImage(nonExistent);

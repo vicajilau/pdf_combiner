@@ -8,6 +8,7 @@
 * **BREAKING CHANGE**: Error handling now uses standard Dart `try-catch` blocks. The plugin throws `PdfCombinerException` on failure.
 * Simplified documentation examples to use generic `try-catch` blocks.
 * Added a dedicated section for `PdfCombinerException` in README.
+* Added support for .heic file format.
 
 ## 4.4.2
 

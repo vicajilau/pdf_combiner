@@ -112,11 +112,12 @@ class DocumentUtils {
   /// Determines whether the given file path or bytes corresponds to an image file.
   ///
   /// This method uses the file's magic number (file signature) to detect if
-  /// the file is a PNG or JPEG/JPG image, regardless of its extension.
+  /// the file is a PNG, JPEG/JPG or HEIC image, regardless of its extension.
   ///
   /// **Currently supported image formats:**
   /// - PNG
   /// - JPEG/JPG
+  /// - HEIC
   ///
   /// **Parameters:**
   /// - [input]: The absolute path to the file or [Uint8List] bytes to check
@@ -132,7 +133,8 @@ class DocumentUtils {
           ? FileMagicNumber.detectFileTypeFromBytes(input)
           : await FileMagicNumber.detectFileTypeFromPathOrBlob(input);
       return fileType == FileMagicNumberType.png ||
-          fileType == FileMagicNumberType.jpg;
+          fileType == FileMagicNumberType.jpg ||
+          fileType == FileMagicNumberType.heic;
     } catch (e) {
       return false;
     }

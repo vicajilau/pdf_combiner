@@ -25,6 +25,8 @@ class FileTypeIcon extends StatelessWidget {
                   return Image.asset("assets/files/jpg_file.png");
                 case FileMagicNumberType.pdf:
                   return Image.asset("assets/files/pdf_file.png");
+                case FileMagicNumberType.heic:
+                  return Image.asset("assets/files/heic_file.png");
                 default:
                   return Image.asset("assets/files/unknown_file.png");
               }

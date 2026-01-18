@@ -40,6 +40,22 @@
 
 This plugin supports **Android**, **iOS**, **Linux**, **macOS** and **web** directly, no additional setup is required.
 
+### Supported Image Formats
+
+The plugin supports the following image formats:
+
+- **JPEG**
+- **PNG**
+- **HEIC**
+
+### Use HEIF on Linux
+
+To use HEIF images on Linux, you need to install the `libheif-dev` library.
+
+```bash
+sudo apt-get install libheif-dev
+```
+
 ## Features
 
 ### Create PDF From Multiple Documents

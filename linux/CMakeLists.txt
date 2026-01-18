@@ -44,6 +44,13 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE flutter)
 target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::GTK)
 target_link_libraries(${PLUGIN_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libpdfium.so")
 
+pkg_check_modules(LIBHEIF libheif)
+if(LIBHEIF_FOUND)
+  target_compile_definitions(${PLUGIN_NAME} PRIVATE HAS_HEIF)
+  target_include_directories(${PLUGIN_NAME} PRIVATE ${LIBHEIF_INCLUDE_DIRS})
+  target_link_libraries(${PLUGIN_NAME} PRIVATE ${LIBHEIF_LIBRARIES})
+endif()
+
 # List of absolute paths to libraries that should be bundled with the plugin.
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
@@ -69,6 +76,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/release-1.11.0.zip
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 # Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
