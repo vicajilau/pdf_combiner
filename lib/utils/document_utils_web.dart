@@ -1,5 +1,8 @@
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
+import 'package:web/web.dart' as web;
+import 'dart:js_interop';
+import 'package:pdf_combiner/models/merge_input.dart';
 
 /// Utility class for handling document-related checks in a web environment.
 ///
@@ -53,6 +56,32 @@ class DocumentUtils {
           fileType == FileMagicNumberType.heic;
     } catch (e) {
       return false;
+    }
+  }
+
+  /// Process a [MergeInput] and return a valid file path (or Blob URL).
+  ///
+  /// - [MergeInputPath]: Returns the path as-is.
+  /// - [MergeInputBytes]: Creates a Blob URL and returns it.
+  static Future<String> prepareInput(MergeInput input) async {
+    if (input is MergeInputPath) {
+      return input.path;
+    } else if (input is MergeInputBytes) {
+      final JSUint8Array array = input.bytes.toJS;
+      final web.Blob blob = web.Blob([array].toJS);
+      final String blobUrl = web.URL.createObjectURL(blob);
+      return blobUrl;
+    } else {
+      throw ArgumentError('Unknown MergeInput type');
+    }
+  }
+
+  /// Cleanup resources for a [MergeInput] after usage.
+  ///
+  /// - [MergeInputBytes]: Revokes the Blob URL.
+  static Future<void> cleanupInput(String path) async {
+    if (path.startsWith('blob:')) {
+      web.URL.revokeObjectURL(path);
     }
   }
 }

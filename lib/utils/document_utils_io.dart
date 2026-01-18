@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
+import 'dart:math';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 /// Utility class for handling document-related checks in a file system environment.
@@ -126,6 +127,46 @@ class DocumentUtils {
           fileType == FileMagicNumberType.heic;
     } catch (e) {
       return false;
+    }
+  }
+
+  /// Process a [MergeInput] and return a valid file path.
+  ///
+  /// - [MergeInputPath]: Returns the path as-is.
+  /// - [MergeInputBytes]: Writes bytes to a temp file and returns the path.
+  static Future<String> prepareInput(MergeInput input) async {
+    if (input is MergeInputPath) {
+      return input.path;
+    } else if (input is MergeInputBytes) {
+      final tempDirPath = getTemporalFolderPath();
+      final tempDir = Directory(tempDirPath);
+      if (!await tempDir.exists()) {
+        await tempDir.create(recursive: true);
+      }
+      final String fileName =
+          'merge_input_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}.pdf';
+      final String tempPath = p.join(tempDirPath, fileName);
+      final file = File(tempPath);
+      await file.writeAsBytes(input.bytes);
+      return tempPath;
+    } else {
+      throw ArgumentError('Unknown MergeInput type');
+    }
+  }
+
+  /// Cleanup resources for a [MergeInput] after usage.
+  ///
+  /// - [MergeInputBytes]: Deletes the temporary file.
+  static Future<void> cleanupInput(String path) async {
+    if (path.startsWith(getTemporalFolderPath())) {
+      try {
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (_) {
+        // Ignore deletion errors
+      }
     }
   }
 }

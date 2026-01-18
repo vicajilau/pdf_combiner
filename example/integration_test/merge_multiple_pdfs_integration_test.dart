@@ -20,7 +20,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: inputPaths,
+        inputs: inputPaths.map((p) => MergeInputPath(p)).toList(),
         outputPath: outputPath,
       );
 
@@ -33,7 +33,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: inputPaths,
+        inputs: inputPaths.map((p) => MergeInputPath(p)).toList(),
         outputPath: outputPath,
       );
 
@@ -46,14 +46,14 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [],
+          inputs: [],
           outputPath: outputPath,
         ),
         throwsA(
           predicate(
             (e) =>
                 e is PdfCombinerException &&
-                e.message == 'The parameter (inputPaths) cannot be empty',
+                e.message == 'The parameter (inputs) cannot be empty',
           ),
         ),
       );
@@ -67,7 +67,7 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: inputPaths,
+          inputs: inputPaths.map((p) => MergeInputPath(p)).toList(),
           outputPath: outputPath,
         ),
         throwsA(
@@ -89,7 +89,7 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: inputPaths,
+          inputs: inputPaths.map((p) => MergeInputPath(p)).toList(),
           outputPath: outputPath,
         ),
         throwsA(

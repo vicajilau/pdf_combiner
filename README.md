@@ -57,6 +57,12 @@ sudo apt-get install libheif-dev
 ```
 
 ## Features
+### MergeInput
+
+The plugin introduces a unified `MergeInput` class to handle inputs from different sources:
+
+- **`MergeInputPath(String path)`**: Use this when you have the file path (e.g., from `file_picker` or local storage).
+- **`MergeInputBytes(Uint8List bytes)`**: Use this when you have the file data in memory (e.g., from an API or web picker).
 
 ### Create PDF From Multiple Documents
 
@@ -64,23 +70,26 @@ Combine any number of PDFs and images, in any order, into a single PDF document.
 
 **Required Parameters:**
 
-- `inputPaths`: A list of strings representing the image and PDF file paths.
-- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
+- `inputs`: A list of `MergeInput` objects representing the image and PDF inputs.
+- `outputPath`: A string representing the absolute path where the generated PDF should be saved. (Ignored on Web).
 
 ```dart
-final imagePaths = ["path/to/image1.jpg", "path/to/document1.pdf", "path/to/image2.png"];
+final inputs = [
+  MergeInputPath("path/to/image1.jpg"),
+  MergeInputPath("path/to/document1.pdf"),
+  MergeInputBytes(imageBytes), // Example with bytes
+];
 final outputPath = "path/to/output.pdf";
 
 try {
   String response = await PdfCombiner.generatePDFFromDocuments(
-    inputPaths: imagePaths,
+    inputs: inputs,
     outputPath: outputPath,
   );
 
   print("File saved to: $response");
 
 } catch (e) {
-  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -91,21 +100,23 @@ Combine several PDF files into a single document.
 
 **Required Parameters:**
 
-- `inputPaths`: A list of strings representing the paths of the PDF files to combine.
-- `outputPath`: A string representing the absolute path of the file where the combined PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
+- `inputs`: A list of `MergeInput` objects representing the PDF files to combine.
+- `outputPath`: A string representing the absolute path where the combined PDF should be saved. (Ignored on Web).
 
 ```dart
-final filesPath = ["path/to/file1.pdf", "path/to/file2.pdf"];
+final inputs = [
+  MergeInputPath("path/to/file1.pdf"),
+  MergeInputPath("path/to/file2.pdf"),
+];
 final outputPath = "path/to/output.pdf";
 
 try {
   String response = await PdfCombiner.mergeMultiplePDFs(
-    inputPaths: filesPath,
+    inputs: inputs,
     outputPath: outputPath,
   );
   print("File saved to: $response");
 } catch (e) {
-  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -116,25 +127,25 @@ Convert a list of image files into a single PDF document.
 
 **Required Parameters:**
 
-- `inputPaths`: A list of strings representing the image file paths.
-- `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
-
-By default, images are added to the PDF without modifications. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
+- `inputs`: A list of `MergeInput` objects representing the images.
+- `outputPath`: A string representing the absolute path where the generated PDF should be saved. (Ignored on Web).
 
 ```dart
-final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
+final inputs = [
+  MergeInputPath("path/to/image1.jpg"),
+  MergeInputPath("path/to/image2.jpg"),
+];
 final outputPath = "path/to/output.pdf";
 
 try {
   String response = await PdfCombiner.createPDFFromMultipleImages(
-    inputPaths: imagePaths,
+    inputs: inputs,
     outputPath: outputPath,
   );
 
   print("File saved to: $response");
 
 } catch (e) {
-  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -151,12 +162,15 @@ The `PdfFromMultipleImageConfig` class is used to configure how images are proce
 Example Usage:
 
 ```dart
-final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
+final inputs = [
+  MergeInputPath("path/to/image1.jpg"),
+  MergeInputPath("path/to/image2.jpg"),
+];
 final outputPath = "path/to/output.pdf";
 
 try {
   String response = await PdfCombiner.createPDFFromMultipleImages(
-    inputPaths: imagePaths,
+    inputs: inputs,
     outputPath: outputPath,
     config: const PdfFromMultipleImageConfig(
       rescale: ImageScale(width: 480, height: 640),
@@ -166,7 +180,6 @@ try {
   print("File saved to: $response");
 
 } catch (e) {
-  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -177,23 +190,20 @@ Extract images from a PDF file.
 
 **Required Parameters:**
 
-- `inputPath`: A string representing the file path of the PDF to extract images from.
-- `outputDirPath`: A string representing the directory folder where the extracted images should be saved. In the case of web, this parameter is ignored.
-
-By default, images are extracted in their original format. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
+- `input`: A `MergeInput` object representing the PDF to extract images from.
+- `outputDirPath`: A string representing the directory folder where the extracted images should be saved. (Ignored on Web).
 
 ```dart
-final pdfFilePath = "path/to/input.pdf";
+final input = MergeInputPath("path/to/input.pdf");
 final outputDirPath = "path/to/output";
 
 try {
   List<String> response = await PdfCombiner.createImageFromPDF(
-    inputPath: pdfFilePath, 
+    input: input, 
     outputDirPath: outputDirPath,
   );
   print("Files generated: $response");
 } catch (e) {
-  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```
@@ -211,12 +221,12 @@ The `ImageFromPdfConfig` class is used to configure how images are processed bef
 Example Usage:
 
 ```dart
-final pdfFilePath = "path/to/input.pdf";
+final input = MergeInputPath("path/to/input.pdf");
 final outputDirPath = "path/to/output";
 
 try {
   List<String> response = await PdfCombiner.createImageFromPDF(
-    inputPath: pdfFilePath,
+    input: input,
     outputDirPath: outputDirPath,
     config: const ImageFromPdfConfig(
       rescale: ImageScale(width: 480, height: 640),
@@ -226,7 +236,6 @@ try {
   );
   print("Files generated: $response");
 } catch (e) {
-  // If the error is handled by the plugin, a PdfCombinerException is thrown.
   print("Error: $e");
 }
 ```

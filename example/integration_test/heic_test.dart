@@ -30,9 +30,8 @@ void main() {
       File(outputPath).deleteSync();
     }
 
-    // Call the plugin
     await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: [sampleHeicPath],
+      inputs: [MergeInputPath(heicFile.path)],
       outputPath: outputPath,
     );
 

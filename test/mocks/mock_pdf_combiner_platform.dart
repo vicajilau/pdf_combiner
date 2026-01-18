@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
@@ -38,7 +39,10 @@ class MockPdfCombinerPlatform
     required List<String> inputPaths,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
-  }) {
+  }) async {
+    final file = File(outputPath);
+    await file.create(recursive: true);
+    await file.writeAsBytes([0x25, 0x50, 0x44, 0x46]); // %PDF
     return Future.value(outputPath);
   }
 
