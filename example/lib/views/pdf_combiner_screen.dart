@@ -56,7 +56,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         if (_viewModel.outputFiles.isNotEmpty) ...[
-                          // HERE IS THE OUTPUT SECTION
+                          // OUTPUT SECTION
                           const SizedBox(),
                           const Text(
                             'OUTPUT FILES',
@@ -109,9 +109,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                               },
                             ),
                           ),
-                          const Divider(),
                         ],
-                        // HERE IS THE INPUT SECTION
+                        // INPUT SECTION
                         const Text(
                           'INPUT FILES',
                           style: TextStyle(
@@ -197,6 +196,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                               ),
                               ElevatedButton(
                                 onPressed: _viewModel.selectedFiles.isNotEmpty
+                                    ? _combinePdfsInMemory
+                                    : null,
+                                child: const Text('Combine in-memory PDFs'),
+                              ),
+                              ElevatedButton(
+                                onPressed: _viewModel.selectedFiles.isNotEmpty
                                     ? _createPdfFromImages
                                     : null,
                                 child: const Text('PDF from images'),
@@ -273,6 +278,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   Future<void> _combinePdfs() async {
     await _runSafely(() async {
       await _viewModel.combinePdfs();
+    });
+  }
+
+  Future<void> _combinePdfsInMemory() async {
+    await _runSafely(() async {
+      await _viewModel.combinePdfsInMemory();
     });
   }
 

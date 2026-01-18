@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/pdf_source.dart';
+import 'package:pdf_combiner/utils/document_utils.dart';
 
 import '../models/pdf_from_multiple_image_config.dart';
 import 'pdf_combiner_platform_interface.dart';
@@ -19,10 +21,10 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// Merges multiple PDF files into a single PDF.
   ///
   /// This method sends a request to the native platform to merge the PDF files
-  /// specified in the `paths` parameter and saves the result in the `outputPath`.
+  /// specified in the `inputs` parameter and saves the result in the `outputPath`.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
+  /// - `inputs`: A list of [PdfSource] representing the PDFs to be merged.
   /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
@@ -30,14 +32,33 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<PdfSource> inputs,
     required String outputPath,
   }) async {
+    final inputPaths = await _convertSourcesToPathsNative(inputs);
     final result = await methodChannel.invokeMethod<String>(
       'mergeMultiplePDF',
       {'paths': inputPaths, 'outputDirPath': outputPath},
     );
     return result;
+  }
+
+  /// Converts a list of [PdfSource] to a list of file paths for native platforms.
+  Future<List<String>> _convertSourcesToPathsNative(List<PdfSource> inputs) async {
+    final List<String> paths = [];
+    for (int i = 0; i < inputs.length; i++) {
+      final input = inputs[i];
+      if (input.path != null) {
+        paths.add(input.path!);
+      } else if (input.bytes != null) {
+        final tempPath = "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_$i.pdf";
+        await DocumentUtils.writeBytesToFile(tempPath, input.bytes!);
+        paths.add(tempPath);
+      } else if (input.file != null) {
+        paths.add(input.file!.path);
+      }
+    }
+    return paths;
   }
 
   /// Creates a PDF from multiple image files.

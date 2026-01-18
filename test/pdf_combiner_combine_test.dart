@@ -50,9 +50,9 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: [
-          'example/assets/document_1.pdf',
-          'example/assets/document_2.pdf'
+        inputs: [
+          PdfSource.path('example/assets/document_1.pdf'),
+          PdfSource.path('example/assets/document_2.pdf')
         ],
         outputPath: 'output/path.pdf',
       );
@@ -69,9 +69,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf',
+          inputs: [
+            PdfSource.path('example/assets/document_1.pdf'),
+            PdfSource.path('example/assets/document_2.pdf'),
           ],
           outputPath: 'output/path.jpeg',
         ),
@@ -93,14 +93,14 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [],
+          inputs: [],
           outputPath: 'output/path',
         ),
         throwsA(
           predicate(
             (e) =>
                 e is PdfCombinerException &&
-                e.message == 'The parameter (inputPaths) cannot be empty',
+                e.message == 'The parameter (inputs) cannot be empty',
           ),
         ),
       );
@@ -113,7 +113,7 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: ['path1', 'path2'],
+          inputs: [PdfSource.path('path1'), PdfSource.path('path2')],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
@@ -132,7 +132,7 @@ void main() {
 
       expect(
         () => fakePlatformWithError.mergeMultiplePDFs(
-          inputPaths: ['path1', 'path2'],
+          inputs: [PdfSource.path('path1'), PdfSource.path('path2')],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
@@ -149,7 +149,7 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: ['path1.pdf', 'path2.pdf'],
+          inputs: [PdfSource.path('path1.pdf'), PdfSource.path('path2.pdf')],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
@@ -170,9 +170,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            PdfSource.path('example/assets/document_1.pdf'),
+            PdfSource.path('example/assets/document_2.pdf')
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -191,9 +191,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            PdfSource.path('example/assets/document_1.pdf'),
+            PdfSource.path('example/assets/document_2.pdf')
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -212,9 +212,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            PdfSource.path('example/assets/document_1.pdf'),
+            PdfSource.path('example/assets/document_2.pdf')
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -235,9 +235,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            PdfSource.path('example/assets/document_1.pdf'),
+            PdfSource.path('example/assets/document_2.pdf')
           ],
           outputPath: 'output/path.pdf',
         ),

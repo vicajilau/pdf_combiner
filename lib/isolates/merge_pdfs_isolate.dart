@@ -16,7 +16,7 @@ class MergePdfsIsolate {
   /// This method spawns an isolate (or uses `compute` on the web) to process
   /// the PDF merging asynchronously.
   ///
-  /// - `inputPaths`: A list of file paths of the input PDFs.
+  /// - `inputPaths`: A list of file paths representing the PDFs to be combined.
   /// - `outputPath`: The file path where the merged PDF will be saved.
   ///
   /// Returns the path of the merged PDF, or `null` if an error occurs.
@@ -26,7 +26,7 @@ class MergePdfsIsolate {
   }) async {
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-        inputPaths: inputPaths,
+        inputs: inputPaths.map((p) => PdfSource.path(p)).toList(),
         outputPath: outputPath,
       );
     }
@@ -40,11 +40,12 @@ class MergePdfsIsolate {
   /// Background process that merges multiple PDFs.
   ///
   /// - `params`: A map containing:
-  ///   - `inputPaths`: The list of input PDF file paths.
+  ///   - `inputPaths`: The list of input PDF paths.
   ///   - `outputPath`: The path where the merged PDF should be saved.
   ///   - `token`: The isolate token for Flutter's binary messenger or `null` for web.
   static Future<String?> _combinePDFs(Map<String, dynamic> params) async {
-    final List<String> inputPaths = params['inputPaths'];
+    final List<String> inputPaths =
+        (params['inputPaths'] as List).cast<String>();
     final String outputPath = params['outputPath'];
     final RootIsolateToken? token = params['token'];
 
@@ -53,7 +54,7 @@ class MergePdfsIsolate {
     }
 
     return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-      inputPaths: inputPaths,
+      inputs: inputPaths.map((p) => PdfSource.path(p)).toList(),
       outputPath: outputPath,
     );
   }

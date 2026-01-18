@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -177,6 +178,11 @@ void main() {
       final result = await DocumentUtils.isPDF(nonExistent);
       expect(result, isFalse);
     });
+
+    test('true when Uint8List has magic number of PDF', () async {
+      final result = await DocumentUtils.isPDF(Uint8List.fromList(pdfBytes));
+      expect(result, isTrue);
+    });
   });
 
   group('isImage', () {
@@ -221,6 +227,71 @@ void main() {
           p.join(Directory.systemTemp.path, 'no_such_image.png');
       final result = await DocumentUtils.isImage(nonExistent);
       expect(result, isFalse);
+    });
+
+    test('true when Uint8List has magic number of PNG', () async {
+      final result = await DocumentUtils.isImage(Uint8List.fromList(pngBytes));
+      expect(result, isTrue);
+    });
+  });
+
+  group('getFilePath', () {
+    test('returns original path when input is String', () {
+      const path = 'some/path/file.pdf';
+      expect(DocumentUtils.getFilePath(path), path);
+    });
+
+    test('returns path of File when input is File', () {
+      final file = File('another/path.pdf');
+      expect(DocumentUtils.getFilePath(file), 'another/path.pdf');
+    });
+
+    test('throws ArgumentError for unsupported types', () {
+      expect(() => DocumentUtils.getFilePath(123), throwsArgumentError);
+    });
+  });
+
+  group('writeBytesToFile', () {
+    test('writes bytes correctly to a file', () async {
+      final tempDir = await Directory.systemTemp.createTemp('doc_utils_write_');
+      final path = p.join(tempDir.path, 'output.bin');
+      final bytes = Uint8List.fromList([1, 2, 3, 4]);
+
+      await DocumentUtils.writeBytesToFile(path, bytes);
+
+      final file = File(path);
+      expect(file.existsSync(), isTrue);
+      expect(await file.readAsBytes(), bytes);
+
+      await tempDir.delete(recursive: true);
+    });
+  });
+
+  group('createBlobUrl', () {
+    test('throws UnsupportedError in non-web platforms', () {
+      expect(() => DocumentUtils.createBlobUrl(Uint8List(0)),
+          throwsA(isA<UnsupportedError>()));
+    });
+  });
+
+  group('isFileSystemFile', () {
+    test('returns true for File', () {
+      expect(DocumentUtils.isFileSystemFile(File('foo')), isTrue);
+    });
+
+    test('returns false for String', () {
+      expect(DocumentUtils.isFileSystemFile('foo'), isFalse);
+    });
+  });
+
+  group('setTemporalFolderPath', () {
+    test('updates the temporal path', () {
+      const newPath = '/custom/temp';
+      final original = DocumentUtils.getTemporalFolderPath();
+      DocumentUtils.setTemporalFolderPath(newPath);
+      expect(DocumentUtils.getTemporalFolderPath(), newPath);
+      // Restauramos
+      DocumentUtils.setTemporalFolderPath(original);
     });
   });
 }

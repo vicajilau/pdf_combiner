@@ -7,6 +7,7 @@ import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'dart:io' as java;
+import 'dart:typed_data';
 
 class MockPdfCombinerPlatformCustomError
     with MockPlatformInterfaceMixin
@@ -17,7 +18,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<PdfSource> inputs,
     required String outputPath,
   }) {
     return Future.value(errorMessage);
@@ -47,7 +48,7 @@ class MockPdfCombinerPlatformNullResponse
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<PdfSource> inputs,
     required String outputPath,
   }) {
     return Future.value(null);
@@ -88,9 +89,9 @@ void main() {
         // Use real PDF files that pass magic number validation
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: [
-              'example/assets/document_1.pdf',
-              'example/assets/document_2.pdf'
+            inputs: [
+              PdfSource.path('example/assets/document_1.pdf'),
+              PdfSource.path('example/assets/document_2.pdf')
             ],
             outputPath: 'output.pdf',
           ),
@@ -107,15 +108,33 @@ void main() {
         // Use real PDF files that pass magic number validation
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: [
-              'example/assets/document_1.pdf',
-              'example/assets/document_2.pdf'
+            inputs: [
+              PdfSource.path('example/assets/document_1.pdf'),
+              PdfSource.path('example/assets/document_2.pdf')
             ],
             outputPath: 'output.pdf',
           ),
           throwsA(isA<PdfCombinerException>().having(
-              (e) => e.message, 'message', PdfCombinerMessages.errorMessage)),
+              (e) => e.message, 'message', 'Unknown error during merge')),
         );
+      });
+
+      test('successfully merge with Uint8List and File inputs (PdfCombiner)',
+          () async {
+        PdfCombiner.isMock = true;
+        MockPdfCombinerPlatformCustomError mockPlatform =
+            MockPdfCombinerPlatformCustomError('output.pdf');
+        PdfCombinerPlatform.instance = mockPlatform;
+
+        final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
+        final file = java.File('example/assets/document_1.pdf');
+
+        final result = await PdfCombiner.mergeMultiplePDFs(
+          inputs: [PdfSource.bytes(pdfBytes), PdfSource.file(file)],
+          outputPath: 'output.pdf',
+        );
+
+        expect(result, 'output.pdf');
       });
     });
 

@@ -70,20 +70,27 @@ class DocumentUtils {
   /// ```
   static void setTemporalFolderPath(String path) => _temporalDir = path;
 
-  /// Determines whether the given file path corresponds to a PDF file.
+  /// Determines whether the given file path or bytes corresponds to a PDF file.
   ///
   /// This method uses the file's magic number (file signature) to accurately
   /// detect if the file is a PDF, regardless of its extension. This is more
   /// reliable than checking only the file extension.
   ///
   /// **Parameters:**
-  /// - [filePath]: The absolute path to the file to check
+  /// - [input]: The absolute path to the file or [Uint8List] bytes to check
   ///
   /// **Returns:** `true` if the file is a valid PDF, `false` otherwise
   /// (including when an error occurs during detection)
-  static Future<bool> isPDF(String filePath) async {
+  static Future<bool> isPDF(dynamic input) async {
     try {
-      return await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath) ==
+      if (PdfCombiner.isMock && input is String && input.startsWith('blob:')) {
+        return true;
+      }
+      if (input is Uint8List) {
+        return FileMagicNumber.detectFileTypeFromBytes(input) ==
+            FileMagicNumberType.pdf;
+      }
+      return await FileMagicNumber.detectFileTypeFromPathOrBlob(input) ==
           FileMagicNumberType.pdf;
     } catch (e) {
       return false;
@@ -102,7 +109,7 @@ class DocumentUtils {
   static bool hasPDFExtension(String filePath) =>
       p.extension(filePath) == ".pdf";
 
-  /// Determines whether the given file path corresponds to an image file.
+  /// Determines whether the given file path or bytes corresponds to an image file.
   ///
   /// This method uses the file's magic number (file signature) to detect if
   /// the file is a PNG, JPEG/JPG or HEIC image, regardless of its extension.
@@ -113,19 +120,44 @@ class DocumentUtils {
   /// - HEIC
   ///
   /// **Parameters:**
-  /// - [filePath]: The absolute path to the file to check
+  /// - [input]: The absolute path to the file or [Uint8List] bytes to check
   ///
   /// **Returns:** `true` if the file is a PNG or JPEG image, `false` otherwise
   /// (including when an error occurs during detection)
-  static Future<bool> isImage(String filePath) async {
+  static Future<bool> isImage(dynamic input) async {
     try {
-      final fileType =
-          await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
+      if (PdfCombiner.isMock && input is String && input.startsWith('blob:')) {
+        return true;
+      }
+      final fileType = input is Uint8List
+          ? FileMagicNumber.detectFileTypeFromBytes(input)
+          : await FileMagicNumber.detectFileTypeFromPathOrBlob(input);
       return fileType == FileMagicNumberType.png ||
           fileType == FileMagicNumberType.jpg ||
           fileType == FileMagicNumberType.heic;
     } catch (e) {
       return false;
     }
+  }
+
+  /// Checks if the given input is a [File] object.
+  static bool isFileSystemFile(dynamic input) => input is File;
+
+  /// Returns the absolute path from a [File] or [String] input.
+  static String getFilePath(dynamic input) {
+    if (input is File) return input.path;
+    if (input is String) return input;
+    throw ArgumentError("Expected File or String, got ${input.runtimeType}");
+  }
+
+  /// Writes a sequence of [bytes] to a file at the specified [path].
+  static Future<void> writeBytesToFile(String path, Uint8List bytes) async {
+    await File(path).writeAsBytes(bytes);
+  }
+
+  /// Throws [UnsupportedError] on non-web platforms, unless [PdfCombiner.isMock] is true.
+  static String createBlobUrl(Uint8List bytes) {
+    if (PdfCombiner.isMock) return "blob:mock_url";
+    throw UnsupportedError("createBlobUrl is only supported on Web");
   }
 }

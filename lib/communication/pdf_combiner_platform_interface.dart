@@ -1,4 +1,5 @@
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/pdf_source.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../models/pdf_from_multiple_image_config.dart';
@@ -38,14 +39,14 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// multiple PDFs and return the result.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
-  /// - `outputDirPath`: The directory path where the merged PDF should be saved.
+  /// - `inputs`: A list of [PdfSource] representing the PDFs to be merged.
+  /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. By default,
   ///   this throws an [UnimplementedError].
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<PdfSource> inputs,
     required String outputPath,
   }) {
     throw UnimplementedError('mergeMultiplePDF() has not been implemented.');
