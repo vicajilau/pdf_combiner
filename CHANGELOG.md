@@ -2,6 +2,14 @@
 
 ### General
 
+* **BREAKING CHANGE**: `mergeMultiplePDFs` now requires `inputs` parameter (List<MergeInput>) instead of `inputPaths`.
+* **BREAKING CHANGE**: `createPDFFromMultipleImages` now requires `inputs` parameter (List<MergeInput>) instead of `inputPaths`.
+* **BREAKING CHANGE**: `generatePDFFromDocuments` now requires `inputs` parameter (List<MergeInput>) instead of `inputPaths`.
+* **BREAKING CHANGE**: `createImageFromPDF` now requires `input` parameter (MergeInput) instead of `inputPath`.
+* **BREAKING CHANGE**: Removed `inputPaths`/`inputPath` parameter from all methods.
+* Added `MergeInput` class hierarchy (`MergeInputPath`, `MergeInputBytes`) to support combining PDFs from files and raw bytes.
+
+
 * **BREAKING CHANGE**: Removed custom response models (`GeneratePdfFromDocumentsResponse`, `ImageFromPDFResponse`, `MergeMultiplePDFResponse` and `PdfFromMultipleImageResponse`).
 * **BREAKING CHANGE**: Methods now return `Future<String>` (path) or `Future<List<String>>` (paths) directly.
 * **BREAKING CHANGE**: Removed `PdfCombinerStatus` enum and `PdfCombinerDelegate`.

@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 import '../communication/pdf_combiner_platform_interface.dart';
-import '../models/pdf_from_multiple_image_config.dart';
 
 /// Internal class for handling PDF creation from multiple images using isolates.
 ///

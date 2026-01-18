@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
-import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/image_scale.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
@@ -22,7 +21,7 @@ void main() {
       // Call the method and check the response.
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: 'assets/test_image1.png',
+          input: MergeInputPath('assets/test_image1.png'),
           outputDirPath: 'output/path',
         ),
         throwsA(
@@ -45,7 +44,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: 'assets/test_image_not_exist.pdf',
+          input: MergeInputPath('assets/test_image_not_exist.pdf'),
           outputDirPath: 'output/path',
         ),
         throwsA(
@@ -67,14 +66,14 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: '',
-          outputDirPath: 'output/path',
+          input: MergeInputPath(''),
+          outputDirPath: 'output',
         ),
         throwsA(
           predicate(
             (e) =>
                 e is PdfCombinerException &&
-                e.message == 'The parameter (inputPath) cannot be empty',
+                e.message == 'The parameter (input) cannot be empty',
           ),
         ),
       );
@@ -89,7 +88,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: 'example/assets/document_1.pdf',
+          input: MergeInputPath('example/assets/document_1.pdf'),
           outputDirPath: 'output/path',
         ),
         throwsA(
@@ -109,7 +108,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: 'example/assets/document_1.pdf',
+          input: MergeInputPath('example/assets/document_1.pdf'),
           outputDirPath: 'output/path',
         ),
         throwsA(
@@ -129,7 +128,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: 'example/assets/document_1.pdf',
+          input: MergeInputPath('example/assets/document_1.pdf'),
           outputDirPath: 'output/path',
           config: ImageFromPdfConfig(
             rescale: ImageScale(width: 500, height: 200),
@@ -153,7 +152,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: 'example/assets/document_1.pdf',
+          input: MergeInputPath('example/assets/document_1.pdf'),
           outputDirPath: 'output/path',
         ),
         throwsA(
@@ -175,7 +174,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: 'example/assets/document_1.pdf',
+        input: MergeInputPath('example/assets/document_1.pdf'),
         outputDirPath: outputDirPath,
         config: ImageFromPdfConfig(createOneImage: true),
       );
@@ -195,7 +194,7 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: 'example/assets/document_1.pdf',
+        input: MergeInputPath('example/assets/document_1.pdf'),
         outputDirPath: outputDirPath,
       );
 

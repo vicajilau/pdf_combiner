@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
-import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 import 'test_file_helper.dart';
@@ -20,7 +20,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: inputPaths[0],
+        input: MergeInputPath(inputPaths[0]),
         outputDirPath: outputPath,
       );
 
@@ -35,7 +35,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInputPath(inputPaths[0]),
           outputDirPath: outputPath,
         ),
         throwsA(
@@ -56,7 +56,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInputPath(inputPaths[0]),
           outputDirPath: outputPath,
         ),
         throwsA(
@@ -76,7 +76,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0], outputDirPath: outputPath);
+          input: MergeInputPath(inputPaths[0]), outputDirPath: outputPath);
 
       expect(result.length, 1);
       expect(result, ['${TestFileHelper.basePath}/image_1.png']);
@@ -88,7 +88,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInputPath(inputPaths[0]),
           outputDirPath: outputPath,
           config: ImageFromPdfConfig(createOneImage: false));
 

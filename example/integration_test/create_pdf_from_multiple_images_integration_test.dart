@@ -20,7 +20,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: inputPaths,
+        inputs: inputPaths.map((p) => MergeInputPath(p)).toList(),
         outputPath: outputPath,
       );
 
@@ -30,14 +30,14 @@ void main() {
     testWidgets('Test creating pdf with empty list', (tester) async {
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: [],
+          inputs: [],
           outputPath: '${TestFileHelper.basePath}/assets/merged_output.pdf',
         ),
         throwsA(
           predicate(
             (e) =>
                 e is PdfCombinerException &&
-                e.message == 'The parameter (inputPaths) cannot be empty',
+                e.message == 'The parameter (inputs) cannot be empty',
           ),
         ),
       );
@@ -51,7 +51,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: inputPaths,
+          inputs: inputPaths.map((p) => MergeInputPath(p)).toList(),
           outputPath: outputPath,
         ),
         throwsA(
@@ -74,7 +74,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: inputPaths,
+          inputs: inputPaths.map((p) => MergeInputPath(p)).toList(),
           outputPath: outputPath,
         ),
         throwsA(
