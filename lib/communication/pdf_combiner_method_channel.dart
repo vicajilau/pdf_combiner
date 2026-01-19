@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/utils/document_utils.dart';
 
 import '../models/pdf_from_multiple_image_config.dart';
 import 'pdf_combiner_platform_interface.dart';
@@ -35,30 +34,12 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
-    final inputPaths = await _convertSourcesToPathsNative(inputs);
+    final inputPaths = inputs.map((input) => input.path).toList();
     final result = await methodChannel.invokeMethod<String>(
       'mergeMultiplePDF',
       {'paths': inputPaths, 'outputDirPath': outputPath},
     );
     return result;
-  }
-
-  /// Converts a list of [MergeInput] to a list of file paths for native platforms.
-  Future<List<String>> _convertSourcesToPathsNative(
-      List<MergeInput> inputs) async {
-    final List<String> paths = [];
-    for (int i = 0; i < inputs.length; i++) {
-      final input = inputs[i];
-      if (input.path != null) {
-        paths.add(input.path!);
-      } else if (input.bytes != null) {
-        final tempPath =
-            "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_$i.pdf";
-        await DocumentUtils.writeBytesToFile(tempPath, input.bytes!);
-        paths.add(tempPath);
-      }
-    }
-    return paths;
   }
 
   /// Creates a PDF from multiple image files.
@@ -83,7 +64,7 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
-    final inputPaths = await _convertSourcesToPathsNative(inputs);
+    final inputPaths = inputs.map((input) => input.path).toList();
     final result = await methodChannel.invokeMethod<String>(
       'createPDFFromMultipleImage',
       {
@@ -119,8 +100,8 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
-    final inputPaths = await _convertSourcesToPathsNative([input]);
-    final inputPath = inputPaths.first;
+    final inputPath = input.path;
+
     final result = await methodChannel.invokeMethod<List<dynamic>>(
       'createImageFromPDF',
       {

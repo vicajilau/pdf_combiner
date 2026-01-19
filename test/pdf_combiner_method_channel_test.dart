@@ -1,12 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/image_scale.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/utils/document_utils.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +19,7 @@ void main() {
         .setMockMethodCallHandler(testChannel, null);
   });
 
-  test('mergeMultiplePDFs calls method channel correctly with path', () async {
+  test('mergeMultiplePDFs calls method channel correctly', () async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
       if (methodCall.method == 'mergeMultiplePDF') {
@@ -41,36 +38,6 @@ void main() {
     );
 
     expect(result, 'merged.pdf');
-  });
-
-  test('mergeMultiplePDFs handles MergeInput.bytes correctly', () async {
-    final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
-    final tempPath =
-        "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_0.pdf";
-
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'mergeMultiplePDF') {
-        final paths = methodCall.arguments['paths'] as List;
-        expect(paths.length, 1);
-        expect(paths[0], tempPath);
-        return 'merged.pdf';
-      }
-      return null;
-    });
-
-    final result = await platform.mergeMultiplePDFs(
-      inputs: [MergeInput.bytes(pdfBytes)],
-      outputPath: '/output/path',
-    );
-
-    expect(result, 'merged.pdf');
-
-    // Clean up temp file
-    final tempFile = File(tempPath);
-    if (await tempFile.exists()) {
-      await tempFile.delete();
-    }
   });
 
   test('createPDFFromMultipleImages calls method channel correctly', () async {
