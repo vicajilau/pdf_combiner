@@ -137,7 +137,14 @@ class PdfCombiner {
 
     final List<String> temporalFiles = [];
     try {
-      final inputPaths = await _preparePdfSources(inputs, temporalFiles);
+      final List<String> inputPaths = [];
+      for (int i = 0; i < inputs.length; i++) {
+        final path = await DocumentUtils.prepareInput(inputs[i]);
+        if (inputs[i].bytes != null) {
+          temporalFiles.add(path);
+        }
+        inputPaths.add(path);
+      }
       await _validateMergeInputs(inputPaths, outputPath);
 
       final response = await MergePdfsIsolate.mergeMultiplePDFs(
@@ -295,30 +302,6 @@ class PdfCombiner {
     } finally {
       DocumentUtils.removeTemporalFiles(temporalFiles);
     }
-  }
-
-  static Future<List<String>> _preparePdfSources(
-      List<MergeInput> inputs, List<String> temporalFiles) async {
-    final List<String> sources = [];
-    for (int i = 0; i < inputs.length; i++) {
-      final input = inputs[i];
-      if (input.path != null) {
-        sources.add(input.path!);
-      } else if (input.bytes != null) {
-        if (!kIsWeb && !PdfCombiner.isMock) {
-          final tempPath =
-              "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_$i.pdf";
-          await DocumentUtils.writeBytesToFile(tempPath, input.bytes!);
-          temporalFiles.add(tempPath);
-          sources.add(tempPath);
-        } else {
-          final blobPath = DocumentUtils.createBlobUrl(input.bytes!);
-          temporalFiles.add(blobPath);
-          sources.add(blobPath);
-        }
-      }
-    }
-    return sources;
   }
 
   static Future<void> _validateMergeInputs(

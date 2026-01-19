@@ -166,7 +166,6 @@ class DocumentUtils {
   ///
   /// - [MergeInput.path]: Returns the path as-is.
   /// - [MergeInput.bytes]: Writes bytes to a temp file and returns the path.
-  /// - [MergeInput.file]: Returns the file's path.
   static Future<String> prepareInput(MergeInput input) async {
     if (input.path != null) {
       return input.path!;
