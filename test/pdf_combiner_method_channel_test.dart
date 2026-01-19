@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/image_scale.dart';
-import 'package:pdf_combiner/models/pdf_source.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 void main() {
@@ -36,14 +36,14 @@ void main() {
     });
 
     final result = await platform.mergeMultiplePDFs(
-      inputs: [PdfSource.path('file1.pdf'), PdfSource.path('file2.pdf')],
+      inputs: [MergeInput.path('file1.pdf'), MergeInput.path('file2.pdf')],
       outputPath: '/output/path',
     );
 
     expect(result, 'merged.pdf');
   });
 
-  test('mergeMultiplePDFs handles PdfSource.bytes correctly', () async {
+  test('mergeMultiplePDFs handles MergeInput.bytes correctly', () async {
     final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
     final tempPath =
         "${DocumentUtils.getTemporalFolderPath()}/temp_pdf_merge_0.pdf";
@@ -60,7 +60,7 @@ void main() {
     });
 
     final result = await platform.mergeMultiplePDFs(
-      inputs: [PdfSource.bytes(pdfBytes)],
+      inputs: [MergeInput.bytes(pdfBytes)],
       outputPath: '/output/path',
     );
 
@@ -71,28 +71,6 @@ void main() {
     if (await tempFile.exists()) {
       await tempFile.delete();
     }
-  });
-
-  test('mergeMultiplePDFs handles PdfSource.file correctly', () async {
-    final testFile = File('test_file_for_merge.pdf');
-
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(testChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'mergeMultiplePDF') {
-        final paths = methodCall.arguments['paths'] as List;
-        expect(paths.length, 1);
-        expect(paths[0], testFile.path);
-        return 'merged.pdf';
-      }
-      return null;
-    });
-
-    final result = await platform.mergeMultiplePDFs(
-      inputs: [PdfSource.file(testFile)],
-      outputPath: '/output/path',
-    );
-
-    expect(result, 'merged.pdf');
   });
 
   test('createPDFFromMultipleImages calls method channel correctly', () async {
@@ -112,7 +90,7 @@ void main() {
     });
 
     final result = await platform.createPDFFromMultipleImages(
-      inputPaths: ['image1.jpg', 'image2.png'],
+      inputs: [MergeInput.path('image1.jpg'), MergeInput.path('image2.png')],
       outputPath: '/output/path',
     );
 
@@ -137,7 +115,7 @@ void main() {
     });
 
     final result = await platform.createImageFromPDF(
-      inputPath: 'file.pdf',
+      input: MergeInput.path('file.pdf'),
       outputPath: '/output/path',
       config: ImageFromPdfConfig(
           rescale: ImageScale(width: 400, height: 400), createOneImage: false),

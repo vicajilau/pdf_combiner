@@ -1,5 +1,5 @@
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
-import 'package:pdf_combiner/models/pdf_source.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../models/pdf_from_multiple_image_config.dart';
@@ -39,14 +39,14 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// multiple PDFs and return the result.
   ///
   /// Parameters:
-  /// - `inputs`: A list of [PdfSource] representing the PDFs to be merged.
+  /// - `inputs`: A list of [MergeInput] representing the PDFs to be merged.
   /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
   /// - A `Future<String?>` representing the result of the operation. By default,
   ///   this throws an [UnimplementedError].
   Future<String?> mergeMultiplePDFs({
-    required List<PdfSource> inputs,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) {
     throw UnimplementedError('mergeMultiplePDF() has not been implemented.');
@@ -55,11 +55,11 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// Creates a PDF from multiple image files.
   ///
   /// This method sends a request to the native platform to create a PDF from the
-  /// images specified in the `inputPaths` parameter. The resulting PDF is saved in the
+  /// images specified in the `inputs` parameter. The resulting PDF is saved in the
   /// `outputPath` directory.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
+  /// - `inputs`: A list of [MergeInput] representing the images to be converted into a PDF.
   /// - `outputPath`: The directory path where the created PDF should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
@@ -69,7 +69,7 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// - A `Future<String?>` representing the result of the operation. By default,
   ///   this throws an [UnimplementedError].
   Future<String?> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
@@ -83,7 +83,7 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// from the provided PDF and return the resulting image file paths.
   ///
   /// Parameters:
-  /// - `inputPath`: The file path of the PDF from which images will be extracted.
+  /// - `input`: A [MergeInput] representing the PDF from which images will be extracted.
   /// - `outputPath`: The directory path where the images should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
@@ -94,7 +94,7 @@ abstract class PdfCombinerPlatform extends PlatformInterface {
   /// - A `Future<List<String>?>` representing a list of image file paths. By default,
   ///   this throws an [UnimplementedError].
   Future<List<String>?> createImageFromPDF({
-    required String inputPath,
+    required MergeInput input,
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {

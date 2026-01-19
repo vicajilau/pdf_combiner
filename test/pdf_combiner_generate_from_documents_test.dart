@@ -51,9 +51,9 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
-        inputPaths: [
-          'example/assets/document_1.pdf',
-          'example/assets/document_2.pdf'
+        inputs: [
+          MergeInput.path('example/assets/document_1.pdf'),
+          MergeInput.path('example/assets/document_2.pdf')
         ],
         outputPath: 'output/path.pdf',
       );
@@ -73,9 +73,9 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.generatePDFFromDocuments(
-        inputPaths: [
-          'example/assets/image_1.jpeg',
-          'example/assets/document_1.pdf',
+        inputs: [
+          MergeInput.path('example/assets/image_1.jpeg'),
+          MergeInput.path('example/assets/document_1.pdf'),
         ],
         outputPath: 'path.pdf',
       );
@@ -92,9 +92,9 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [
-            'example/assets/image_1.jpeg',
-            'example/assets/document_1.pdf',
+          inputs: [
+            MergeInput.path('example/assets/image_1.jpeg'),
+            MergeInput.path('example/assets/document_1.pdf'),
           ],
           outputPath: 'path.jpg',
         ),
@@ -115,9 +115,9 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [
-            'example/assets/document_5.pdf',
-            'example/assets/image_1.jpeg'
+          inputs: [
+            MergeInput.path('example/assets/document_5.pdf'),
+            MergeInput.path('example/assets/image_1.jpeg')
           ],
           outputPath: 'path.pdf',
         ),
@@ -139,9 +139,9 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [
-            'example/assets/document_5.pdf',
-            'example/assets/image_1.jpeg'
+          inputs: [
+            MergeInput.path('example/assets/document_5.pdf'),
+            MergeInput.path('example/assets/image_1.jpeg')
           ],
           outputPath: 'path.pdf',
         ),
@@ -162,9 +162,9 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [
-            'example/assets/image_5.jpeg',
-            'example/assets/image_2.png'
+          inputs: [
+            MergeInput.path('example/assets/image_5.jpeg'),
+            MergeInput.path('example/assets/image_2.png')
           ],
           outputPath: 'path.pdf',
         ),
@@ -187,9 +187,9 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/image_1.jpeg'
+          inputs: [
+            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInput.path('example/assets/image_1.jpeg')
           ],
           outputPath: '',
         ),
@@ -203,21 +203,21 @@ void main() {
       );
     });
 
-    test('combine - Error empty inputPaths', () async {
+    test('combine - Error empty inputs', () async {
       MockPdfCombinerPlatformWithError fakePlatformWithError =
           MockPdfCombinerPlatformWithError();
       PdfCombinerPlatform.instance = fakePlatformWithError;
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [],
+          inputs: [],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
           predicate(
             (e) =>
                 e is PdfCombinerException &&
-                e.message == 'The parameter (inputPaths) cannot be empty',
+                e.message == 'The parameter (inputs) cannot be empty',
           ),
         ),
       );
@@ -230,7 +230,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: ['path1', 'path2'],
+          inputs: [MergeInput.path('path1'), MergeInput.path('path2')],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
@@ -250,7 +250,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: ['path1.pdf', 'path2.pdf'],
+          inputs: [MergeInput.path('path1.pdf'), MergeInput.path('path2.pdf')],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
@@ -271,9 +271,9 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInput.path('example/assets/document_2.pdf')
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -292,9 +292,9 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInput.path('example/assets/document_2.pdf')
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -313,8 +313,8 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [
-            'example/assets/image_1.jpeg',
+          inputs: [
+            MergeInput.path('example/assets/image_1.jpeg'),
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -324,6 +324,23 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('generatePDFFromDocuments with bytes input (PdfCombiner)', () async {
+      PdfCombiner.isMock = true;
+      DocumentUtils.setTemporalFolderPath("./example/assets/temp");
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      // PDF magic number bytes
+      final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
+
+      final result = await PdfCombiner.generatePDFFromDocuments(
+        inputs: [MergeInput.bytes(pdfBytes)],
+        outputPath: 'output/path.pdf',
+      );
+
+      expect(result, "output/path.pdf");
     });
   });
 }

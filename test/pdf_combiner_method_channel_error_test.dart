@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
-import 'package:pdf_combiner/models/pdf_source.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 
 class MockPdfCombinerPlatform extends PdfCombinerPlatform {}
 
@@ -15,7 +15,10 @@ void main() {
     test('mergeMultiplePDFs throws UnimplementedError', () async {
       expect(
         () async => await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-          inputs: [PdfSource.path('path/to/pdf1.pdf'), PdfSource.path('path/to/pdf2.pdf')],
+          inputs: [
+            MergeInput.path('path/to/pdf1.pdf'),
+            MergeInput.path('path/to/pdf2.pdf')
+          ],
           outputPath: 'path/to/output.pdf',
         ),
         throwsA(isA<UnimplementedError>()),
@@ -25,9 +28,10 @@ void main() {
     test('createPDFFromMultipleImages throws UnimplementedError', () async {
       expect(
         () async => await PdfCombinerPlatform.instance
-            .createPDFFromMultipleImages(
-                inputPaths: ['path/to/image1.png', 'path/to/image2.png'],
-                outputPath: 'path/to/output.pdf'),
+            .createPDFFromMultipleImages(inputs: [
+          MergeInput.path('path/to/image1.png'),
+          MergeInput.path('path/to/image2.png')
+        ], outputPath: 'path/to/output.pdf'),
         throwsA(isA<UnimplementedError>()),
       );
     });
@@ -35,7 +39,7 @@ void main() {
     test('createImageFromPDF throws UnimplementedError', () async {
       expect(
         () async => await PdfCombinerPlatform.instance.createImageFromPDF(
-          inputPath: 'path/to/pdf.pdf',
+          input: MergeInput.path('path/to/pdf.pdf'),
           outputPath: 'path/to/output/images',
         ),
         throwsA(isA<UnimplementedError>()),

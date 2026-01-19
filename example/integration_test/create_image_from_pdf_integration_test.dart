@@ -20,7 +20,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: inputPaths[0],
+        input: MergeInput.path(inputPaths[0]),
         outputDirPath: outputPath,
       );
 
@@ -35,7 +35,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
         ),
         throwsA(
@@ -56,7 +56,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
         ),
         throwsA(
@@ -76,7 +76,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0], outputDirPath: outputPath);
+          input: MergeInput.path(inputPaths[0]), outputDirPath: outputPath);
 
       expect(result.length, 1);
       expect(result, ['${TestFileHelper.basePath}/image_1.png']);
@@ -88,7 +88,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
           config: ImageFromPdfConfig(createOneImage: false));
 

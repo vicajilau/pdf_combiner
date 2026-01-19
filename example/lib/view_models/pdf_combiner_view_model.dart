@@ -72,7 +72,7 @@ class PdfCombinerViewModel {
       String outputFilePath = '${directory?.path}/combined_output.pdf';
 
       final response = await PdfCombiner.mergeMultiplePDFs(
-        inputs: selectedFiles.map((p) => PdfSource.path(p)).toList(),
+        inputs: selectedFiles.map((p) => MergeInput.path(p)).toList(),
         outputPath: outputFilePath,
       ); // Combine the PDFs
       outputFiles = [response];
@@ -100,7 +100,7 @@ class PdfCombinerViewModel {
       }
 
       final response = await PdfCombiner.mergeMultiplePDFs(
-        inputs: fileBytes.map((b) => PdfSource.bytes(b)).toList(),
+        inputs: fileBytes.map((b) => MergeInput.bytes(b)).toList(),
         outputPath: outputFilePath,
       ); // Combine the PDFs
       outputFiles = [response];
@@ -113,7 +113,7 @@ class PdfCombinerViewModel {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     final response = await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: selectedFiles,
+      inputs: selectedFiles.map((path) => MergeInput.path(path)).toList(),
       outputPath: outputFilePath,
     );
     outputFiles = [response];
@@ -125,7 +125,7 @@ class PdfCombinerViewModel {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     final response = await PdfCombiner.generatePDFFromDocuments(
-      inputPaths: selectedFiles,
+      inputs: selectedFiles.map((path) => MergeInput.path(path)).toList(),
       outputPath: outputFilePath,
     );
     outputFiles = [response];
@@ -140,7 +140,7 @@ class PdfCombinerViewModel {
     final directory = await _getOutputDirectory();
     final outputFilePath = '${directory?.path}';
     final response = await PdfCombiner.createImageFromPDF(
-      inputPath: selectedFiles.first,
+      input: MergeInput.path(selectedFiles.first),
       outputDirPath: outputFilePath,
     );
     outputFiles = response;

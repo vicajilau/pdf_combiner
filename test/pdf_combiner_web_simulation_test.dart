@@ -11,7 +11,7 @@ class MockPdfCombinerPlatformSuccess
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<PdfSource> inputs,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) {
     return Future.value(outputPath);
@@ -19,7 +19,7 @@ class MockPdfCombinerPlatformSuccess
 
   @override
   Future<String?> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
@@ -28,7 +28,7 @@ class MockPdfCombinerPlatformSuccess
 
   @override
   Future<List<String>?> createImageFromPDF({
-    required String inputPath,
+    required MergeInput input,
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
@@ -50,7 +50,7 @@ void main() {
     test('covers web-specific path in mergeMultiplePDFs (Uint8List)', () async {
       final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputs: [PdfSource.bytes(pdfBytes)],
+        inputs: [MergeInput.bytes(pdfBytes)],
         outputPath: 'output.pdf',
       );
       expect(result, 'output.pdf');
@@ -63,7 +63,7 @@ void main() {
 
       try {
         await PdfCombiner.mergeMultiplePDFs(
-          inputs: [PdfSource.bytes(pdfBytes)],
+          inputs: [MergeInput.bytes(pdfBytes)],
           outputPath: 'output.pdf',
         );
       } catch (_) {}

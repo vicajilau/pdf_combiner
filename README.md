@@ -64,16 +64,21 @@ Combine any number of PDFs and images, in any order, into a single PDF document.
 
 **Required Parameters:**
 
-- `inputPaths`: A list of strings representing the image and PDF file paths.
+- `inputs`: A list of strings representing the image and PDF files.
 - `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
 ```dart
-final imagePaths = ["path/to/image1.jpg", "path/to/document1.pdf", "path/to/image2.png"];
+final imagePaths = [
+    MergeInput.path("path/to/image1.jpg"), 
+    MergeInput.path("path/to/document1.pdf"), 
+    MergeInput.path("path/to/image2.png")
+];
+
 final outputPath = "path/to/output.pdf";
 
 try {
   String response = await PdfCombiner.generatePDFFromDocuments(
-    inputPaths: imagePaths,
+    inputs: imagePaths,
     outputPath: outputPath,
   );
 
@@ -91,10 +96,9 @@ Combine several PDF files into a single document.
 
 **Required Parameters:**
 
-- `inputs`: A list of `PdfSource` objects representing the PDF files to combine. `PdfSource` supports three input types:
-  - `PdfSource.path(String)` - A file path to a PDF file.
-  - `PdfSource.bytes(Uint8List)` - PDF content as bytes (in-memory).
-  - `PdfSource.file(File)` - A `File` object pointing to a PDF file.
+- `inputs`: A list of `MergeInput` objects representing the PDF files to combine. `MergeInput` supports three input types:
+  - `MergeInput.path(String)` - A file path to a PDF file.
+  - `MergeInput.bytes(Uint8List)` - PDF content as bytes (in-memory).
 - `outputPath`: A string representing the absolute path of the file where the combined PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
 ```dart
@@ -107,9 +111,8 @@ final pdfFile = File('path/to/file2.pdf');
 try {
   String response = await PdfCombiner.mergeMultiplePDFs(
     inputs: [
-      PdfSource.path('path/to/file1.pdf'),
-      PdfSource.bytes(pdfBytes),
-      PdfSource.file(pdfFile),
+      MergeInput.path('path/to/file1.pdf'),
+      MergeInput.bytes(pdfBytes),
     ],
     outputPath: 'path/to/output.pdf',
   );
@@ -126,18 +129,21 @@ Convert a list of image files into a single PDF document.
 
 **Required Parameters:**
 
-- `inputPaths`: A list of strings representing the image file paths.
+- `inputs`: A list of `MergeInput` representing the image files.
 - `outputPath`: A string representing the absolute path of the file where the generated PDF should be saved. In the case of web, this parameter is ignored. The file extension must be `.pdf`.
 
 By default, images are added to the PDF without modifications. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
-final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
+final imagePaths = [
+    MergeInput.path("path/to/image1.jpg"), 
+    MergeInput.path("path/to/image2.jpg")
+];
 final outputPath = "path/to/output.pdf";
 
 try {
   String response = await PdfCombiner.createPDFFromMultipleImages(
-    inputPaths: imagePaths,
+    inputs: imagePaths,
     outputPath: outputPath,
   );
 
@@ -161,12 +167,15 @@ The `PdfFromMultipleImageConfig` class is used to configure how images are proce
 Example Usage:
 
 ```dart
-final imagePaths = ["path/to/image1.jpg", "path/to/image2.jpg"];
+final imagePaths = [
+    MergeInput.path("path/to/image1.jpg"), 
+    MergeInput.path("path/to/image2.jpg")
+];
 final outputPath = "path/to/output.pdf";
 
 try {
   String response = await PdfCombiner.createPDFFromMultipleImages(
-    inputPaths: imagePaths,
+    inputs: imagePaths,
     outputPath: outputPath,
     config: const PdfFromMultipleImageConfig(
       rescale: ImageScale(width: 480, height: 640),
@@ -187,18 +196,18 @@ Extract images from a PDF file.
 
 **Required Parameters:**
 
-- `inputPath`: A string representing the file path of the PDF to extract images from.
+- `input`: A `MergeInput` representing the PDF file to extract images from.
 - `outputDirPath`: A string representing the directory folder where the extracted images should be saved. In the case of web, this parameter is ignored.
 
 By default, images are extracted in their original format. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
-final pdfFilePath = "path/to/input.pdf";
+final pdfFilePath = MergeInput.path("path/to/input.pdf");
 final outputDirPath = "path/to/output";
 
 try {
   List<String> response = await PdfCombiner.createImageFromPDF(
-    inputPath: pdfFilePath, 
+    input: pdfFilePath, 
     outputDirPath: outputDirPath,
   );
   print("Files generated: $response");
@@ -221,12 +230,12 @@ The `ImageFromPdfConfig` class is used to configure how images are processed bef
 Example Usage:
 
 ```dart
-final pdfFilePath = "path/to/input.pdf";
+final pdfFilePath = MergeInput.path("path/to/input.pdf");
 final outputDirPath = "path/to/output";
 
 try {
   List<String> response = await PdfCombiner.createImageFromPDF(
-    inputPath: pdfFilePath,
+    input: pdfFilePath,
     outputDirPath: outputDirPath,
     config: const ImageFromPdfConfig(
       rescale: ImageScale(width: 480, height: 640),
@@ -276,6 +285,7 @@ print(compression.value); // Output: 60
 When an error occurs during an operation, such as a file not being found, an invalid format, or an internal error in PDF processing, the plugin throws a `PdfCombinerException`.
 
 This exception contains:
+
 - `message`: A descriptive message about what went wrong.
 
 You can handle it explicitly if you need more control:
@@ -367,6 +377,7 @@ if (response.status == PdfCombinerStatus.success) {
 ```
 
 #### After (v5.0.0+)
+
 ```dart
 try {
   String path = await PdfCombiner.mergeMultiplePDFs(...);
@@ -380,6 +391,7 @@ try {
 ---
 
 ### Version 3.3.0+
+
 No manual configuration is required for web projects using this version or newer.
 > **As of version 3.3.0 (Web)**: The `pdf_combiner.js` JavaScript file is now loaded dynamically, eliminating the need to manually include it and import it into the index.html file.
 

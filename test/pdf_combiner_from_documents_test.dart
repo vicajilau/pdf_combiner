@@ -5,12 +5,12 @@ import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 
 void main() {
   group('PdfCombiner.generatePDFFromDocuments', () {
-    test('error cuando inputPaths está vacío', () async {
+    test('error cuando inputs está vacío', () async {
       PdfCombiner.isMock = false;
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: const [],
+          inputs: const [],
           outputPath: 'out.pdf',
         ),
         throwsA(
@@ -18,7 +18,7 @@ void main() {
             (e) =>
                 e is PdfCombinerException &&
                 e.message.contains(
-                  PdfCombinerMessages.emptyParameterMessage('inputPaths'),
+                  PdfCombinerMessages.emptyParameterMessage('inputs'),
                 ),
           ),
         ),
@@ -30,7 +30,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: const ['any'],
+          inputs: [MergeInput.path('any')],
           outputPath: '   ',
         ),
         throwsA(
@@ -51,7 +51,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: const ['foo.xyz'],
+          inputs: [MergeInput.path('foo.xyz')],
           outputPath: 'out.PDF',
         ),
         throwsA(
@@ -72,7 +72,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputPaths: [firstPath],
+          inputs: [MergeInput.path(firstPath)],
           outputPath: 'out.pdf',
         ),
         throwsA(

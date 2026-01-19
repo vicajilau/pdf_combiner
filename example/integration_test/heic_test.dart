@@ -32,7 +32,7 @@ void main() {
 
     // Call the plugin
     await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: [sampleHeicPath],
+      inputs: [MergeInput.path(sampleHeicPath)],
       outputPath: outputPath,
     );
 

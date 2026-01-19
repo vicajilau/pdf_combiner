@@ -72,7 +72,8 @@ void main() {
   });
 
   group('removeTemporalFiles', () {
-    test('does not delete anything when isMock = true (skips the loop)', () async {
+    test('does not delete anything when isMock = true (skips the loop)',
+        () async {
       PdfCombiner.isMock = true;
       final mockTemp = MockDocumentUtils.getTemporalFolderPath();
       final fileInMockTemp = p.join(mockTemp, 'will_not_be_deleted.tmp');
@@ -106,8 +107,7 @@ void main() {
       await tempDir.delete(recursive: true);
     });
 
-    test('deletes only files inside systemTemp when isMock = false',
-        () async {
+    test('deletes only files inside systemTemp when isMock = false', () async {
       PdfCombiner.isMock = false;
 
       // Inside /tmp (or the equivalent path in the OS)
@@ -292,6 +292,60 @@ void main() {
       expect(DocumentUtils.getTemporalFolderPath(), newPath);
       // Restauramos
       DocumentUtils.setTemporalFolderPath(original);
+    });
+  });
+
+  group('prepareInput', () {
+    test('returns path as-is when MergeInput has path', () async {
+      const testPath = 'test/path/file.pdf';
+      final source = MergeInput.path(testPath);
+
+      final result = await DocumentUtils.prepareInput(source);
+
+      expect(result, testPath);
+    });
+
+    test('writes bytes to temp file and returns path when MergeInput has bytes',
+        () async {
+      PdfCombiner.isMock = false;
+      final tempDir = await Directory.systemTemp.createTemp('prepareInput_');
+      DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+      final bytes = Uint8List.fromList(pdfBytes);
+      final source = MergeInput.bytes(bytes);
+
+      final result = await DocumentUtils.prepareInput(source);
+
+      expect(result.startsWith(tempDir.path), isTrue);
+      expect(result.endsWith('.pdf'), isTrue);
+      expect(File(result).existsSync(), isTrue);
+
+      final writtenBytes = await File(result).readAsBytes();
+      expect(writtenBytes, bytes);
+
+      await tempDir.delete(recursive: true);
+    });
+
+    test(
+        'creates temp directory if it does not exist when MergeInput has bytes',
+        () async {
+      PdfCombiner.isMock = false;
+      final baseTempDir =
+          await Directory.systemTemp.createTemp('prepareInput_base_');
+      final nonExistentPath = p.join(baseTempDir.path, 'non_existent_subdir');
+      DocumentUtils.setTemporalFolderPath(nonExistentPath);
+
+      expect(Directory(nonExistentPath).existsSync(), isFalse);
+
+      final bytes = Uint8List.fromList(pdfBytes);
+      final source = MergeInput.bytes(bytes);
+
+      final result = await DocumentUtils.prepareInput(source);
+
+      expect(Directory(nonExistentPath).existsSync(), isTrue);
+      expect(File(result).existsSync(), isTrue);
+
+      await baseTempDir.delete(recursive: true);
     });
   });
 }

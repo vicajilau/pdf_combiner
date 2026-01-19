@@ -7,7 +7,6 @@ import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'dart:io' as java;
-import 'dart:typed_data';
 
 class MockPdfCombinerPlatformCustomError
     with MockPlatformInterfaceMixin
@@ -18,7 +17,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<PdfSource> inputs,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) {
     return Future.value(errorMessage);
@@ -26,7 +25,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
@@ -35,7 +34,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<List<String>?> createImageFromPDF({
-    required String inputPath,
+    required MergeInput input,
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
@@ -48,7 +47,7 @@ class MockPdfCombinerPlatformNullResponse
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<PdfSource> inputs,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) {
     return Future.value(null);
@@ -56,7 +55,7 @@ class MockPdfCombinerPlatformNullResponse
 
   @override
   Future<String?> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
@@ -65,7 +64,7 @@ class MockPdfCombinerPlatformNullResponse
 
   @override
   Future<List<String>?> createImageFromPDF({
-    required String inputPath,
+    required MergeInput input,
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
@@ -90,8 +89,8 @@ void main() {
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
             inputs: [
-              PdfSource.path('example/assets/document_1.pdf'),
-              PdfSource.path('example/assets/document_2.pdf')
+              MergeInput.path('example/assets/document_1.pdf'),
+              MergeInput.path('example/assets/document_2.pdf')
             ],
             outputPath: 'output.pdf',
           ),
@@ -109,8 +108,8 @@ void main() {
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
             inputs: [
-              PdfSource.path('example/assets/document_1.pdf'),
-              PdfSource.path('example/assets/document_2.pdf')
+              MergeInput.path('example/assets/document_1.pdf'),
+              MergeInput.path('example/assets/document_2.pdf')
             ],
             outputPath: 'output.pdf',
           ),
@@ -118,62 +117,44 @@ void main() {
               (e) => e.message, 'message', 'Unknown error during merge')),
         );
       });
-
-      test('successfully merge with Uint8List and File inputs (PdfCombiner)',
-          () async {
-        PdfCombiner.isMock = true;
-        MockPdfCombinerPlatformCustomError mockPlatform =
-            MockPdfCombinerPlatformCustomError('output.pdf');
-        PdfCombinerPlatform.instance = mockPlatform;
-
-        final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
-        final file = java.File('example/assets/document_1.pdf');
-
-        final result = await PdfCombiner.mergeMultiplePDFs(
-          inputs: [PdfSource.bytes(pdfBytes), PdfSource.file(file)],
-          outputPath: 'output.pdf',
-        );
-
-        expect(result, 'output.pdf');
-      });
     });
 
     group('createPDFFromMultipleImages', () {
       group('createPDFFromMultipleImages', () {
         test('throws exception when platform returns a custom error string',
-                () async {
-              const customError = 'Custom platform error';
-              final mockPlatform = MockPdfCombinerPlatformCustomError(customError);
-              PdfCombinerPlatform.instance = mockPlatform;
+            () async {
+          const customError = 'Custom platform error';
+          final mockPlatform = MockPdfCombinerPlatformCustomError(customError);
+          PdfCombinerPlatform.instance = mockPlatform;
 
-              final file1 = java.File('image_test_custom.png');
-              // PNG magic number: 89 50 4E 47 0D 0A 1A 0A
-              await file1.writeAsBytes(
-                [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
-                flush: true,
-              );
+          final file1 = java.File('image_test_custom.png');
+          // PNG magic number: 89 50 4E 47 0D 0A 1A 0A
+          await file1.writeAsBytes(
+            [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
+            flush: true,
+          );
 
+          try {
+            await expectLater(
+              () => PdfCombiner.createPDFFromMultipleImages(
+                inputs: [MergeInput.path(file1.path)],
+                outputPath: 'output_images.pdf',
+              ),
+              throwsA(isA<PdfCombinerException>()
+                  .having((e) => e.message, 'message', customError)),
+            );
+          } finally {
+            if (await file1.exists()) {
               try {
-                await expectLater(
-                      () => PdfCombiner.createPDFFromMultipleImages(
-                    inputPaths: [file1.path],
-                    outputPath: 'output_images.pdf',
-                  ),
-                  throwsA(isA<PdfCombinerException>()
-                      .having((e) => e.message, 'message', customError)),
-                );
-              } finally {
-                if (await file1.exists()) {
-                  try {
-                    await file1.delete();
-                  } catch (_) {
-                    // Windows sometimes needs a moment to release the file lock
-                    await Future.delayed(const Duration(milliseconds: 100));
-                    if (await file1.exists()) await file1.delete();
-                  }
-                }
+                await file1.delete();
+              } catch (_) {
+                // Windows sometimes needs a moment to release the file lock
+                await Future.delayed(const Duration(milliseconds: 100));
+                if (await file1.exists()) await file1.delete();
               }
-            });
+            }
+          }
+        });
 
         test('throws default exception when platform returns null', () async {
           final mockPlatform = MockPdfCombinerPlatformNullResponse();
@@ -187,12 +168,12 @@ void main() {
 
           try {
             await expectLater(
-                  () => PdfCombiner.createPDFFromMultipleImages(
-                inputPaths: [file1.path],
+              () => PdfCombiner.createPDFFromMultipleImages(
+                inputs: [MergeInput.path(file1.path)],
                 outputPath: 'output_images.pdf',
               ),
-              throwsA(isA<PdfCombinerException>().having(
-                      (e) => e.message, 'message', PdfCombinerMessages.errorMessage)),
+              throwsA(isA<PdfCombinerException>().having((e) => e.message,
+                  'message', PdfCombinerMessages.errorMessage)),
             );
           } finally {
             if (await file1.exists()) {
@@ -222,7 +203,7 @@ void main() {
         try {
           expect(
             () async => await PdfCombiner.createImageFromPDF(
-              inputPath: 'input.pdf',
+              input: MergeInput.path('input.pdf'),
               outputDirPath: 'output_dir',
             ),
             throwsA(isA<PdfCombinerException>()

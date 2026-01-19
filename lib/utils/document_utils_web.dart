@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:js_interop';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:web/web.dart' as web;
 
 /// Utility class for handling document-related checks in a web environment.
@@ -84,5 +85,20 @@ class DocumentUtils {
   static String createBlobUrl(Uint8List bytes) {
     final blob = web.Blob([bytes.toJS].toJS);
     return web.URL.createObjectURL(blob);
+  }
+
+  /// Process a [MergeInput] and return a valid file path or blob URL.
+  ///
+  /// - [MergeInput.path]: Returns the path as-is.
+  /// - [MergeInput.bytes]: Creates a blob URL and returns it.
+  /// - [MergeInput.file]: Not supported on web, throws [UnsupportedError].
+  static Future<String> prepareInput(MergeInput input) async {
+    if (input.path != null) {
+      return input.path!;
+    } else if (input.bytes != null) {
+      return createBlobUrl(input.bytes!);
+    } else {
+      throw ArgumentError('MergeInput must have path, bytes, or file');
+    }
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/foundation.dart';
@@ -159,5 +160,30 @@ class DocumentUtils {
   static String createBlobUrl(Uint8List bytes) {
     if (PdfCombiner.isMock) return "blob:mock_url";
     throw UnsupportedError("createBlobUrl is only supported on Web");
+  }
+
+  /// Process a [MergeInput] and return a valid file path.
+  ///
+  /// - [MergeInput.path]: Returns the path as-is.
+  /// - [MergeInput.bytes]: Writes bytes to a temp file and returns the path.
+  /// - [MergeInput.file]: Returns the file's path.
+  static Future<String> prepareInput(MergeInput input) async {
+    if (input.path != null) {
+      return input.path!;
+    } else if (input.bytes != null) {
+      final tempDirPath = getTemporalFolderPath();
+      final tempDir = Directory(tempDirPath);
+      if (!await tempDir.exists()) {
+        await tempDir.create(recursive: true);
+      }
+      final String fileName =
+          'pdf_input_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}.pdf';
+      final String tempPath = p.join(tempDirPath, fileName);
+      final file = File(tempPath);
+      await file.writeAsBytes(input.bytes!);
+      return tempPath;
+    } else {
+      throw ArgumentError('MergeInput must have path, bytes, or file');
+    }
   }
 }
