@@ -30,12 +30,7 @@ jobs:
       - name: Install Flutter Dependencies
         run: flutter pub get
 
-      - name: Run create_image_from_pdf_integration_test Integration Tests
-        run: |
-          cd example
-          flutter test integration_test/create_image_from_pdf_integration_test.dart -d linux
-
-      - name: Run create_pdf_from_multiple_images_integration_test Integration Tests
+      - name: Run integration_test
         run: |
           cd example
           flutter test integration_test
