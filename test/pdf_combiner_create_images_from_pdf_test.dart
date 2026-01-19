@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
@@ -179,6 +180,29 @@ void main() {
       );
 
       // Verify the error result matches the expected values.
+      expect(
+          result, ['$outputDirPath/image1.png', '$outputDirPath/image2.png']);
+    });
+    // Test successfully for createImageFromPDF with bytes
+    test('createImageFromPDF - Helper coverage (input bytes != null)',
+        () async {
+      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
+      PdfCombinerPlatform.instance = fakePlatform;
+
+      final outputDirPath = 'output/path';
+      final bytes = <int>[
+        0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, // %PDF-1.4
+        0x0A,
+        0x25, 0x25, 0x45, 0x4F, 0x46, // %%EOF
+      ];
+
+      // Call the method with bytes input
+      final result = await PdfCombiner.createImageFromPDF(
+        input: MergeInput.bytes(Uint8List.fromList(bytes)),
+        outputDirPath: outputDirPath,
+      );
+
+      // Verify success - detailed internal logic (temporal file addition) coverage is implicit
       expect(
           result, ['$outputDirPath/image1.png', '$outputDirPath/image2.png']);
     });

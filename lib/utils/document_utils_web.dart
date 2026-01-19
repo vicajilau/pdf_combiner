@@ -91,14 +91,13 @@ class DocumentUtils {
   ///
   /// - [MergeInput.path]: Returns the path as-is.
   /// - [MergeInput.bytes]: Creates a blob URL and returns it.
-  /// - [MergeInput.file]: Not supported on web, throws [UnsupportedError].
   static Future<String> prepareInput(MergeInput input) async {
     if (input.path != null) {
       return input.path!;
     } else if (input.bytes != null) {
       return createBlobUrl(input.bytes!);
     } else {
-      throw ArgumentError('MergeInput must have path, bytes, or file');
+      throw ArgumentError('MergeInput must have path or bytes');
     }
   }
 }

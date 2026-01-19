@@ -8,6 +8,14 @@ import 'package:pdf_combiner/utils/document_utils.dart';
 
 import 'mocks/mock_document_utils.dart';
 
+class FakeMergeInput implements MergeInput {
+  @override
+  Uint8List? get bytes => null;
+
+  @override
+  String? get path => null;
+}
+
 void main() {
   late bool originalIsMock;
 
@@ -346,6 +354,12 @@ void main() {
       expect(File(result).existsSync(), isTrue);
 
       await baseTempDir.delete(recursive: true);
+    });
+
+    test('throws ArgumentError when MergeInput has neither path nor bytes',
+        () async {
+      final source = FakeMergeInput();
+      expect(() => DocumentUtils.prepareInput(source), throwsArgumentError);
     });
   });
 }
