@@ -12,6 +12,17 @@ import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
 import '../view_models/pdf_combiner_view_model.dart';
 
+extension on MergeInput {
+  String fileName(int? index) {
+    switch (type) {
+      case MergeInputType.path:
+        return p.basename(path ?? '');
+      case MergeInputType.bytes:
+        return 'File in bytes $index';
+    }
+  }
+}
+
 class PdfCombinerScreen extends StatefulWidget {
   const PdfCombinerScreen({super.key});
 
@@ -136,13 +147,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                 key: ValueKey(_viewModel.selectedFiles[index]),
                                 direction: DismissDirection.horizontal,
                                 onDismissed: (direction) {
-                                  final path = p.basename(_viewModel
-                                      .selectedFiles[index]
-                                      .toString());
+                                  final file = _viewModel.selectedFiles[index];
                                   setState(() {
                                     _viewModel.removeFileAt(index);
                                   });
-                                  _showSnackbarSafely('File $path removed.');
+                                  _showSnackbarSafely(
+                                      'File ${file.fileName(index + 1)} removed.');
                                 },
                                 background: Container(
                                   color: Colors.red,
@@ -162,11 +172,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                       final file =
                                           _viewModel.selectedFiles[index];
                                       return Text(
-                                        p.basename(file.type ==
-                                                MergeInputType.path
-                                            ? _viewModel.selectedFiles[index]
-                                                .toString()
-                                            : "File in bytes ${index + 1}"),
+                                        file.fileName(index + 1),
                                         overflow: TextOverflow.ellipsis,
                                       );
                                     }),
