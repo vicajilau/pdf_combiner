@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/models/merge_input_type.dart';
 
 void main() {
   group('MergeInput', () {

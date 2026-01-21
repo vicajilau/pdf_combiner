@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/models/merge_input_type.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';

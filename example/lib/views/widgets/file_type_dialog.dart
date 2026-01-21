@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pdf_combiner/models/merge_input_type.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 
 Future<MergeInputType?> showFileTypeDialog(BuildContext context) async =>
     showDialog<MergeInputType>(

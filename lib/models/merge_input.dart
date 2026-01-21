@@ -1,6 +1,10 @@
 import 'dart:typed_data' show Uint8List;
 
-import 'package:pdf_combiner/models/merge_input_type.dart';
+/// An enum representing the type of input for merging PDFs.
+enum MergeInputType {
+  path,
+  bytes,
+}
 
 /// A class representing an input for merging PDFs.
 ///

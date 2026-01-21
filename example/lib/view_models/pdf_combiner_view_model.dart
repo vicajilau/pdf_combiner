@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/models/merge_input_type.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:platform_detail/platform_detail.dart';
 

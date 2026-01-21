@@ -5,7 +5,6 @@ import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/models/merge_input_type.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_dialog.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
