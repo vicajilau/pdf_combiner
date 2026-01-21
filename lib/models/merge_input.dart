@@ -9,18 +9,19 @@ class MergeInput {
   final String? path;
   final Uint8List? bytes;
   final MergeInputType type;
-  final bool isTemporal;
 
-  const MergeInput(this.type, {this.path, this.bytes, this.isTemporal = false})
+  const MergeInput(this.type, {this.path, this.bytes})
       : assert((path != null) != (bytes != null));
 
   /// Creates a [MergeInput] from a file path.
-  factory MergeInput.path(String path, {bool isTemporal = false}) =>
-      MergeInput(MergeInputType.path, path: path, isTemporal: isTemporal);
+  factory MergeInput.path(String path) =>
+      MergeInput(MergeInputType.path, path: path);
 
   /// Creates a [MergeInput] from a byte array.
   factory MergeInput.bytes(Uint8List bytes) =>
-      MergeInput(MergeInputType.bytes, bytes: bytes, isTemporal: true);
+      MergeInput(MergeInputType.bytes, bytes: bytes);
+
+  bool get isTemporal => type == MergeInputType.bytes;
 
   @override
   String toString() {

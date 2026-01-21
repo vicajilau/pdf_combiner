@@ -50,6 +50,7 @@ class PdfCombiner {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
+    List<String> temporalPaths = [];
     final List<MergeInput> mutablePaths = List.from(inputs);
     if (inputs.isEmpty) {
       throw (PdfCombinerException(
@@ -78,8 +79,9 @@ class PdfCombiner {
             inputs: [input],
             outputPath: '${DocumentUtils.getTemporalFolderPath()}/$i.pdf',
           );
+          temporalPaths.add(response);
 
-          mutablePaths[i] = MergeInput.path(response, isTemporal: true);
+          mutablePaths[i] = MergeInput.path(response);
         }
       }
       final response = await PdfCombiner.mergeMultiplePDFs(
@@ -87,10 +89,7 @@ class PdfCombiner {
         outputPath: outputPath,
       );
 
-      DocumentUtils.removeTemporalFiles(mutablePaths
-          .where((e) => e.isTemporal && e.path != null)
-          .map((e) => e.path!)
-          .toList());
+      DocumentUtils.removeTemporalFiles(temporalPaths);
 
       return response;
     }

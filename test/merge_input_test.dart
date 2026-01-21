@@ -15,14 +15,6 @@ void main() {
       expect(input.isTemporal, isFalse);
     });
 
-    test('path constructor with isTemporal flag', () {
-      final input = MergeInput.path('/path/to/file.pdf', isTemporal: true);
-
-      expect(input.type, MergeInputType.path);
-      expect(input.path, '/path/to/file.pdf');
-      expect(input.isTemporal, isTrue);
-    });
-
     test('bytes constructor creates MergeInput with bytes type', () {
       final bytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
       final input = MergeInput.bytes(bytes);
