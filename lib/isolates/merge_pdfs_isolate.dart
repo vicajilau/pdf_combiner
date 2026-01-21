@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 import '../communication/pdf_combiner_platform_interface.dart';
@@ -16,7 +17,7 @@ class MergePdfsIsolate {
   /// This method spawns an isolate (or uses `compute` on the web) to process
   /// the PDF merging asynchronously.
   ///
-  /// - `inputPaths`: A list of file paths of the input PDFs.
+  /// - `inputs`: A list of file paths of the input PDFs.
   /// - `outputPath`: The file path where the merged PDF will be saved.
   ///
   /// Returns the path of the merged PDF, or `null` if an error occurs.
@@ -26,7 +27,7 @@ class MergePdfsIsolate {
   }) async {
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-        inputPaths: inputPaths,
+        inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
         outputPath: outputPath,
       );
     }
@@ -53,7 +54,7 @@ class MergePdfsIsolate {
     }
 
     return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-      inputPaths: inputPaths,
+      inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
       outputPath: outputPath,
     );
   }

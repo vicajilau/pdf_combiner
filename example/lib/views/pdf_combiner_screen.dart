@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:pdf_combiner/models/merge_input_type.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
+import 'package:pdf_combiner_example/views/widgets/file_type_dialog.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
 import '../view_models/pdf_combiner_view_model.dart';
@@ -42,10 +45,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         child: Stack(
           children: [
             DropTarget(
-              onDragDone: (details) {
-                setState(() {
-                  _viewModel.addFilesDragAndDrop(details.files);
-                });
+              onDragDone: (details) async {
+                final fileType =
+                    await showFileTypeDialog(context); // Show dialog
+                if (fileType == null) return;
+                await _viewModel.addFilesDragAndDrop(fileType, details.files);
+                setState(() {});
               },
               child: (_viewModel.isEmpty())
                   ? Center(
@@ -78,20 +83,22 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                   ),
                                   child: ListTile(
                                     leading: FileTypeIcon(
-                                        filePath: _viewModel.outputFiles[index]),
+                                        input: MergeInput.path(
+                                            _viewModel.outputFiles[index])),
                                     title: Text(
                                       p.basename(_viewModel.outputFiles[index]),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     onTap: () => _openOutputFile(index),
                                     subtitle: FutureBuilder(
-                                        future:
-                                            FileMagicNumber.getBytesFromPathOrBlob(
+                                        future: FileMagicNumber
+                                            .getBytesFromPathOrBlob(
                                                 _viewModel.outputFiles[index]),
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
-                                            return const Text("Loading size...");
+                                            return const Text(
+                                                "Loading size...");
                                           } else if (snapshot.hasError) {
                                             return const Icon(Icons.error);
                                           } else {
@@ -129,8 +136,9 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                 key: ValueKey(_viewModel.selectedFiles[index]),
                                 direction: DismissDirection.horizontal,
                                 onDismissed: (direction) {
-                                  final path =
-                                      p.basename(_viewModel.selectedFiles[index]);
+                                  final path = p.basename(_viewModel
+                                      .selectedFiles[index]
+                                      .toString());
                                   setState(() {
                                     _viewModel.removeFileAt(index);
                                   });
@@ -140,8 +148,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                   color: Colors.red,
                                   alignment: Alignment.centerLeft,
                                   padding: const EdgeInsets.only(left: 16),
-                                  child:
-                                      const Icon(Icons.delete, color: Colors.white),
+                                  child: const Icon(Icons.delete,
+                                      color: Colors.white),
                                 ),
                                 child: Card(
                                   shape: RoundedRectangleBorder(
@@ -149,20 +157,38 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                   ),
                                   child: ListTile(
                                     leading: FileTypeIcon(
-                                        filePath: _viewModel.selectedFiles[index]),
-                                    title: Text(
-                                      p.basename(_viewModel.selectedFiles[index]),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    onTap: () async => await _openInputFile(index),
+                                        input: _viewModel.selectedFiles[index]),
+                                    title: Builder(builder: (context) {
+                                      final file =
+                                          _viewModel.selectedFiles[index];
+                                      return Text(
+                                        p.basename(file.type ==
+                                                MergeInputType.path
+                                            ? _viewModel.selectedFiles[index]
+                                                .toString()
+                                            : "File in bytes ${index + 1}"),
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    }),
+                                    onTap: () async {
+                                      await _openInputFile(index);
+                                    },
                                     subtitle: FutureBuilder(
-                                        future:
-                                            FileMagicNumber.getBytesFromPathOrBlob(
-                                                _viewModel.selectedFiles[index]),
+                                        future: _viewModel.selectedFiles[index]
+                                                    .type ==
+                                                MergeInputType.bytes
+                                            ? Future.value(_viewModel
+                                                .selectedFiles[index].bytes)
+                                            : FileMagicNumber
+                                                .getBytesFromPathOrBlob(
+                                                    _viewModel
+                                                        .selectedFiles[index]
+                                                        .toString()),
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
-                                            return const Text("Loading size...");
+                                            return const Text(
+                                                "Loading size...");
                                           } else if (snapshot.hasError) {
                                             return const Icon(Icons.error);
                                           } else {
@@ -239,7 +265,9 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   // Function to pick PDF files from the device
   Future<void> _pickFiles() async {
-    await _viewModel.pickFiles();
+    final fileType = await showFileTypeDialog(context);
+    if (fileType == null) return;
+    await _viewModel.pickFiles(fileType);
     setState(() {});
   }
 
@@ -269,7 +297,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   }
 
   // Function to combine selected PDF files into a single output file
-
   Future<void> _combinePdfs() async {
     await _runSafely(() async {
       await _viewModel.combinePdfs();
@@ -310,7 +337,11 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   Future<void> _openInputFile(int index) async {
     if (index < _viewModel.selectedFiles.length) {
-      final result = await OpenFile.open(_viewModel.selectedFiles[index]);
+      if (_viewModel.selectedFiles[index].isTemporal) {
+        return;
+      }
+      final result =
+          await OpenFile.open(_viewModel.selectedFiles[index].toString());
       if (result.type != ResultType.done) {
         _showSnackbarSafely('Failed to open file. Error: ${result.message}');
       }

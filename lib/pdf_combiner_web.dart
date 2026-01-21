@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:js_interop';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/web/list_to_js_array_extension.dart';
 import 'package:pdf_combiner/web/pdf_combiner_web_bindings.dart';
 import 'package:web/web.dart';
@@ -9,6 +10,7 @@ import 'package:web/web.dart';
 import 'communication/pdf_combiner_platform_interface.dart';
 import 'models/image_from_pdf_config.dart';
 import 'models/pdf_from_multiple_image_config.dart';
+import 'utils/document_utils.dart';
 
 /// Web implementation of the PdfCombinerPlatform.
 /// This class handles the interaction between the Flutter app and JavaScript functions
@@ -40,8 +42,8 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     pdfLibScript.setAttribute('src',
         'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
     pdfLibScript.setAttribute('type', 'text/javascript');
-    pdfHeicScript.setAttribute('src',
-        'https://unpkg.com/heic2any/dist/heic2any.min.js');
+    pdfHeicScript.setAttribute(
+        'src', 'https://unpkg.com/heic2any/dist/heic2any.min.js');
     pdfHeicScript.setAttribute('type', 'text/javascript');
     pdfCombinerScript.setAttribute('src',
         'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js');
@@ -60,7 +62,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   /// specified in the `paths` parameter and saves the result in the `outputPath`.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
+  /// - `inputs`: A list of file paths of the PDFs to be merged.
   /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
@@ -68,9 +70,11 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) async {
+    final inputPaths = await Future.wait(inputs.map(
+        (MergeInput input) async => await DocumentUtils.prepareInput(input)));
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
     final JSString result =
         (await combinePDFs(jsInputPaths).toDart) as JSString;
@@ -80,11 +84,11 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   /// Creates a PDF from multiple image files.
   ///
   /// This method sends a request to the native platform to create a PDF from the
-  /// images specified in the `inputPaths` parameter. The resulting PDF is saved in the
+  /// images specified in the `inputs` parameter. The resulting PDF is saved in the
   /// `outputPath` directory.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
+  /// - `inputs`: A list of MergeInput to be converted into a PDF.
   /// - `outputPath`: The directory path where the created PDF should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
@@ -95,10 +99,12 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
+    final inputPaths = await Future.wait(inputs.map(
+        (MergeInput input) async => await DocumentUtils.prepareInput(input)));
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
     final JSString result =
         (await createPdfFromImages(jsInputPaths, config.toMap().jsify()).toDart)
@@ -112,7 +118,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   /// PDF file specified in the `path` parameter and saves the images in the `outputDirPath` directory.
   ///
   /// Parameters:
-  /// - `inputPath`: The file path of the PDF from which images will be extracted.
+  /// - `input`: The input to be converted into images.
   /// - `outputPath`: The directory path where the images should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
@@ -124,10 +130,11 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
   ///   is successful, it returns a list of file paths to the extracted images; otherwise, it returns `null`.
   @override
   Future<List<String>> createImageFromPDF({
-    required String inputPath,
+    required MergeInput input,
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
+    final String inputPath = await DocumentUtils.prepareInput(input);
     final JSString jsInputPath = inputPath.toJS;
     final JSArray<JSString> result = config.createOneImage
         ? (await pdfToImage(jsInputPath, config.jsify()).toDart)

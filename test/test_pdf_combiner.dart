@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
@@ -19,7 +20,7 @@ void main() {
       });
       DocumentUtils.setTemporalFolderPath("./example/assets/temp");
       var result = await PdfCombiner.generatePDFFromDocuments(
-        inputPaths: ["./example/assets/image_1.jpeg"],
+        inputs: [MergeInput.path("./example/assets/image_1.jpeg")],
         outputPath: "./example/assets/temp/document_0.pdf",
       );
       expect(result, "./example/assets/temp/document_0.pdf");

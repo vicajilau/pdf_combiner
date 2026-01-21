@@ -1,17 +1,23 @@
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:pdf_combiner/models/merge_input_type.dart';
 
 class FileTypeIcon extends StatelessWidget {
-  final String filePath;
-  const FileTypeIcon({super.key, required this.filePath});
+  final MergeInput input;
+  const FileTypeIcon({super.key, required this.input});
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: () => OpenFile.open(filePath),
+      onPressed: input.isTemporal ? null : () => OpenFile.open(input.path!),
       child: FutureBuilder(
-          future: FileMagicNumber.detectFileTypeFromPathOrBlob(filePath),
+          future: (input.type == MergeInputType.path
+              ? FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!)
+              : Future.value(
+                  FileMagicNumber.detectFileTypeFromBytes(input.bytes!),
+                )),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator();

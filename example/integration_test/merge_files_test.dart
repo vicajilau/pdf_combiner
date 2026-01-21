@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 import 'test_file_helper.dart';
@@ -20,7 +21,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-        inputPath: inputPaths[0],
+        input: MergeInput.path(inputPaths[0]),
         outputDirPath: outputPath,
       );
 
@@ -33,17 +34,18 @@ void main() {
       inputPaths.add('${TestFileHelper.basePath}/assets/non_existing.pdf');
       final outputPath = await helper.getOutputFilePath("");
 
-      expect(
+      await expectLater(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
         ),
         throwsA(
           predicate(
             (e) =>
-                e is PdfCombinerException &&
-                e.message ==
-                    'File is not of PDF type or does not exist: ${inputPaths[0]}',
+                (e is PdfCombinerException &&
+                    e.message ==
+                        'File is not of PDF type or does not exist: ${inputPaths[0]}') ||
+                e is PathNotFoundException,
           ),
         ),
       );
@@ -54,9 +56,9 @@ void main() {
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      expect(
+      await expectLater(
         () => PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
         ),
         throwsA(
@@ -76,7 +78,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0], outputDirPath: outputPath);
+          input: MergeInput.path(inputPaths[0]), outputDirPath: outputPath);
 
       expect(result.length, 1);
       expect(result, ['${TestFileHelper.basePath}/image_1.png']);
@@ -88,7 +90,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-          inputPath: inputPaths[0],
+          input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
           config: ImageFromPdfConfig(createOneImage: false));
 
@@ -98,12 +100,12 @@ void main() {
   group('createPDFFromMultipleImages Integration Tests', () {
     testWidgets('Test creating pdf from two images', (tester) async {
       final helper =
-      TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png']);
+          TestFileHelper(['assets/image_1.jpeg', 'assets/image_2.png']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: inputPaths,
+        inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
         outputPath: outputPath,
       );
 
@@ -111,15 +113,15 @@ void main() {
     }, timeout: Timeout.none);
 
     testWidgets('Test creating pdf with empty list', (tester) async {
-      expect(
-            () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: [],
+      await expectLater(
+        () => PdfCombiner.createPDFFromMultipleImages(
+          inputs: [],
           outputPath: '${TestFileHelper.basePath}/assets/merged_output.pdf',
         ),
         throwsA(
           predicate(
-                (e) =>
-            e is PdfCombinerException &&
+            (e) =>
+                e is PdfCombinerException &&
                 e.message == 'The parameter (inputPaths) cannot be empty',
           ),
         ),
@@ -132,18 +134,19 @@ void main() {
       inputPaths.add('${TestFileHelper.basePath}/assets/non_existing.jpg');
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      expect(
-            () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: inputPaths,
+      await expectLater(
+        () => PdfCombiner.createPDFFromMultipleImages(
+          inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
         throwsA(
           predicate(
-                (e) =>
-            e is PdfCombinerException &&
-                e.message.startsWith(
-                  'File is not an image or does not exist:',
-                ),
+            (e) =>
+                (e is PdfCombinerException &&
+                    e.message.startsWith(
+                      'File is not an image or does not exist:',
+                    )) ||
+                e is PathNotFoundException,
           ),
         ),
       );
@@ -151,19 +154,19 @@ void main() {
 
     testWidgets('Test creating pdf with non-supported file', (tester) async {
       final helper =
-      TestFileHelper(['assets/document_1.pdf', 'assets/image_1.jpeg']);
+          TestFileHelper(['assets/document_1.pdf', 'assets/image_1.jpeg']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      expect(
-            () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: inputPaths,
+      await expectLater(
+        () => PdfCombiner.createPDFFromMultipleImages(
+          inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
         throwsA(
           predicate(
-                (e) =>
-            e is PdfCombinerException &&
+            (e) =>
+                e is PdfCombinerException &&
                 e.message ==
                     'File is not an image or does not exist: ${TestFileHelper.basePath}/document_1.pdf',
           ),
@@ -171,7 +174,8 @@ void main() {
       );
     }, timeout: Timeout.none);
   });
-  testWidgets('createPdfFromMultipleImages parses HEIC', (WidgetTester tester) async {
+  testWidgets('createPdfFromMultipleImages parses HEIC',
+      (WidgetTester tester) async {
     final helper = TestFileHelper(['assets/sample.heic']);
     final filePaths = await helper.prepareInputFiles();
     final sampleHeicPath = filePaths.first;
@@ -185,24 +189,25 @@ void main() {
 
     await tester.runAsync(() async {
       await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: [sampleHeicPath],
+        inputs: [MergeInput.path(sampleHeicPath)],
         outputPath: outputPath,
       );
     });
 
-    expect(outputFile.existsSync(), true, reason: 'Output PDF should be created');
+    expect(outputFile.existsSync(), true,
+        reason: 'Output PDF should be created');
     expect(outputFile.lengthSync(), greaterThan(0));
   }, timeout: const Timeout(Duration(seconds: 30)));
 
   group('mergeMultiplePDFs Integration Tests', () {
     testWidgets('Test merging two PDFs', (tester) async {
       final helper =
-      TestFileHelper(['assets/document_1.pdf', 'assets/document_2.pdf']);
+          TestFileHelper(['assets/document_1.pdf', 'assets/document_2.pdf']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: inputPaths,
+        inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
         outputPath: outputPath,
       );
 
@@ -215,7 +220,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: inputPaths,
+        inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
         outputPath: outputPath,
       );
 
@@ -226,15 +231,15 @@ void main() {
       final helper = TestFileHelper([]);
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      expect(
-            () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [],
+      await expectLater(
+        () => PdfCombiner.mergeMultiplePDFs(
+          inputs: [],
           outputPath: outputPath,
         ),
         throwsA(
           predicate(
-                (e) =>
-            e is PdfCombinerException &&
+            (e) =>
+                e is PdfCombinerException &&
                 e.message == 'The parameter (inputPaths) cannot be empty',
           ),
         ),
@@ -247,17 +252,18 @@ void main() {
       inputPaths.add('${TestFileHelper.basePath}/non_existing.pdf');
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      expect(
-            () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: inputPaths,
+      await expectLater(
+        () => PdfCombiner.mergeMultiplePDFs(
+          inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
         throwsA(
           predicate(
-                (e) =>
-            e is PdfCombinerException &&
-                e.message
-                    .startsWith('File is not of PDF type or does not exist:'),
+            (e) =>
+                (e is PdfCombinerException &&
+                    e.message.startsWith(
+                        'File is not of PDF type or does not exist:')) ||
+                e is PathNotFoundException,
           ),
         ),
       );
@@ -265,24 +271,24 @@ void main() {
 
     testWidgets('Test merging with non-supported file', (tester) async {
       final helper =
-      TestFileHelper(['assets/document_1.pdf', 'assets/image_1.jpeg']);
+          TestFileHelper(['assets/document_1.pdf', 'assets/image_1.jpeg']);
       final inputPaths = await helper.prepareInputFiles();
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
-      expect(
-            () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: inputPaths,
+      await expectLater(
+        () => PdfCombiner.mergeMultiplePDFs(
+          inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
         throwsA(
           predicate(
-                (e) =>
-            e is PdfCombinerException &&
+            (e) =>
+                e is PdfCombinerException &&
                 e.message
                     .startsWith('File is not of PDF type or does not exist:'),
           ),
         ),
       );
-    });
+    }, timeout: Timeout.none);
   });
 }

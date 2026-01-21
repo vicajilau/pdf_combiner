@@ -1,5 +1,11 @@
+import 'dart:js_interop';
+import 'dart:typed_data';
+
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
+import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:pdf_combiner/models/merge_input_type.dart';
+import 'package:web/web.dart' as web;
 
 /// Utility class for handling document-related checks in a web environment.
 ///
@@ -9,12 +15,13 @@ import 'package:path/path.dart' as p;
 class DocumentUtils {
   static String _temporalDir = '';
 
-  /// Removes a list of temporary files.
-  ///
-  /// **Note:** This is a no-op on web platforms as they do not have direct
-  /// file system access for deletion.
+  /// Removes a list of temporary files (blob URLs) on web.
   static void removeTemporalFiles(List<String> paths) {
-    // No-op on web
+    for (final path in paths) {
+      if (path.startsWith('blob:')) {
+        web.URL.revokeObjectURL(path);
+      }
+    }
   }
 
   /// Returns the temporary directory path.
@@ -30,12 +37,15 @@ class DocumentUtils {
   static void setTemporalFolderPath(String path) => _temporalDir = path;
 
   /// Determines whether the given file path/blob corresponds to a PDF file.
-  static Future<bool> isPDF(String filePath) async {
-    try {
-      return await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath) ==
-          FileMagicNumberType.pdf;
-    } catch (e) {
-      return false;
+  static Future<bool> isPDF(MergeInput input) async {
+    switch (input.type) {
+      case MergeInputType.path:
+        return await FileMagicNumber.detectFileTypeFromPathOrBlob(
+                input.path!) ==
+            FileMagicNumberType.pdf;
+      case MergeInputType.bytes:
+        return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
+            FileMagicNumberType.pdf;
     }
   }
 
@@ -44,15 +54,58 @@ class DocumentUtils {
       p.extension(filePath).toLowerCase() == ".pdf";
 
   /// Determines whether the given file path/blob corresponds to an image file.
-  static Future<bool> isImage(String filePath) async {
-    try {
-      final fileType =
-          await FileMagicNumber.detectFileTypeFromPathOrBlob(filePath);
-      return fileType == FileMagicNumberType.png ||
-          fileType == FileMagicNumberType.jpg ||
-          fileType == FileMagicNumberType.heic;
-    } catch (e) {
-      return false;
+  static Future<bool> isImage(MergeInput input) async {
+    late FileMagicNumberType fileType;
+    switch (input.type) {
+      case MergeInputType.path:
+        fileType =
+            await FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!);
+        break;
+      case MergeInputType.bytes:
+        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        break;
+    }
+    return fileType == FileMagicNumberType.png ||
+        fileType == FileMagicNumberType.jpg ||
+        fileType == FileMagicNumberType.heic;
+  }
+
+  /// Creates a Blob URL from the given bytes with the correct MIME type.
+  static String createBlobUrl(Uint8List bytes) {
+    final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
+    String type = '';
+
+    switch (fileType) {
+      case FileMagicNumberType.pdf:
+        type = 'application/pdf';
+        break;
+      case FileMagicNumberType.png:
+        type = 'image/png';
+        break;
+      case FileMagicNumberType.jpg:
+        type = 'image/jpeg';
+        break;
+      case FileMagicNumberType.heic:
+        type = 'image/heic';
+        break;
+      default:
+        type = 'application/octet-stream';
+    }
+
+    final blob = web.Blob([bytes.toJS].toJS, web.BlobPropertyBag(type: type));
+    return web.URL.createObjectURL(blob);
+  }
+
+  /// Process a [MergeInput] and return a valid file path or blob URL.
+  ///
+  /// - [MergeInput.path]: Returns the path as-is.
+  /// - [MergeInput.bytes]: Creates a blob URL and returns it.
+  static Future<String> prepareInput(MergeInput input) async {
+    switch (input.type) {
+      case MergeInputType.path:
+        return input.path!;
+      case MergeInputType.bytes:
+        return createBlobUrl(input.bytes!);
     }
   }
 }
