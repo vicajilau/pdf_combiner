@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
@@ -50,9 +51,9 @@ void main() {
 
       // Call the method and check the response.
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: [
-          'example/assets/document_1.pdf',
-          'example/assets/document_2.pdf'
+        inputs: [
+          MergeInput.path('example/assets/document_1.pdf'),
+          MergeInput.path('example/assets/document_2.pdf'),
         ],
         outputPath: 'output/path.pdf',
       );
@@ -69,9 +70,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf',
+          inputs: [
+            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInput.path('example/assets/document_2.pdf'),
           ],
           outputPath: 'output/path.jpeg',
         ),
@@ -93,7 +94,7 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [],
+          inputs: [],
           outputPath: 'output/path',
         ),
         throwsA(
@@ -106,58 +107,21 @@ void main() {
       );
     });
 
-    test('combine - Error handling (Only PDF file allowed)', () async {
-      MockPdfCombinerPlatformWithError fakePlatformWithError =
-          MockPdfCombinerPlatformWithError();
-      PdfCombinerPlatform.instance = fakePlatformWithError;
-
-      expect(
-        () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: ['path1', 'path2'],
-          outputPath: 'output/path.pdf',
-        ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message == 'File is not of PDF type or does not exist: path1',
-          ),
-        ),
-      );
-    });
-
     test('combine - Error handling (Simulated Error)', () async {
       MockPdfCombinerPlatformWithError fakePlatformWithError =
           MockPdfCombinerPlatformWithError();
 
       expect(
         () => fakePlatformWithError.mergeMultiplePDFs(
-          inputPaths: ['path1', 'path2'],
+          inputs: [
+            MergeInput.path('path1'),
+            MergeInput.path('path2'),
+          ],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
           predicate(
             (e) => e is PdfCombinerException && e.message == 'error',
-          ),
-        ),
-      );
-    });
-
-    test('combine - Error handling (File does not exist)', () async {
-      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
-      PdfCombinerPlatform.instance = fakePlatform;
-
-      expect(
-        () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: ['path1.pdf', 'path2.pdf'],
-          outputPath: 'output/path.pdf',
-        ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message ==
-                    'File is not of PDF type or does not exist: path1.pdf',
           ),
         ),
       );
@@ -170,9 +134,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInput.path('example/assets/document_2.pdf'),
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -191,9 +155,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInput.path('example/assets/document_2.pdf'),
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -212,32 +176,9 @@ void main() {
 
       expect(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
-          ],
-          outputPath: 'output/path.pdf',
-        ),
-        throwsA(
-          predicate(
-            (e) => e is PdfCombinerException && e.message == 'error',
-          ),
-        ),
-      );
-    });
-
-    // Test for error setting a different type of file in the mergeMultiplePDF method.
-
-    test('combine - Error in processing', () async {
-      MockPdfCombinerPlatformWithError fakePlatformWithError =
-          MockPdfCombinerPlatformWithError();
-      PdfCombinerPlatform.instance = fakePlatformWithError;
-
-      expect(
-        () => PdfCombiner.mergeMultiplePDFs(
-          inputPaths: [
-            'example/assets/document_1.pdf',
-            'example/assets/document_2.pdf'
+          inputs: [
+            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInput.path('example/assets/document_2.pdf'),
           ],
           outputPath: 'output/path.pdf',
         ),

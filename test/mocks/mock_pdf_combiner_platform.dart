@@ -1,5 +1,6 @@
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -21,7 +22,7 @@ class MockPdfCombinerPlatform
   /// [outputPath] The path where the merged PDF should be saved.
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) {
     return Future.value(outputPath);
@@ -35,7 +36,7 @@ class MockPdfCombinerPlatform
   /// [config] The configuration for the PDF creation.
   @override
   Future<String?> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
@@ -47,14 +48,15 @@ class MockPdfCombinerPlatform
   /// Simulates the creation of images from a PDF file. It returns a mock result
   /// indicating the creation of two image files.
   ///
-  /// [inputPath] The path to the PDF file.
+  /// [input] The path to the PDF file.
   /// [outputPath] The path where the images should be saved.
   /// [config] The configuration for the image creation.
   @override
-  Future<List<String>?> createImageFromPDF(
-      {required String inputPath,
-      required String outputPath,
-      ImageFromPdfConfig config = const ImageFromPdfConfig()}) {
+  Future<List<String>?> createImageFromPDF({
+    required MergeInput input,
+    required String outputPath,
+    ImageFromPdfConfig config = const ImageFromPdfConfig(),
+  }) {
     if (config.createOneImage == true) {
       return Future.value(['$outputPath/image1.png']);
     } else {

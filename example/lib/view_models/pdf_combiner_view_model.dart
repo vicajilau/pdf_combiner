@@ -2,51 +2,62 @@ import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:platform_detail/platform_detail.dart';
 
 class PdfCombinerViewModel {
-  List<String> selectedFiles = []; // List to store selected PDF file paths
+  List<MergeInput> selectedFiles = []; // List of selected files
   List<String> outputFiles = []; // Path for the combined output file
 
   /// Function to pick PDF files from the device (old method)
-  Future<void> pickFiles() async {
+  Future<void> pickFiles(MergeInputType fileType) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png', 'heic'],
       allowMultiple: true, // Allow picking multiple files
+      withData: true,
     );
-
-    if (result != null && result.files.isNotEmpty) {
-      for (var element in result.files) {
-        debugPrint("${element.name}, ");
-      }
-      final files = result.files
-          .where((file) => file.path != null)
-          .map((file) => File(file.path!))
-          .toList();
-      _addFiles(files);
+    if (result == null) return;
+    switch (fileType) {
+      case MergeInputType.path:
+        selectedFiles +=
+            result.files.map((file) => MergeInput.path(file.path!)).toList();
+        break;
+      case MergeInputType.bytes:
+        selectedFiles +=
+            result.files.map((file) => MergeInput.bytes(file.bytes!)).toList();
+        break;
     }
   }
 
   /// Function to pick PDF files from the device
-  Future<void> addFilesDragAndDrop(List<DropItem> files) async {
-    selectedFiles += files.map((file) => file.path).toList();
+  Future<void> addFilesDragAndDrop(
+      MergeInputType fileType, List<DropItem> files) async {
+    switch (fileType) {
+      case MergeInputType.path:
+        selectedFiles +=
+            files.map((file) => MergeInput.path(file.path)).toList();
+        break;
+      case MergeInputType.bytes:
+        selectedFiles += await Future.wait(
+          files.map(
+            (file) async => MergeInput.bytes(
+              await file.readAsBytes(),
+            ),
+          ),
+        );
+        break;
+    }
+
     outputFiles = [];
   }
 
   /// Function to check if the selected files list is empty
   bool isEmpty() => selectedFiles.isEmpty;
-
-  /// Function to pick PDF files from the device
-  Future<void> _addFiles(List<File> files) async {
-    selectedFiles += files.map((file) => file.path).toList();
-    outputFiles = [];
-  }
 
   /// Function to restart the selected files
   void restart() {
@@ -63,7 +74,7 @@ class PdfCombinerViewModel {
       String outputFilePath = '${directory?.path}/combined_output.pdf';
 
       final response = await PdfCombiner.mergeMultiplePDFs(
-        inputPaths: selectedFiles,
+        inputs: selectedFiles,
         outputPath: outputFilePath,
       ); // Combine the PDFs
       outputFiles = [response];
@@ -76,7 +87,7 @@ class PdfCombinerViewModel {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     final response = await PdfCombiner.createPDFFromMultipleImages(
-      inputPaths: selectedFiles,
+      inputs: selectedFiles,
       outputPath: outputFilePath,
     );
     outputFiles = [response];
@@ -88,7 +99,7 @@ class PdfCombinerViewModel {
     final directory = await _getOutputDirectory();
     String outputFilePath = '${directory?.path}/combined_output.pdf';
     final response = await PdfCombiner.generatePDFFromDocuments(
-      inputPaths: selectedFiles,
+      inputs: selectedFiles,
       outputPath: outputFilePath,
     );
     outputFiles = [response];
@@ -103,7 +114,7 @@ class PdfCombinerViewModel {
     final directory = await _getOutputDirectory();
     final outputFilePath = '${directory?.path}';
     final response = await PdfCombiner.createImageFromPDF(
-      inputPath: selectedFiles.first,
+      input: selectedFiles.first,
       outputDirPath: outputFilePath,
     );
     outputFiles = response;
@@ -135,8 +146,8 @@ class PdfCombinerViewModel {
   /// Function to copy the selected files' paths to the clipboard
   Future<void> copySelectedFilesToClipboard(int index) async {
     if (selectedFiles.isNotEmpty) {
-      await Clipboard.setData(ClipboardData(
-          text: selectedFiles[index])); // Copy selected files to clipboard
+      await Clipboard.setData(
+          ClipboardData(text: selectedFiles[index].toString()));
     }
   }
 

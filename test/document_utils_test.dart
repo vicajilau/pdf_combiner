@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
@@ -11,16 +12,12 @@ void main() {
   late bool originalIsMock;
 
   setUp(() {
-    // Save original value to restore it in tearDown
     originalIsMock = PdfCombiner.isMock;
   });
 
   tearDown(() {
-    // Restore original value even if the test changes the flag
     PdfCombiner.isMock = originalIsMock;
   });
-
-  /// Helpers
 
   Future<File> createFileWithBytes(String path, List<int> bytes) async {
     final file = File(path);
@@ -29,26 +26,54 @@ void main() {
     return file;
   }
 
-  // Minimum signatures by "magic number"
-  // PDF: "%PDF-1.4" + ... + "%%EOF"
   final pdfBytes = <int>[
-    0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, // %PDF-1.4
+    0x25,
+    0x50,
+    0x44,
+    0x46,
+    0x2D,
+    0x31,
+    0x2E,
+    0x34,
     0x0A,
-    // dummy minimum body
-    0x25, 0x25, 0x45, 0x4F, 0x46, // %%EOF
+    0x25,
+    0x25,
+    0x45,
+    0x4F,
+    0x46,
   ];
 
-  // PNG: 8-byte signature + some padding
   final pngBytes = <int>[
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-    // Padding to avoid false negatives
-    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    0x00,
+    0x00,
+    0x00,
+    0x0D,
+    0x49,
+    0x48,
+    0x44,
+    0x52,
   ];
 
-  // JPEG: FF D8 FF + padding
   final jpgBytes = <int>[
-    0xFF, 0xD8, 0xFF, // JPEG signature
-    0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, // JFIF...
+    0xFF,
+    0xD8,
+    0xFF,
+    0xE0,
+    0x00,
+    0x10,
+    0x4A,
+    0x46,
+    0x49,
+    0x46,
+    0x00,
   ];
 
   group('getTemporalFolderPath', () {
@@ -71,19 +96,18 @@ void main() {
   });
 
   group('removeTemporalFiles', () {
-    test('does not delete anything when isMock = true (skips the loop)', () async {
+    test('does not delete anything when isMock = true (skips the loop)',
+        () async {
       PdfCombiner.isMock = true;
       final mockTemp = MockDocumentUtils.getTemporalFolderPath();
       final fileInMockTemp = p.join(mockTemp, 'will_not_be_deleted.tmp');
 
       final file = await createFileWithBytes(fileInMockTemp, [1, 2, 3]);
 
-      // Even when the path is inside the mock temporal folder, it should not delete it
       DocumentUtils.removeTemporalFiles([fileInMockTemp]);
 
       expect(File(fileInMockTemp).existsSync(), isTrue);
 
-      // Cleanup
       await file.delete();
     });
 
@@ -105,8 +129,7 @@ void main() {
       await tempDir.delete(recursive: true);
     });
 
-    test('deletes only files inside systemTemp when isMock = false',
-        () async {
+    test('deletes only files inside systemTemp when isMock = false', () async {
       PdfCombiner.isMock = false;
 
       // Inside /tmp (or the equivalent path in the OS)
@@ -155,7 +178,7 @@ void main() {
       final pdfPath = p.join(tempDir.path, 'test.pdf');
       await createFileWithBytes(pdfPath, pdfBytes);
 
-      final result = await DocumentUtils.isPDF(pdfPath);
+      final result = await DocumentUtils.isPDF(MergeInput.path(pdfPath));
       expect(result, isTrue);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -166,7 +189,7 @@ void main() {
       final pngPath = p.join(tempDir.path, 'image.png');
       await createFileWithBytes(pngPath, pngBytes);
 
-      final result = await DocumentUtils.isPDF(pngPath);
+      final result = await DocumentUtils.isPDF(MergeInput.path(pngPath));
       expect(result, isFalse);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -174,8 +197,10 @@ void main() {
 
     test('false when there is an exception (non-existent path)', () async {
       final nonExistent = p.join(Directory.systemTemp.path, 'no_such_file.pdf');
-      final result = await DocumentUtils.isPDF(nonExistent);
-      expect(result, isFalse);
+      expect(
+        () => DocumentUtils.isPDF(MergeInput.path(nonExistent)),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 
@@ -186,7 +211,7 @@ void main() {
       final pngPath = p.join(tempDir.path, 'img.png');
       await createFileWithBytes(pngPath, pngBytes);
 
-      final result = await DocumentUtils.isImage(pngPath);
+      final result = await DocumentUtils.isImage(MergeInput.path(pngPath));
       expect(result, isTrue);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -198,7 +223,7 @@ void main() {
       final jpgPath = p.join(tempDir.path, 'img.jpg');
       await createFileWithBytes(jpgPath, jpgBytes);
 
-      final result = await DocumentUtils.isImage(jpgPath);
+      final result = await DocumentUtils.isImage(MergeInput.path(jpgPath));
       expect(result, isTrue);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -210,17 +235,19 @@ void main() {
       final pdfPath = p.join(tempDir.path, 'doc.pdf');
       await createFileWithBytes(pdfPath, pdfBytes);
 
-      final result = await DocumentUtils.isImage(pdfPath);
+      final result = await DocumentUtils.isImage(MergeInput.path(pdfPath));
       expect(result, isFalse);
 
       await Directory(tempDir.path).delete(recursive: true);
     });
 
-    test('false when there is an exception (non-existent path)', () async {
+    test('throws when path does not exist', () async {
       final nonExistent =
           p.join(Directory.systemTemp.path, 'no_such_image.png');
-      final result = await DocumentUtils.isImage(nonExistent);
-      expect(result, isFalse);
+      expect(
+        () => DocumentUtils.isImage(MergeInput.path(nonExistent)),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 }

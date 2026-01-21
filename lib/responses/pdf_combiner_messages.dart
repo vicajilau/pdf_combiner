@@ -18,8 +18,8 @@ class PdfCombinerMessages {
   /// Returns an error message when a file is not a valid PDF or does not exist.
   ///
   /// - [path] The file path of the invalid or non-existent PDF.
-  static String errorMessagePDF(String path) =>
-      "File is not of PDF type or does not exist: $path";
+  static String errorMessagePDF(String? path) =>
+      "File is not of PDF type or does not exist: ${path ?? "File in bytes"}";
 
   /// Returns an error message when a file is not a valid image or does not exist.
   ///

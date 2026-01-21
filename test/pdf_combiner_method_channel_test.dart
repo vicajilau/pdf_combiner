@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_method_channel.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/image_scale.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +33,10 @@ void main() {
     });
 
     final result = await platform.mergeMultiplePDFs(
-      inputPaths: ['file1.pdf', 'file2.pdf'],
+      inputs: [
+        MergeInput.path('file1.pdf'),
+        MergeInput.path('file2.pdf'),
+      ],
       outputPath: '/output/path',
     );
 
@@ -56,7 +60,10 @@ void main() {
     });
 
     final result = await platform.createPDFFromMultipleImages(
-      inputPaths: ['image1.jpg', 'image2.png'],
+      inputs: [
+        MergeInput.path('image1.jpg'),
+        MergeInput.path('image2.png'),
+      ],
       outputPath: '/output/path',
     );
 
@@ -81,7 +88,7 @@ void main() {
     });
 
     final result = await platform.createImageFromPDF(
-      inputPath: 'file.pdf',
+      input: MergeInput.path('file.pdf'),
       outputPath: '/output/path',
       config: ImageFromPdfConfig(
           rescale: ImageScale(width: 400, height: 400), createOneImage: false),

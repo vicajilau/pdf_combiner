@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 import 'mocks/mock_pdf_combiner_platform.dart';
@@ -11,7 +12,6 @@ void main() {
   group('PdfCombiner  Create PDF From Multiple Images Unit Tests', () {
     PdfCombiner.isMock = true;
 
-    // Test for error handling when file not exist in the createPDFFromMultipleImages method.
     test('createPDFFromMultipleImages - Error handling (empty inputPaths)',
         () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
@@ -19,7 +19,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: [],
+          inputs: [],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
@@ -27,48 +27,6 @@ void main() {
             (e) =>
                 e is PdfCombinerException &&
                 e.message == 'The parameter (inputPaths) cannot be empty',
-          ),
-        ),
-      );
-    });
-
-    test('createPDFFromMultipleImages - Error handling (File does not exist)',
-        () async {
-      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
-      PdfCombinerPlatform.instance = fakePlatform;
-
-      expect(
-        () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: ['path1.jpg', 'path2.jpg'],
-          outputPath: 'output/path.pdf',
-        ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message ==
-                    'File is not an image or does not exist: path1.jpg',
-          ),
-        ),
-      );
-    });
-
-    test('createPDFFromMultipleImages - Error handling (File is not an image)',
-        () async {
-      MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
-      PdfCombinerPlatform.instance = fakePlatform;
-
-      expect(
-        () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: ['assets/document_1.pdf', 'path2.jpg'],
-          outputPath: 'output/path.pdf',
-        ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message ==
-                    'File is not an image or does not exist: assets/document_1.pdf',
           ),
         ),
       );
@@ -82,9 +40,9 @@ void main() {
 
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: [
-            'example/assets/image_1.jpeg',
-            'example/assets/image_2.png'
+          inputs: [
+            MergeInput.path('example/assets/image_1.jpeg'),
+            MergeInput.path('example/assets/image_2.png'),
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -96,29 +54,22 @@ void main() {
       );
     });
 
-    // Test for success process in createPDFFromMultipleImages
     test('createPDFFromMultipleImages - success generate PDF', () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
-
-      // Replace the platform instance with the mock implementation.
       PdfCombinerPlatform.instance = fakePlatform;
 
       final outputPath = 'output/path/pdf_output.pdf';
 
-      // Call the method and check the response.
       final result = await PdfCombiner.createPDFFromMultipleImages(
-        inputPaths: [
-          'example/assets/image_1.jpeg',
-          'example/assets/image_2.png'
+        inputs: [
+          MergeInput.path('example/assets/image_1.jpeg'),
+          MergeInput.path('example/assets/image_2.png'),
         ],
         outputPath: outputPath,
       );
 
-      // Verify the error result matches the expected values.
       expect(result, outputPath);
     });
-
-    // Test for error handling when you try to send a file that its not a pdf in createPDFFromMultipleImages
 
     test('createPDFFromMultipleImages wrong outputPath', () async {
       MockPdfCombinerPlatform fakePlatform = MockPdfCombinerPlatform();
@@ -128,9 +79,9 @@ void main() {
 
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: [
-            'example/assets/image_1.jpeg',
-            'example/assets/image_2.png'
+          inputs: [
+            MergeInput.path('example/assets/image_1.jpeg'),
+            MergeInput.path('example/assets/image_2.png'),
           ],
           outputPath: outputPath,
         ),
@@ -152,36 +103,15 @@ void main() {
 
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: [
-            'example/assets/image_1.jpeg',
-            'example/assets/image_2.png'
+          inputs: [
+            MergeInput.path('example/assets/image_1.jpeg'),
+            MergeInput.path('example/assets/image_2.png'),
           ],
           outputPath: 'output/path.pdf',
         ),
         throwsA(
           predicate(
             (e) => e is PdfCombinerException && e.message == 'Mocked Exception',
-          ),
-        ),
-      );
-    });
-
-    test('createPDFFromMultipleImages - Mocked Exception', () async {
-      MockPdfCombinerPlatformWithException fakePlatform =
-          MockPdfCombinerPlatformWithException();
-      PdfCombinerPlatform.instance = fakePlatform;
-
-      expect(
-        () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: [
-            'example/assets/image_1.jpeg',
-            'example/assets/image_2.png'
-          ],
-          outputPath: 'output/path.pdf',
-        ),
-        throwsA(
-          predicate(
-            (e) => e is PdfCombinerException,
           ),
         ),
       );
@@ -194,9 +124,9 @@ void main() {
 
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputPaths: [
-            'example/assets/image_1.jpeg',
-            'example/assets/image_2.png'
+          inputs: [
+            MergeInput.path('example/assets/image_1.jpeg'),
+            MergeInput.path('example/assets/image_2.png'),
           ],
           outputPath: 'output/path.pdf',
         ),

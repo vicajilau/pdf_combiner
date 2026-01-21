@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
 import '../communication/pdf_combiner_platform_interface.dart';
@@ -29,7 +30,7 @@ class ImagesFromPdfIsolate {
   }) async {
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.createImageFromPDF(
-        inputPath: inputPath,
+        input: MergeInput.path(inputPath),
         outputPath: outputDirectory,
         config: config,
       );
@@ -61,7 +62,7 @@ class ImagesFromPdfIsolate {
     }
 
     return await PdfCombinerPlatform.instance.createImageFromPDF(
-      inputPath: inputPath,
+      input: MergeInput.path(inputPath),
       outputPath: outputDirectory,
       config: config,
     );

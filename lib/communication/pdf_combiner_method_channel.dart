@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 
 import '../models/pdf_from_multiple_image_config.dart';
 import 'pdf_combiner_platform_interface.dart';
@@ -19,10 +20,10 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// Merges multiple PDF files into a single PDF.
   ///
   /// This method sends a request to the native platform to merge the PDF files
-  /// specified in the `paths` parameter and saves the result in the `outputPath`.
+  /// specified in the `inputs` parameter and saves the result in the `outputPath`.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths of the PDFs to be merged.
+  /// - `inputs`: A list of [MergeInput] objects representing the PDFs to be merged.
   /// - `outputPath`: The directory path where the merged PDF should be saved.
   ///
   /// Returns:
@@ -30,9 +31,10 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) async {
+    final inputPaths = inputs.map((input) => input.path).toList();
     final result = await methodChannel.invokeMethod<String>(
       'mergeMultiplePDF',
       {'paths': inputPaths, 'outputDirPath': outputPath},
@@ -43,11 +45,11 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// Creates a PDF from multiple image files.
   ///
   /// This method sends a request to the native platform to create a PDF from the
-  /// images specified in the `inputPaths` parameter. The resulting PDF is saved in the
+  /// images specified in the `inputs` parameter. The resulting PDF is saved in the
   /// `outputPath` directory.
   ///
   /// Parameters:
-  /// - `inputPaths`: A list of file paths of the images to be converted into a PDF.
+  /// - `inputs`: A list of [MergeInput] objects representing the images to be converted into a PDF.
   /// - `outputPath`: The directory path where the created PDF should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
@@ -58,10 +60,11 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   ///   is successful, it returns a string message from the native platform; otherwise, it returns `null`.
   @override
   Future<String?> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
+    final inputPaths = inputs.map((input) => input.path).toList();
     final result = await methodChannel.invokeMethod<String>(
       'createPDFFromMultipleImage',
       {
@@ -81,7 +84,7 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   /// PDF file specified in the `path` parameter and saves the images in the `outputDirPath` directory.
   ///
   /// Parameters:
-  /// - `inputPath`: The file path of the PDF from which images will be extracted.
+  /// - `input`: The [MergeInput] object representing the PDF from which images will be extracted.
   /// - `outputPath`: The directory path where the images should be saved.
   /// - `config`: A configuration object that specifies how to process the images.
   ///   - `rescale`: The scaling configuration for the images (default is the original image).
@@ -93,14 +96,14 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   ///   is successful, it returns a list of file paths to the extracted images; otherwise, it returns `null`.
   @override
   Future<List<String>?> createImageFromPDF({
-    required String inputPath,
+    required MergeInput input,
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
     final result = await methodChannel.invokeMethod<List<dynamic>>(
       'createImageFromPDF',
       {
-        'path': inputPath,
+        'path': input.path,
         'outputDirPath': outputPath,
         'height': config.rescale.height,
         'width': config.rescale.width,

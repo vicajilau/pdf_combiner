@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/models/image_from_pdf_config.dart';
+import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
@@ -17,7 +18,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) {
     return Future.value(errorMessage);
@@ -25,7 +26,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<String?> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
@@ -34,7 +35,7 @@ class MockPdfCombinerPlatformCustomError
 
   @override
   Future<List<String>?> createImageFromPDF({
-    required String inputPath,
+    required MergeInput input,
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
@@ -47,7 +48,7 @@ class MockPdfCombinerPlatformNullResponse
     implements PdfCombinerPlatform {
   @override
   Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) {
     return Future.value(null);
@@ -55,7 +56,7 @@ class MockPdfCombinerPlatformNullResponse
 
   @override
   Future<String?> createPDFFromMultipleImages({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) {
@@ -64,7 +65,7 @@ class MockPdfCombinerPlatformNullResponse
 
   @override
   Future<List<String>?> createImageFromPDF({
-    required String inputPath,
+    required MergeInput input,
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) {
@@ -85,12 +86,11 @@ void main() {
         final mockPlatform = MockPdfCombinerPlatformCustomError(customError);
         PdfCombinerPlatform.instance = mockPlatform;
 
-        // Use real PDF files that pass magic number validation
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: [
-              'example/assets/document_1.pdf',
-              'example/assets/document_2.pdf'
+            inputs: [
+              MergeInput.path('example/assets/document_1.pdf'),
+              MergeInput.path('example/assets/document_2.pdf'),
             ],
             outputPath: 'output.pdf',
           ),
@@ -104,12 +104,11 @@ void main() {
         final mockPlatform = MockPdfCombinerPlatformNullResponse();
         PdfCombinerPlatform.instance = mockPlatform;
 
-        // Use real PDF files that pass magic number validation
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
-            inputPaths: [
-              'example/assets/document_1.pdf',
-              'example/assets/document_2.pdf'
+            inputs: [
+              MergeInput.path('example/assets/document_1.pdf'),
+              MergeInput.path('example/assets/document_2.pdf'),
             ],
             outputPath: 'output.pdf',
           ),
@@ -128,7 +127,6 @@ void main() {
               PdfCombinerPlatform.instance = mockPlatform;
 
               final file1 = java.File('image_test_custom.png');
-              // PNG magic number: 89 50 4E 47 0D 0A 1A 0A
               await file1.writeAsBytes(
                 [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
                 flush: true,
@@ -137,7 +135,7 @@ void main() {
               try {
                 await expectLater(
                       () => PdfCombiner.createPDFFromMultipleImages(
-                    inputPaths: [file1.path],
+                    inputs: [MergeInput.path(file1.path)],
                     outputPath: 'output_images.pdf',
                   ),
                   throwsA(isA<PdfCombinerException>()
@@ -148,7 +146,6 @@ void main() {
                   try {
                     await file1.delete();
                   } catch (_) {
-                    // Windows sometimes needs a moment to release the file lock
                     await Future.delayed(const Duration(milliseconds: 100));
                     if (await file1.exists()) await file1.delete();
                   }
@@ -169,7 +166,7 @@ void main() {
           try {
             await expectLater(
                   () => PdfCombiner.createPDFFromMultipleImages(
-                inputPaths: [file1.path],
+                inputs: [MergeInput.path(file1.path)],
                 outputPath: 'output_images.pdf',
               ),
               throwsA(isA<PdfCombinerException>().having(
@@ -203,7 +200,7 @@ void main() {
         try {
           expect(
             () async => await PdfCombiner.createImageFromPDF(
-              inputPath: 'input.pdf',
+              input: MergeInput.path('input.pdf'),
               outputDirPath: 'output_dir',
             ),
             throwsA(isA<PdfCombinerException>()
@@ -214,7 +211,6 @@ void main() {
             try {
               await file1.delete();
             } catch (_) {
-              // Windows sometimes needs a moment to release the file lock
               await Future.delayed(const Duration(milliseconds: 100));
               if (await file1.exists()) await file1.delete();
             }
