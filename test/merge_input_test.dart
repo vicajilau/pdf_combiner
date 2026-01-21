@@ -12,7 +12,7 @@ void main() {
       expect(input.type, MergeInputType.path);
       expect(input.path, '/path/to/file.pdf');
       expect(input.bytes, isNull);
-      expect(input.type.isTemporal, isFalse);
+      expect(input.type == MergeInputType.bytes, isFalse);
     });
 
     test('bytes constructor creates MergeInput with bytes type', () {
@@ -22,7 +22,7 @@ void main() {
       expect(input.type, MergeInputType.bytes);
       expect(input.bytes, bytes);
       expect(input.path, isNull);
-      expect(input.type.isTemporal, isTrue);
+      expect(input.type == MergeInputType.bytes, isTrue);
     });
 
     test('toString returns path for path type', () {

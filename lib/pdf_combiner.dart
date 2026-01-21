@@ -138,8 +138,12 @@ class PdfCombiner {
             inputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
-                if (input.type.isTemporal) {
-                  temportalFilePaths.add(result);
+                switch (input.type) {
+                  case MergeInputType.bytes:
+                    temportalFilePaths.add(result);
+                    break;
+                  case MergeInputType.path:
+                    break;
                 }
                 return result;
               },
@@ -215,8 +219,12 @@ class PdfCombiner {
             inputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
-                if (input.type.isTemporal) {
-                  temportalFilePaths.add(result);
+                switch (input.type) {
+                  case MergeInputType.bytes:
+                    temportalFilePaths.add(result);
+                    break;
+                  case MergeInputType.path:
+                    break;
                 }
                 return result;
               },
@@ -294,8 +302,12 @@ class PdfCombiner {
         ));
       } else {
         final inputPath = await DocumentUtils.prepareInput(input);
-        if (input.type.isTemporal) {
-          temportalFilePath = inputPath;
+        switch (input.type) {
+          case MergeInputType.bytes:
+            temportalFilePath = inputPath;
+            break;
+          case MergeInputType.path:
+            break;
         }
         final response = await ImagesFromPdfIsolate.createImageFromPDF(
           inputPath: inputPath,
