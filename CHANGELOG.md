@@ -9,6 +9,7 @@
 * **BREAKING CHANGE**: `createImageFromPDF` parameter changed from `inputPath: String` to `input: MergeInput`.
 * Added `MergeInput` class with two factory constructors: `MergeInput.path(String)` and `MergeInput.bytes(Uint8List)`.
 * Added support for mixing file paths and bytes in the same operation.
+* Added support for .heic file format.
 
 ## 5.0.0
 
@@ -20,7 +21,6 @@
 * **BREAKING CHANGE**: Error handling now uses standard Dart `try-catch` blocks. The plugin throws `PdfCombinerException` on failure.
 * Simplified documentation examples to use generic `try-catch` blocks.
 * Added a dedicated section for `PdfCombinerException` in README.
-* Added support for .heic file format.
 
 ## 4.4.2
 
