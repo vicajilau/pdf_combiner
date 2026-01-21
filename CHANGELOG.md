@@ -1,3 +1,15 @@
+## 6.0.0
+
+### General
+
+* **BREAKING CHANGE**: All methods now use `MergeInput` instead of `String` for input parameters, allowing both file paths and raw bytes (`Uint8List`).
+* **BREAKING CHANGE**: `generatePDFFromDocuments` parameter changed from `inputPaths: List<String>` to `inputs: List<MergeInput>`.
+* **BREAKING CHANGE**: `mergeMultiplePDFs` parameter changed from `inputPaths: List<String>` to `inputs: List<MergeInput>`.
+* **BREAKING CHANGE**: `createPDFFromMultipleImages` parameter changed from `inputPaths: List<String>` to `inputs: List<MergeInput>`.
+* **BREAKING CHANGE**: `createImageFromPDF` parameter changed from `inputPath: String` to `input: MergeInput`.
+* Added `MergeInput` class with two factory constructors: `MergeInput.path(String)` and `MergeInput.bytes(Uint8List)`.
+* Added support for mixing file paths and bytes in the same operation.
+
 ## 5.0.0
 
 ### General
