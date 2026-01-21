@@ -11,13 +11,21 @@ class FileTypeIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: input.isTemporal ? null : () => OpenFile.open(input.path!),
+      onPressed: () {
+        switch (input.type) {
+          case MergeInputType.path:
+            OpenFile.open(input.path!);
+          case MergeInputType.bytes:
+            null;
+        }
+      },
       child: FutureBuilder(
-          future: (input.type == MergeInputType.path
-              ? FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!)
-              : Future.value(
-                  FileMagicNumber.detectFileTypeFromBytes(input.bytes!),
-                )),
+          future: switch (input.type) {
+            MergeInputType.bytes => Future.value(
+                FileMagicNumber.detectFileTypeFromBytes(input.bytes!)),
+            MergeInputType.path =>
+              FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!),
+          },
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator();

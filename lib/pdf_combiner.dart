@@ -138,7 +138,7 @@ class PdfCombiner {
             inputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
-                if (input.isTemporal) {
+                if (input.type.isTemporal) {
                   temportalFilePaths.add(result);
                 }
                 return result;
@@ -215,7 +215,7 @@ class PdfCombiner {
             inputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
-                if (input.isTemporal) {
+                if (input.type.isTemporal) {
                   temportalFilePaths.add(result);
                 }
                 return result;
@@ -277,11 +277,24 @@ class PdfCombiner {
       bool success = await DocumentUtils.isPDF(input);
 
       if (!success) {
+        String inputTypeMessage;
+
+        switch (input.type) {
+          case MergeInputType.bytes:
+            inputTypeMessage = "File in bytes";
+            break;
+
+          case MergeInputType.path:
+            inputTypeMessage = input.path!;
+            break;
+        }
+
         throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(
-            input.type == MergeInputType.path ? input.path! : "File in bytes"));
+          inputTypeMessage,
+        ));
       } else {
         final inputPath = await DocumentUtils.prepareInput(input);
-        if (input.isTemporal) {
+        if (input.type.isTemporal) {
           temportalFilePath = inputPath;
         }
         final response = await ImagesFromPdfIsolate.createImageFromPDF(

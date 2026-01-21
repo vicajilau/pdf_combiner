@@ -180,16 +180,16 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                       await _openInputFile(index);
                                     },
                                     subtitle: FutureBuilder(
-                                        future: _viewModel.selectedFiles[index]
-                                                    .type ==
-                                                MergeInputType.bytes
-                                            ? Future.value(_viewModel
-                                                .selectedFiles[index].bytes)
-                                            : FileMagicNumber
-                                                .getBytesFromPathOrBlob(
-                                                    _viewModel
-                                                        .selectedFiles[index]
-                                                        .toString()),
+                                        future: switch (_viewModel
+                                            .selectedFiles[index].type) {
+                                          MergeInputType.bytes => Future.value(
+                                              _viewModel
+                                                  .selectedFiles[index].bytes),
+                                          MergeInputType.path => FileMagicNumber
+                                              .getBytesFromPathOrBlob(_viewModel
+                                                  .selectedFiles[index]
+                                                  .toString()),
+                                        },
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
@@ -343,13 +343,17 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   Future<void> _openInputFile(int index) async {
     if (index < _viewModel.selectedFiles.length) {
-      if (_viewModel.selectedFiles[index].isTemporal) {
-        return;
-      }
-      final result =
-          await OpenFile.open(_viewModel.selectedFiles[index].toString());
-      if (result.type != ResultType.done) {
-        _showSnackbarSafely('Failed to open file. Error: ${result.message}');
+      switch (_viewModel.selectedFiles[index].type) {
+        case MergeInputType.path:
+          final result =
+              await OpenFile.open(_viewModel.selectedFiles[index].toString());
+          if (result.type != ResultType.done) {
+            _showSnackbarSafely(
+                'Failed to open file. Error: ${result.message}');
+          }
+          return;
+        case MergeInputType.bytes:
+          return;
       }
     }
   }

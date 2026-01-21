@@ -2,6 +2,10 @@ import 'dart:typed_data' show Uint8List;
 
 import 'package:pdf_combiner/models/merge_input_type.dart';
 
+extension MergeInputExtension on MergeInputType {
+  bool get isTemporal => this == MergeInputType.bytes;
+}
+
 /// A class representing an input for merging PDFs.
 ///
 /// It can be created from a file path or a byte array.
@@ -20,8 +24,6 @@ class MergeInput {
   /// Creates a [MergeInput] from a byte array.
   factory MergeInput.bytes(Uint8List bytes) =>
       MergeInput(MergeInputType.bytes, bytes: bytes);
-
-  bool get isTemporal => type == MergeInputType.bytes;
 
   @override
   String toString() {
