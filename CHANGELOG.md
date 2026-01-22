@@ -1,3 +1,9 @@
+## 6.0.1
+
+### General
+
+* Fixed static analysis issues.
+
 ## 6.0.0
 
 ### General

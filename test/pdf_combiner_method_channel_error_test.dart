@@ -28,12 +28,10 @@ void main() {
     test('createPDFFromMultipleImages throws UnimplementedError', () async {
       expect(
         () async => await PdfCombinerPlatform.instance
-            .createPDFFromMultipleImages(
-                inputs: [
-                  MergeInput.path('path/to/image1.png'),
-                  MergeInput.path('path/to/image2.png'),
-                ],
-                outputPath: 'path/to/output.pdf'),
+            .createPDFFromMultipleImages(inputs: [
+          MergeInput.path('path/to/image1.png'),
+          MergeInput.path('path/to/image2.png'),
+        ], outputPath: 'path/to/output.pdf'),
         throwsA(isA<UnimplementedError>()),
       );
     });
