@@ -1,3 +1,9 @@
+## 6.0.2
+
+### General
+
+* Updated dependencies.
+
 ## 6.0.1
 
 ### General
