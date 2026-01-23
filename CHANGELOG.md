@@ -1,3 +1,9 @@
+## 6.0.3
+
+### General
+
+* Fixed documentation link to improve pub.dev scoring.
+
 ## 6.0.2
 
 ### General
