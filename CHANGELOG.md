@@ -1,3 +1,9 @@
+## 6.0.4
+
+### General
+
+* Updated minimum Dart SDK to `3.0.0` to support latest dependencies.
+
 ## 6.0.3
 
 ### General

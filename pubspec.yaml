@@ -1,10 +1,10 @@
 name: pdf_combiner
 description: "It is a lightweight and efficient Flutter plugin designed to merge multiple PDF documents into a single file effortlessly."
-version: 6.0.3
+version: 6.0.4
 homepage: https://github.com/vicajilau/pdf_combiner
 
 environment:
-  sdk: '>=2.17.0 <4.0.0'
+  sdk: ^3.0.0
   flutter: '>=3.0.0'
 
 dependencies:
