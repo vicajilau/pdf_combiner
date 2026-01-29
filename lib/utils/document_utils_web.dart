@@ -45,6 +45,8 @@ class DocumentUtils {
       case MergeInputType.bytes:
         return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
             FileMagicNumberType.pdf;
+      case MergeInputType.url:
+        return false;
     }
   }
 
@@ -62,6 +64,9 @@ class DocumentUtils {
         break;
       case MergeInputType.bytes:
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        break;
+      case MergeInputType.url:
+        fileType = FileMagicNumberType.unknown;
         break;
     }
     return fileType == FileMagicNumberType.png ||
@@ -105,6 +110,8 @@ class DocumentUtils {
         return input.path!;
       case MergeInputType.bytes:
         return createBlobUrl(input.bytes!);
+      case MergeInputType.url:
+        return input.url!;
     }
   }
 }

@@ -31,6 +31,9 @@ class PdfCombinerViewModel {
         selectedFiles +=
             result.files.map((file) => MergeInput.bytes(file.bytes!)).toList();
         break;
+        case MergeInputType.url:
+          // Currently not supported in file picker
+          break;
     }
   }
 
@@ -51,6 +54,9 @@ class PdfCombinerViewModel {
           ),
         );
         break;
+        case MergeInputType.url:
+          // Currently not supported in drag and drop
+          break;
     }
 
     outputFiles = [];

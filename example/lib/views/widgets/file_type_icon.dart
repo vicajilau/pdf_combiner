@@ -16,6 +16,8 @@ class FileTypeIcon extends StatelessWidget {
             OpenFile.open(input.path!);
           case MergeInputType.bytes:
             null;
+          case MergeInputType.url:
+            null;
         }
       },
       child: FutureBuilder(
@@ -24,6 +26,7 @@ class FileTypeIcon extends StatelessWidget {
                 FileMagicNumber.detectFileTypeFromBytes(input.bytes!)),
             MergeInputType.path =>
               FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!),
+            MergeInputType.url => Future.value(null),
           },
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {

@@ -18,6 +18,8 @@ extension on MergeInput {
         return p.basename(path ?? '');
       case MergeInputType.bytes:
         return 'File in bytes $index';
+      case MergeInputType.url:
+        return url ?? 'File from URL $index';
     }
   }
 }
@@ -55,11 +57,20 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         child: Stack(
           children: [
             DropTarget(
-              onDragDone: (details) async {
-                final fileType =
+               onDragDone: (details) async {
+                final selection =
                     await showFileTypeDialog(context); // Show dialog
-                if (fileType == null) return;
-                await _viewModel.addFilesDragAndDrop(fileType, details.files);
+                if (selection == null) return;
+                if (selection.type == MergeInputType.url) {
+                  if (selection.url != null && selection.url!.isNotEmpty) {
+                    _viewModel.selectedFiles += [
+                      MergeInput.url(selection.url!)
+                    ];
+                  }
+                } else {
+                  await _viewModel.addFilesDragAndDrop(
+                      selection.type, details.files);
+                }
                 setState(() {});
               },
               child: (_viewModel.isEmpty())
@@ -188,6 +199,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                               .getBytesFromPathOrBlob(_viewModel
                                                   .selectedFiles[index]
                                                   .toString()),
+                                          MergeInputType.url => Future.value(null),
                                         },
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
@@ -270,9 +282,16 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   // Function to pick PDF files from the device
   Future<void> _pickFiles() async {
-    final fileType = await showFileTypeDialog(context);
-    if (fileType == null) return;
-    await _viewModel.pickFiles(fileType);
+   final selection = await showFileTypeDialog(context);
+    if (selection == null) return;
+    if (selection.type == MergeInputType.url) {
+      if (selection.url != null && selection.url!.isNotEmpty) {
+        _viewModel.selectedFiles += [MergeInput.url(selection.url!)];
+      }
+      setState(() {});
+    } else {
+      await _viewModel.pickFiles(selection.type);
+    }
     setState(() {});
   }
 
@@ -352,6 +371,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           }
           return;
         case MergeInputType.bytes:
+          return;
+        case MergeInputType.url:
           return;
       }
     }
