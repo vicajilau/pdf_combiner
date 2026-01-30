@@ -14,17 +14,17 @@ class RadioGroupItem<T> {
   const RadioGroupItem(this.value, this.label);
 }
 
-class RadioGroup<T> extends StatelessWidget {
+class RadioGroupFileType<T> extends StatelessWidget {
   final T groupValue;
   final ValueChanged<T?> onChanged;
   final List<RadioGroupItem<T>> items;
 
-  const RadioGroup({
-    Key? key,
+  const RadioGroupFileType({
+    super.key,
     required this.groupValue,
     required this.onChanged,
     required this.items,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +34,14 @@ class RadioGroup<T> extends StatelessWidget {
           onTap: () => onChanged(item.value),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Row(
-              children: [
-                Radio<T>(value: item.value, groupValue: groupValue, onChanged: onChanged),
-                const SizedBox(width: 8),
-                Expanded(child: Text(item.label)),
-              ],
-            ),
-          ),
+            child: RadioGroup<T>(
+                groupValue: groupValue,
+                onChanged: onChanged,
+                           child: ListTile(
+            title: Text(item.label),
+            leading: Radio<T>(toggleable: true, value: item.value),
+          ),),
+          ), 
         );
       }).toList(),
     );
@@ -58,8 +58,7 @@ Future<FileTypeSelection?> showFileTypeDialog(BuildContext context) async {
 
       return StatefulBuilder(builder: (context, setState) {
         final isUrlSelected = selected == MergeInputType.url;
-        final canAccept = selected != null &&
-            (!isUrlSelected || controller.text.trim().isNotEmpty);
+        final canAccept = (!isUrlSelected || controller.text.trim().isNotEmpty);
 
         return AlertDialog(
           title: const Text('File Type'),
@@ -67,7 +66,7 @@ Future<FileTypeSelection?> showFileTypeDialog(BuildContext context) async {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                RadioGroup<MergeInputType>(
+                RadioGroupFileType<MergeInputType>(
                   groupValue: selected,
                   onChanged: (v) => setState(() => selected = v!),
                   items: const [
@@ -97,7 +96,6 @@ Future<FileTypeSelection?> showFileTypeDialog(BuildContext context) async {
               onPressed: () => Navigator.of(context).pop(null),
             ),
             TextButton(
-              child: const Text('Accept'),
               onPressed: canAccept
                   ? () {
                       final url = controller.text.trim();
@@ -109,6 +107,7 @@ Future<FileTypeSelection?> showFileTypeDialog(BuildContext context) async {
                       }
                     }
                   : null,
+              child: const Text('Accept'),
             ),
           ],
         );

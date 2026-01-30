@@ -2,10 +2,11 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:file_magic_number/file_magic_number.dart';
-import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:http/http.dart' as http;
+import 'package:pdf_combiner/utils/string_extenxion.dart';
 
 extension on MergeInputType {
   String extension(MergeInput input) {
@@ -14,7 +15,7 @@ extension on MergeInputType {
         return p.extension(input.path!);
       case MergeInputType.bytes:
         final magicType = FileMagicNumber.detectFileTypeFromBytes(input.bytes);
-        return _magicTypeToString(magicType);
+        return magicType.name;
       case MergeInputType.url:
         return p.extension(input.url!);
     }
@@ -28,21 +29,6 @@ extension on MergeInputType {
         return 'image_input';
       case MergeInputType.url:
         return 'url_input';
-    }
-  }
-
-  String _magicTypeToString(FileMagicNumberType type) {
-    switch (type) {
-      case FileMagicNumberType.pdf:
-        return 'pdf';
-      case FileMagicNumberType.jpg:
-        return 'jpg';
-      case FileMagicNumberType.png:
-        return 'png';
-      case FileMagicNumberType.heic:
-        return 'heic';
-      default:
-        return 'nonSupported';
     }
   }
 }
@@ -183,7 +169,7 @@ class DocumentUtils {
         return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
             FileMagicNumberType.pdf;
       case MergeInputType.url:
-        return false;
+        return input.url.stringToMagicType == FileMagicNumberType.pdf;
     }
   }
 
@@ -225,6 +211,7 @@ class DocumentUtils {
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
         break;
       case MergeInputType.url:
+      fileType = input.url!.stringToMagicType;
         break;
     }
     return fileType == FileMagicNumberType.png ||

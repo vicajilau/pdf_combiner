@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:pdf_combiner/utils/string_extenxion.dart';
 import 'package:web/web.dart' as web;
 
 /// Utility class for handling document-related checks in a web environment.
@@ -46,7 +47,7 @@ class DocumentUtils {
         return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
             FileMagicNumberType.pdf;
       case MergeInputType.url:
-        return false;
+        return input.url.stringToMagicType == FileMagicNumberType.pdf;
     }
   }
 
@@ -66,7 +67,7 @@ class DocumentUtils {
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
         break;
       case MergeInputType.url:
-        fileType = FileMagicNumberType.unknown;
+        fileType = input.url.stringToMagicType;
         break;
     }
     return fileType == FileMagicNumberType.png ||
@@ -104,6 +105,7 @@ class DocumentUtils {
   ///
   /// - [MergeInput.path]: Returns the path as-is.
   /// - [MergeInput.bytes]: Creates a blob URL and returns it.
+  /// - [MergeInput.url]: Returns the URL as-is.
   static Future<String> prepareInput(MergeInput input) async {
     switch (input.type) {
       case MergeInputType.path:
@@ -113,5 +115,10 @@ class DocumentUtils {
       case MergeInputType.url:
         return input.url!;
     }
+  }
+ 
+  static Future<List<MergeInput>> conversionUrlInputsToPaths(
+      List<MergeInput> inputs) async { 
+    return inputs;
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +10,7 @@ import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_dialog.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
-
+import 'package:http/http.dart' as http;
 import '../view_models/pdf_combiner_view_model.dart';
 
 extension on MergeInput {
@@ -57,7 +59,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         child: Stack(
           children: [
             DropTarget(
-               onDragDone: (details) async {
+              onDragDone: (details) async {
                 final selection =
                     await showFileTypeDialog(context); // Show dialog
                 if (selection == null) return;
@@ -199,7 +201,9 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                               .getBytesFromPathOrBlob(_viewModel
                                                   .selectedFiles[index]
                                                   .toString()),
-                                          MergeInputType.url => Future.value(null),
+                                          MergeInputType.url => getUrlFileSize(
+                                              _viewModel.selectedFiles[index]
+                                                  .toString()),
                                         },
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
@@ -209,7 +213,17 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                           } else if (snapshot.hasError) {
                                             return const Icon(Icons.error);
                                           } else {
-                                            return Text(snapshot.data?.size() ??
+                                            final input =
+                                                _viewModel.selectedFiles[index];
+                                            if (input.type ==
+                                                MergeInputType.url) {
+                                              final len = snapshot.data as int?;
+                                              return Text(len != null
+                                                  ? formatBytes(len)
+                                                  : "Unknown Size");
+                                            }
+                                            final snapshotUint = snapshot.data as Uint8List?;
+                                            return Text(snapshotUint?.size() ??
                                                 "Unknown Size");
                                           }
                                         }),
@@ -282,7 +296,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   // Function to pick PDF files from the device
   Future<void> _pickFiles() async {
-   final selection = await showFileTypeDialog(context);
+    final selection = await showFileTypeDialog(context);
     if (selection == null) return;
     if (selection.type == MergeInputType.url) {
       if (selection.url != null && selection.url!.isNotEmpty) {
@@ -393,5 +407,38 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(message)));
     }
+  }
+
+  String formatBytes(int bytes) {
+    if (bytes >= 1e9) return "${(bytes / 1e9).toStringAsFixed(2)} GB";
+    if (bytes >= 1e6) return "${(bytes / 1e6).toStringAsFixed(2)} MB";
+    if (bytes >= 1e3) return "${(bytes / 1e3).toStringAsFixed(2)} KB";
+    return "$bytes B";
+  }
+
+  Future<int?> getUrlFileSize(String url) async {
+    final uri = Uri.parse(url);
+    final client = http.Client();
+    try {
+      final head = await client.head(uri);
+      if (head.statusCode >= 200 && head.statusCode < 300) {
+        final cl = head.headers['content-length'];
+        if (cl != null) return int.tryParse(cl);
+      }
+
+      final range = await client.get(uri, headers: {'Range': 'bytes=0-0'});
+      if (range.statusCode == 206) {
+        final cr = range.headers['content-range'];
+        if (cr != null) {
+          final parts = cr.split('/');
+          if (parts.length == 2) return int.tryParse(parts[1]);
+        }
+      }
+    } catch (_) {
+      return null;
+    } finally {
+      client.close();
+    }
+    return null;
   }
 }
