@@ -61,7 +61,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
             DropTarget(
               onDragDone: (details) async {
                 final selection =
-                    await showFileTypeDialog(context); // Show dialog
+                    await showFileTypeDialog(context, isDrag: true); // Show dialog
                 if (selection == null) return;
                 if (selection.type == MergeInputType.url) {
                   if (selection.url != null && selection.url!.isNotEmpty) {

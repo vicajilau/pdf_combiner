@@ -35,20 +35,22 @@ class RadioGroupFileType<T> extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0),
             child: RadioGroup<T>(
-                groupValue: groupValue,
-                onChanged: onChanged,
-                           child: ListTile(
-            title: Text(item.label),
-            leading: Radio<T>(toggleable: true, value: item.value),
-          ),),
-          ), 
+              groupValue: groupValue,
+              onChanged: onChanged,
+              child: ListTile(
+                title: Text(item.label),
+                leading: Radio<T>(toggleable: true, value: item.value),
+              ),
+            ),
+          ),
         );
       }).toList(),
     );
   }
 }
 
-Future<FileTypeSelection?> showFileTypeDialog(BuildContext context) async {
+Future<FileTypeSelection?> showFileTypeDialog(BuildContext context,
+    {bool isDrag = false}) async {
   return showDialog<FileTypeSelection>(
     context: context,
     barrierDismissible: false,
@@ -69,11 +71,16 @@ Future<FileTypeSelection?> showFileTypeDialog(BuildContext context) async {
                 RadioGroupFileType<MergeInputType>(
                   groupValue: selected,
                   onChanged: (v) => setState(() => selected = v!),
-                  items: const [
-                    RadioGroupItem(MergeInputType.path, 'Path'),
-                    RadioGroupItem(MergeInputType.bytes, 'Bytes'),
-                    RadioGroupItem(MergeInputType.url, 'Url'),
-                  ],
+                  items: isDrag
+                      ? const [
+                          RadioGroupItem(MergeInputType.path, 'Path'),
+                          RadioGroupItem(MergeInputType.bytes, 'Bytes'),
+                        ]
+                      : const [
+                          RadioGroupItem(MergeInputType.path, 'Path'),
+                          RadioGroupItem(MergeInputType.bytes, 'Bytes'),
+                          RadioGroupItem(MergeInputType.url, 'Url'),
+                        ],
                 ),
                 if (isUrlSelected)
                   Padding(
