@@ -2,7 +2,7 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/utils/string_extenxion.dart';
+import 'package:pdf_combiner/utils/string_extension.dart';
 
 class FileTypeIcon extends StatelessWidget {
   final MergeInput input;

@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/utils/string_extenxion.dart';
+import 'package:pdf_combiner/utils/string_extension.dart';
 import 'package:web/web.dart' as web;
 
 /// Utility class for handling document-related checks in a web environment.
@@ -117,8 +117,12 @@ class DocumentUtils {
     }
   }
  
+
+
   static Future<List<MergeInput>> conversionUrlInputsToPaths(
       List<MergeInput> inputs) async { 
+
+    //Returns the same inputs in web environment is not necessary to convert urls to paths
     return inputs;
   }
 }

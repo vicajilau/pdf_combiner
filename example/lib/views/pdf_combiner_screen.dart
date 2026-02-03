@@ -201,7 +201,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                               .getBytesFromPathOrBlob(_viewModel
                                                   .selectedFiles[index]
                                                   .toString()),
-                                          MergeInputType.url => getUrlFileSize(
+                                          MergeInputType.url => _viewModel.getUrlFileSize(
                                               _viewModel.selectedFiles[index]
                                                   .toString()),
                                         },
@@ -219,7 +219,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                                 MergeInputType.url) {
                                               final len = snapshot.data as int?;
                                               return Text(len != null
-                                                  ? formatBytes(len)
+                                                  ? _viewModel.formatBytes(len)
                                                   : "Unknown Size");
                                             }
                                             final snapshotUint = snapshot.data as Uint8List?;
@@ -407,38 +407,5 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(message)));
     }
-  }
-
-  String formatBytes(int bytes) {
-    if (bytes >= 1e9) return "${(bytes / 1e9).toStringAsFixed(2)} GB";
-    if (bytes >= 1e6) return "${(bytes / 1e6).toStringAsFixed(2)} MB";
-    if (bytes >= 1e3) return "${(bytes / 1e3).toStringAsFixed(2)} KB";
-    return "$bytes B";
-  }
-
-  Future<int?> getUrlFileSize(String url) async {
-    final uri = Uri.parse(url);
-    final client = http.Client();
-    try {
-      final head = await client.head(uri);
-      if (head.statusCode >= 200 && head.statusCode < 300) {
-        final cl = head.headers['content-length'];
-        if (cl != null) return int.tryParse(cl);
-      }
-
-      final range = await client.get(uri, headers: {'Range': 'bytes=0-0'});
-      if (range.statusCode == 206) {
-        final cr = range.headers['content-range'];
-        if (cr != null) {
-          final parts = cr.split('/');
-          if (parts.length == 2) return int.tryParse(parts[1]);
-        }
-      }
-    } catch (_) {
-      return null;
-    } finally {
-      client.close();
-    }
-    return null;
   }
 }

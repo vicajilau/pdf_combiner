@@ -6,7 +6,7 @@ import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:http/http.dart' as http;
-import 'package:pdf_combiner/utils/string_extenxion.dart';
+import 'package:pdf_combiner/utils/string_extension.dart';
 
 extension on MergeInputType {
   String extension(MergeInput input) {

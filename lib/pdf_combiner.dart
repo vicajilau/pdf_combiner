@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
@@ -49,7 +50,7 @@ class PdfCombiner {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
-    final List<MergeInput> newInputs = await DocumentUtils.conversionUrlInputsToPaths(inputs);
+    final List<MergeInput> newInputs = kIsWeb ? inputs :await DocumentUtils.conversionUrlInputsToPaths(inputs);
     List<String> temporalPaths = [];
     final List<MergeInput> mutablePaths = List.from(newInputs);
     if (newInputs.isEmpty) {
@@ -113,7 +114,7 @@ class PdfCombiner {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
-    final List<MergeInput> newInputs = await DocumentUtils.conversionUrlInputsToPaths(inputs);
+    final List<MergeInput> newInputs = kIsWeb ? inputs :await DocumentUtils.conversionUrlInputsToPaths(inputs);
     final temportalFilePaths = <String>[];
     if (newInputs.isEmpty) {
       throw PdfCombinerException(
@@ -194,7 +195,7 @@ class PdfCombiner {
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
-    final List<MergeInput> newInputs = await DocumentUtils.conversionUrlInputsToPaths(inputs);
+    final List<MergeInput> newInputs = kIsWeb ? inputs : await DocumentUtils.conversionUrlInputsToPaths(inputs);
     final temportalFilePaths = <String>[];
     final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
     if (!outputPathIsPDF) {
@@ -286,7 +287,7 @@ class PdfCombiner {
     required String outputDirPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
-    final MergeInput newInput = await DocumentUtils.conversionUrlInputsToPaths([input]).then((value) => value.first);
+    final MergeInput newInput = kIsWeb ? input : await DocumentUtils.conversionUrlInputsToPaths([input]).then((value) => value.first);
     String? temportalFilePath;
     try {
       bool success = await DocumentUtils.isPDF(newInput);
