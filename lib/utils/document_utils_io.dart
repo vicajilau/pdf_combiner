@@ -2,10 +2,12 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:file_magic_number/file_magic_number.dart';
+import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:http/http.dart' as http;
+import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/utils/string_extension.dart';
 
 extension on MergeInputType {
@@ -109,11 +111,10 @@ class DocumentUtils {
 
               outputs.add(MergeInput.path(file.path));
             } else {
-              throw Exception(
-                  'Fallo al descargar archivo. Código: ${response.statusCode}');
+              throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(input.url!));
             }
           } catch (e) {
-            throw Exception('Error procesando URL: $e');
+            throw PdfCombinerException(e.toString());
           }
 
       }

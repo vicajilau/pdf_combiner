@@ -50,7 +50,7 @@ class PdfCombiner {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
-    final List<MergeInput> newInputs = kIsWeb ? inputs :await DocumentUtils.conversionUrlInputsToPaths(inputs);
+    final List<MergeInput> newInputs = await DocumentUtils.conversionUrlInputsToPaths(inputs);
     List<String> temporalPaths = [];
     final List<MergeInput> mutablePaths = List.from(newInputs);
     if (newInputs.isEmpty) {
@@ -114,7 +114,7 @@ class PdfCombiner {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
-    final List<MergeInput> newInputs = kIsWeb ? inputs :await DocumentUtils.conversionUrlInputsToPaths(inputs);
+    final List<MergeInput> newInputs = await DocumentUtils.conversionUrlInputsToPaths(inputs);
     final temportalFilePaths = <String>[];
     if (newInputs.isEmpty) {
       throw PdfCombinerException(
@@ -287,7 +287,7 @@ class PdfCombiner {
     required String outputDirPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
-    final MergeInput newInput = kIsWeb ? input : await DocumentUtils.conversionUrlInputsToPaths([input]).then((value) => value.first);
+    final MergeInput newInput = await DocumentUtils.conversionUrlInputsToPaths([input]).then((value) => value.first);
     String? temportalFilePath;
     try {
       bool success = await DocumentUtils.isPDF(newInput);
