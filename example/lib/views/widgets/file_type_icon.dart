@@ -2,19 +2,21 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:pdf_combiner/utils/string_extension.dart';
 
 class FileTypeIcon extends StatelessWidget {
   final MergeInput input;
   const FileTypeIcon({super.key, required this.input});
 
   @override
-  Widget build(BuildContext context) {
-    return TextButton(
+  Widget build(BuildContext context) => TextButton(
       onPressed: () {
         switch (input.type) {
           case MergeInputType.path:
             OpenFile.open(input.path!);
           case MergeInputType.bytes:
+            null;
+          case MergeInputType.url:
             null;
         }
       },
@@ -24,6 +26,7 @@ class FileTypeIcon extends StatelessWidget {
                 FileMagicNumber.detectFileTypeFromBytes(input.bytes!)),
             MergeInputType.path =>
               FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!),
+            MergeInputType.url => Future.value(input.url.stringToMagicType),
           },
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -46,5 +49,6 @@ class FileTypeIcon extends StatelessWidget {
             }
           }),
     );
-  }
+
+ 
 }

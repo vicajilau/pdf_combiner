@@ -4,6 +4,7 @@ import 'dart:typed_data' show Uint8List;
 enum MergeInputType {
   path,
   bytes,
+  url,
 }
 
 /// A class representing an input for merging PDFs.
@@ -11,11 +12,12 @@ enum MergeInputType {
 /// It can be created from a file path or a byte array.
 class MergeInput {
   final String? path;
+  final String? url;
   final Uint8List? bytes;
   final MergeInputType type;
 
-  const MergeInput(this.type, {this.path, this.bytes})
-      : assert((path != null) != (bytes != null));
+  const MergeInput(this.type, {this.path, this.bytes, this.url})
+      : assert(((path != null) != (bytes != null))!= (url != null));
 
   /// Creates a [MergeInput] from a file path.
   factory MergeInput.path(String path) =>
@@ -24,6 +26,10 @@ class MergeInput {
   /// Creates a [MergeInput] from a byte array.
   factory MergeInput.bytes(Uint8List bytes) =>
       MergeInput(MergeInputType.bytes, bytes: bytes);
+  
+  /// Creates a [MergeInput] from a url string.
+  factory MergeInput.url(String url) =>
+      MergeInput(MergeInputType.url, url: url);
 
   @override
   String toString() {
@@ -32,6 +38,8 @@ class MergeInput {
         return path!;
       case MergeInputType.bytes:
         return bytes!.toString();
+      case MergeInputType.url:
+        return url!;
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
@@ -49,17 +50,18 @@ class PdfCombiner {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
+    final List<MergeInput> newInputs = await DocumentUtils.conversionUrlInputsToPaths(inputs);
     List<String> temporalPaths = [];
-    final List<MergeInput> mutablePaths = List.from(inputs);
-    if (inputs.isEmpty) {
+    final List<MergeInput> mutablePaths = List.from(newInputs);
+    if (newInputs.isEmpty) {
       throw (PdfCombinerException(
           PdfCombinerMessages.emptyParameterMessage("inputs")));
     } else if (outputPath.trim().isEmpty) {
       throw (PdfCombinerException(
           PdfCombinerMessages.emptyParameterMessage("outputPath")));
     } else {
-      for (int i = 0; i < inputs.length; i++) {
-        final input = inputs[i];
+      for (int i = 0; i < newInputs.length; i++) {
+        final input = newInputs[i];
         final isPDF = await DocumentUtils.isPDF(input);
         final isImage = await DocumentUtils.isImage(input);
         final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
@@ -112,8 +114,9 @@ class PdfCombiner {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
+    final List<MergeInput> newInputs = await DocumentUtils.conversionUrlInputsToPaths(inputs);
     final temportalFilePaths = <String>[];
-    if (inputs.isEmpty) {
+    if (newInputs.isEmpty) {
       throw PdfCombinerException(
           PdfCombinerMessages.emptyParameterMessage("inputPaths"));
     } else {
@@ -121,7 +124,7 @@ class PdfCombiner {
         bool success = true;
         String? path;
 
-        for (MergeInput input in inputs) {
+        for (MergeInput input in newInputs) {
           success = await DocumentUtils.isPDF(input);
           path = input.path;
         }
@@ -134,7 +137,7 @@ class PdfCombiner {
           throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(path));
         } else {
           final inputPaths = await Future.wait(
-            inputs.map(
+            newInputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
                 switch (input.type) {
@@ -142,6 +145,8 @@ class PdfCombiner {
                     temportalFilePaths.add(result);
                     break;
                   case MergeInputType.path:
+                    break;
+                  case MergeInputType.url:
                     break;
                 }
                 return result;
@@ -190,12 +195,13 @@ class PdfCombiner {
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
+    final List<MergeInput> newInputs = kIsWeb ? inputs : await DocumentUtils.conversionUrlInputsToPaths(inputs);
     final temportalFilePaths = <String>[];
     final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
     if (!outputPathIsPDF) {
       throw PdfCombinerException(
           PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath));
-    } else if (inputs.isEmpty) {
+    } else if (newInputs.isEmpty) {
       throw PdfCombinerException(
           PdfCombinerMessages.emptyParameterMessage("inputPaths"));
     } else {
@@ -204,9 +210,9 @@ class PdfCombiner {
         String? path;
         int i = 0;
 
-        while (i < inputs.length && success) {
-          success = await DocumentUtils.isImage(inputs[i]);
-          path = inputs[i].path;
+        while (i < newInputs.length && success) {
+          success = await DocumentUtils.isImage(newInputs[i]);
+          path = newInputs[i].path;
           i++;
         }
 
@@ -215,7 +221,7 @@ class PdfCombiner {
               PdfCombinerMessages.errorMessageImage(path ?? ''));
         } else {
           final inputPaths = await Future.wait(
-            inputs.map(
+            newInputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
                 switch (input.type) {
@@ -223,6 +229,8 @@ class PdfCombiner {
                     temportalFilePaths.add(result);
                     break;
                   case MergeInputType.path:
+                    break;
+                  case MergeInputType.url:
                     break;
                 }
                 return result;
@@ -279,20 +287,24 @@ class PdfCombiner {
     required String outputDirPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
+    final MergeInput newInput = await DocumentUtils.conversionUrlInputsToPaths([input]).then((value) => value.first);
     String? temportalFilePath;
     try {
-      bool success = await DocumentUtils.isPDF(input);
+      bool success = await DocumentUtils.isPDF(newInput);
 
       if (!success) {
         String inputTypeMessage;
 
-        switch (input.type) {
+        switch (newInput.type) {
           case MergeInputType.bytes:
             inputTypeMessage = "File in bytes";
             break;
 
           case MergeInputType.path:
-            inputTypeMessage = input.path!;
+            inputTypeMessage = newInput.path!;
+            break;
+          case MergeInputType.url:
+            inputTypeMessage = newInput.url!;
             break;
         }
 
@@ -300,12 +312,14 @@ class PdfCombiner {
           inputTypeMessage,
         ));
       } else {
-        final inputPath = await DocumentUtils.prepareInput(input);
-        switch (input.type) {
+        final inputPath = await DocumentUtils.prepareInput(newInput);
+        switch (newInput.type) {
           case MergeInputType.bytes:
             temportalFilePath = inputPath;
             break;
           case MergeInputType.path:
+            break;
+          case MergeInputType.url:
             break;
         }
         final response = await ImagesFromPdfIsolate.createImageFromPDF(

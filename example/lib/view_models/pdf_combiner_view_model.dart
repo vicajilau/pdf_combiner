@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
@@ -31,6 +32,9 @@ class PdfCombinerViewModel {
         selectedFiles +=
             result.files.map((file) => MergeInput.bytes(file.bytes!)).toList();
         break;
+        case MergeInputType.url:
+          // Currently not supported in file picker
+          break;
     }
   }
 
@@ -51,6 +55,9 @@ class PdfCombinerViewModel {
           ),
         );
         break;
+        case MergeInputType.url:
+          // Currently not supported in drag and drop
+          break;
     }
 
     outputFiles = [];
@@ -154,5 +161,40 @@ class PdfCombinerViewModel {
   /// Function to remove the selected files
   void removeFileAt(int index) {
     selectedFiles.removeAt(index);
+  }
+
+/// Function to format bytes into a human-readable string
+  String formatBytes(int bytes) {
+    if (bytes >= 1e9) return "${(bytes / 1e9).toStringAsFixed(2)} GB";
+    if (bytes >= 1e6) return "${(bytes / 1e6).toStringAsFixed(2)} MB";
+    if (bytes >= 1e3) return "${(bytes / 1e3).toStringAsFixed(2)} KB";
+    return "$bytes B";
+  }
+
+/// Function to get the file size from a URL
+  Future<int?> getUrlFileSize(String url) async {
+    final uri = Uri.parse(url);
+    final client = http.Client();
+    try {
+      final head = await client.head(uri);
+      if (head.statusCode >= 200 && head.statusCode < 300) {
+        final cl = head.headers['content-length'];
+        if (cl != null) return int.tryParse(cl);
+      }
+
+      final range = await client.get(uri, headers: {'Range': 'bytes=0-0'});
+      if (range.statusCode == 206) {
+        final cr = range.headers['content-range'];
+        if (cr != null) {
+          final parts = cr.split('/');
+          if (parts.length == 2) return int.tryParse(parts[1]);
+        }
+      }
+    } catch (_) {
+      return null;
+    } finally {
+      client.close();
+    }
+    return null;
   }
 }

@@ -2,17 +2,24 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:file_magic_number/file_magic_number.dart';
-import 'package:path/path.dart' as p;
+import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:http/http.dart' as http;
+import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
+import 'package:pdf_combiner/utils/string_extension.dart';
 
 extension on MergeInputType {
-  String extension() {
+  String extension(MergeInput input) {
     switch (this) {
       case MergeInputType.path:
-        return '.pdf';
+        return p.extension(input.path!);
       case MergeInputType.bytes:
-        return '.png';
+        final magicType = FileMagicNumber.detectFileTypeFromBytes(input.bytes);
+        return magicType.name;
+      case MergeInputType.url:
+        return p.extension(input.url!);
     }
   }
 
@@ -22,6 +29,8 @@ extension on MergeInputType {
         return 'pdf_input';
       case MergeInputType.bytes:
         return 'image_input';
+      case MergeInputType.url:
+        return 'url_input';
     }
   }
 }
@@ -62,6 +71,55 @@ class DocumentUtils {
         }
       }
     }
+  }
+
+  /// Converts any `MergeInput.url` entries into temporary `MergeInput.path` files.
+  ///
+  /// Downloads each URL to a temporary file inside the configured temporal
+  /// folder and returns a new list where URLs were replaced by `MergeInput.path`
+  /// referencing the downloaded file. `path` and `bytes` inputs are preserved.
+
+  static Future<List<MergeInput>> conversionUrlInputsToPaths(
+      List<MergeInput> inputs) async {
+    final outputs = <MergeInput>[];
+    final tempDirPath = getTemporalFolderPath();
+    final tempDir = Directory(tempDirPath);
+    if (!await tempDir.exists()) {
+      await tempDir.create(recursive: true);
+    }
+
+    for (final input in inputs) {
+      switch (input.type) {
+        case MergeInputType.path:
+          outputs.add(input);
+          break;
+        case MergeInputType.bytes:
+          outputs.add(input);
+          break;
+        case MergeInputType.url:
+          try {
+            final response = await http.get(Uri.parse(input.url!));
+            if (response.statusCode == 200) {
+              final byteInput = MergeInput.bytes(response.bodyBytes);
+
+              final fileName =
+                  '${byteInput.type.filenamePrefix()}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}${byteInput.type.extension(byteInput)}';
+              final tempPath = p.join(tempDirPath, fileName);
+              final file = File(tempPath);
+
+              await file.writeAsBytes(byteInput.bytes!);
+
+              outputs.add(MergeInput.path(file.path));
+            } else {
+              throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(input.url!));
+            }
+          } catch (e) {
+            throw PdfCombinerException(e.toString());
+          }
+
+      }
+    }
+    return outputs;
   }
 
   /// Returns the absolute path to the system's temporary directory.
@@ -111,6 +169,8 @@ class DocumentUtils {
       case MergeInputType.bytes:
         return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
             FileMagicNumberType.pdf;
+      case MergeInputType.url:
+        return input.url.stringToMagicType == FileMagicNumberType.pdf;
     }
   }
 
@@ -151,6 +211,9 @@ class DocumentUtils {
       case MergeInputType.bytes:
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
         break;
+      case MergeInputType.url:
+      fileType = input.url!.stringToMagicType;
+        break;
     }
     return fileType == FileMagicNumberType.png ||
         fileType == FileMagicNumberType.jpg ||
@@ -177,11 +240,13 @@ class DocumentUtils {
           await tempDir.create(recursive: true);
         }
         final fileName =
-            '${input.type.filenamePrefix()}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}${input.type.extension()}';
+            '${input.type.filenamePrefix()}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}${input.type.extension(input)}';
         final tempPath = p.join(tempDirPath, fileName);
         final file = File(tempPath);
         await file.writeAsBytes(input.bytes!);
         return tempPath;
+      case MergeInputType.url:
+        return input.url!;
     }
   }
 }
