@@ -31,7 +31,7 @@ void main() {
 
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
-          inputs: [MergeInput.path('any')],
+          inputs: [MergeInputPath('any')],
           outputPath: '   ',
         ),
         throwsA(

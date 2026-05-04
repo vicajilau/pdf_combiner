@@ -9,19 +9,21 @@ import 'package:web/web.dart' as web;
 
 extension on MergeInput {
   Future<Uint8List> readBytes() async {
-    switch (type) {
-      case MergeInputType.path:
+    switch (this) {
+      case MergeInputPath(:final path):
         return Uint8List.fromList(
-          await FileMagicNumber.getBytesFromPathOrBlob(path!),
+          await FileMagicNumber.getBytesFromPathOrBlob(path),
         );
-      case MergeInputType.bytes:
-        return bytes!;
-      case MergeInputType.url:
-        final response = await http.get(Uri.parse(url!));
+      case MergeInputBytes(:final bytes):
+        return bytes;
+      case MergeInputUrl(:final url):
+        final response = await http.get(Uri.parse(url));
         if (response.statusCode < 200 || response.statusCode >= 300) {
           throw Exception('Failed to download input URL: ${response.statusCode}');
         }
         return response.bodyBytes;
+      default:
+        throw UnsupportedError('Unsupported MergeInput subtype: $runtimeType');
     }
   }
 }
@@ -106,13 +108,15 @@ class DocumentUtils {
   /// - [MergeInput.path]: Returns the path as-is.
   /// - [MergeInput.bytes] and [MergeInput.url]: Create a blob URL and return it.
   static Future<String> prepareInput(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return input.path!;
-      case MergeInputType.bytes:
-        return createBlobUrl(input.bytes!);
-      case MergeInputType.url:
+    switch (input) {
+      case MergeInputPath(:final path):
+        return path;
+      case MergeInputBytes(:final bytes):
+        return createBlobUrl(bytes);
+      case MergeInputUrl():
         return createBlobUrl(await input.readBytes());
+      default:
+        throw UnsupportedError('Unsupported MergeInput subtype: ${input.runtimeType}');
     }
   }
 }

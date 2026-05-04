@@ -1,24 +1,10 @@
 import 'dart:typed_data' show Uint8List;
 
-/// An enum representing the type of input for merging PDFs.
-enum MergeInputType {
-  path,
-  bytes,
-  url,
-}
-
 /// An abstract class representing an input for merging PDFs.
 ///
 /// Subclasses must provide the concrete input (path, bytes, url).
 abstract class MergeInput {
-  final MergeInputType type;
-
-  const MergeInput(this.type);
-
-  /// Factory helpers for convenience and backwards compatibility.
-  factory MergeInput.path(String path) => MergeInputPath(path);
-  factory MergeInput.bytes(Uint8List bytes) => MergeInputBytes(bytes);
-  factory MergeInput.url(String url) => MergeInputUrl(url);
+  const MergeInput();
 
   /// Returns the local path when this input is backed by a file path.
   String? get path => switch (this) {
@@ -41,6 +27,17 @@ abstract class MergeInput {
   /// Returns a user-friendly identifier for logging and error messages.
   String get sourceLabel => path ?? url ?? 'File in bytes';
 
+  /// Indicates whether this input must be materialized as a temporary resource.
+  bool get requiresTemporaryResource => this is! MergeInputPath;
+
+  /// Prefix used when a temporary file must be created for this input.
+  String get temporaryFilePrefix => switch (this) {
+        MergeInputPath() => 'path_input',
+        MergeInputBytes() => 'bytes_input',
+        MergeInputUrl() => 'url_input',
+        _ => throw StateError('Unsupported MergeInput subtype: $runtimeType'),
+      };
+
   @override
   String toString();
 }
@@ -50,7 +47,7 @@ class MergeInputPath extends MergeInput {
   @override
   final String path;
 
-  MergeInputPath(this.path) : super(MergeInputType.path);
+  const MergeInputPath(this.path);
 
   @override
   String toString() => path;
@@ -61,7 +58,7 @@ class MergeInputBytes extends MergeInput {
   @override
   final Uint8List bytes;
 
-  MergeInputBytes(this.bytes) : super(MergeInputType.bytes);
+  const MergeInputBytes(this.bytes);
 
   @override
   String toString() => bytes.toString();
@@ -72,7 +69,7 @@ class MergeInputUrl extends MergeInput {
   @override
   final String url;
 
-  MergeInputUrl(this.url) : super(MergeInputType.url);
+  const MergeInputUrl(this.url);
 
   @override
   String toString() => url;

@@ -79,7 +79,7 @@ class PdfCombiner {
           );
           temporalPaths.add(response);
 
-          mutablePaths[i] = MergeInput.path(response);
+          mutablePaths[i] = MergeInputPath(response);
         }
       }
       final response = await PdfCombiner.mergeMultiplePDFs(
@@ -136,13 +136,8 @@ class PdfCombiner {
             inputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
-                switch (input.type) {
-                  case MergeInputType.bytes:
-                  case MergeInputType.url:
-                    temportalFilePaths.add(result);
-                    break;
-                  case MergeInputType.path:
-                    break;
+                if (input.requiresTemporaryResource) {
+                  temportalFilePaths.add(result);
                 }
                 return result;
               },
@@ -218,13 +213,8 @@ class PdfCombiner {
             inputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
-                switch (input.type) {
-                  case MergeInputType.bytes:
-                  case MergeInputType.url:
-                    temportalFilePaths.add(result);
-                    break;
-                  case MergeInputType.path:
-                    break;
+                if (input.requiresTemporaryResource) {
+                  temportalFilePaths.add(result);
                 }
                 return result;
               },
@@ -285,34 +275,13 @@ class PdfCombiner {
       bool success = await DocumentUtils.isPDF(input);
 
       if (!success) {
-        String inputTypeMessage;
-
-        switch (input.type) {
-          case MergeInputType.bytes:
-            inputTypeMessage = "File in bytes";
-            break;
-
-          case MergeInputType.path:
-            inputTypeMessage = input.path!;
-            break;
-
-          case MergeInputType.url:
-            inputTypeMessage = input.url!;
-            break;
-        }
-
         throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(
-          inputTypeMessage,
+          input.sourceLabel,
         ));
       } else {
         final inputPath = await DocumentUtils.prepareInput(input);
-        switch (input.type) {
-          case MergeInputType.bytes:
-          case MergeInputType.url:
-            temportalFilePath = inputPath;
-            break;
-          case MergeInputType.path:
-            break;
+        if (input.requiresTemporaryResource) {
+          temportalFilePath = inputPath;
         }
         final response = await ImagesFromPdfIsolate.createImageFromPDF(
           inputPath: inputPath,

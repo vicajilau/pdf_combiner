@@ -24,19 +24,6 @@ extension on FileMagicNumberType {
   }
 }
 
-extension on MergeInput {
-  String filenamePrefix() {
-    switch (type) {
-      case MergeInputType.path:
-        return 'path_input';
-      case MergeInputType.bytes:
-        return 'bytes_input';
-      case MergeInputType.url:
-        return 'url_input';
-    }
-  }
-}
-
 /// Utility class for handling document-related checks in a file system environment.
 ///
 /// This implementation is designed for platforms with direct file system access,
@@ -72,25 +59,29 @@ class DocumentUtils {
   }
 
   static Future<FileMagicNumberType> _detectInputType(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!);
-      case MergeInputType.bytes:
-        return FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
-      case MergeInputType.url:
-        final bytes = await _downloadUrlBytes(input.url!);
+    switch (input) {
+      case MergeInputPath(:final path):
+        return FileMagicNumber.detectFileTypeFromPathOrBlob(path);
+      case MergeInputBytes(:final bytes):
         return FileMagicNumber.detectFileTypeFromBytes(bytes);
+      case MergeInputUrl(:final url):
+        final bytes = await _downloadUrlBytes(url);
+        return FileMagicNumber.detectFileTypeFromBytes(bytes);
+      default:
+        throw UnsupportedError('Unsupported MergeInput subtype: ${input.runtimeType}');
     }
   }
 
   static Future<Uint8List> _readInputBytes(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return Uint8List.fromList(await File(input.path!).readAsBytes());
-      case MergeInputType.bytes:
-        return input.bytes!;
-      case MergeInputType.url:
-        return _downloadUrlBytes(input.url!);
+    switch (input) {
+      case MergeInputPath(:final path):
+        return Uint8List.fromList(await File(path).readAsBytes());
+      case MergeInputBytes(:final bytes):
+        return bytes;
+      case MergeInputUrl(:final url):
+        return _downloadUrlBytes(url);
+      default:
+        throw UnsupportedError('Unsupported MergeInput subtype: ${input.runtimeType}');
     }
   }
 
@@ -207,24 +198,22 @@ class DocumentUtils {
   ///
   /// **Returns:** The path to the prepared input file
   static Future<String> prepareInput(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return input.path!;
-      case MergeInputType.bytes:
-      case MergeInputType.url:
-        final bytes = await _readInputBytes(input);
-        final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        final tempDirPath = getTemporalFolderPath();
-        final tempDir = Directory(tempDirPath);
-        if (!await tempDir.exists()) {
-          await tempDir.create(recursive: true);
-        }
-        final fileName =
-            '${input.filenamePrefix()}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}${fileType.extension()}';
-        final tempPath = p.join(tempDirPath, fileName);
-        final file = File(tempPath);
-        await file.writeAsBytes(bytes);
-        return tempPath;
+    if (input case MergeInputPath(:final path)) {
+      return path;
     }
+
+    final bytes = await _readInputBytes(input);
+    final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
+    final tempDirPath = getTemporalFolderPath();
+    final tempDir = Directory(tempDirPath);
+    if (!await tempDir.exists()) {
+      await tempDir.create(recursive: true);
+    }
+    final fileName =
+        '${input.temporaryFilePrefix}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}${fileType.extension()}';
+    final tempPath = p.join(tempDirPath, fileName);
+    final file = File(tempPath);
+    await file.writeAsBytes(bytes);
+    return tempPath;
   }
 }

@@ -60,19 +60,19 @@ sudo apt-get install libheif-dev
 
 ### MergeInput
 
-The `MergeInput` class represents an input for PDF operations. It can be created from a file path or from raw bytes (Uint8List).
+`MergeInput` represents an input for PDF operations through explicit subtypes: `MergeInputPath`, `MergeInputBytes`, and `MergeInputUrl`.
 
 **Creating from a file path:**
 
 ```dart
-final input = MergeInput.path("path/to/file.pdf");
+final input = MergeInputPath("path/to/file.pdf");
 ```
 
 **Creating from bytes:**
 
 ```dart
 final Uint8List fileBytes = await getFileBytes(); // Your method to get bytes
-final input = MergeInput.bytes(fileBytes);
+final input = MergeInputBytes(fileBytes);
 ```
 
 **Mixing paths and bytes:**
@@ -81,9 +81,9 @@ You can mix both approaches in the same list, allowing you to combine files from
 
 ```dart
 final inputs = [
-  MergeInput.path("path/to/local_file.pdf"),
-  MergeInput.bytes(fileBytes),
-  MergeInput.path("path/to/another_file.pdf"),
+  MergeInputPath("path/to/local_file.pdf"),
+  MergeInputBytes(fileBytes),
+  MergeInputPath("path/to/another_file.pdf"),
 ];
 ```
 
@@ -102,9 +102,9 @@ Combine any number of PDFs and images, in any order, into a single PDF document.
 final Uint8List fileBytes = await getFileBytes();
 
 final inputs = [
-  MergeInput.path("path/to/local_image.jpg"),
-  MergeInput.bytes(fileBytes),
-  MergeInput.path("path/to/local_document.pdf"),
+  MergeInputPath("path/to/local_image.jpg"),
+  MergeInputBytes(fileBytes),
+  MergeInputPath("path/to/local_document.pdf"),
 ];
 final outputPath = "path/to/output.pdf";
 
@@ -135,9 +135,9 @@ Combine several PDF files into a single document.
 final Uint8List fileBytes = await getFileBytes();
 
 final inputs = [
-  MergeInput.path("path/to/local_file1.pdf"),
-  MergeInput.bytes(fileBytes),
-  MergeInput.path("path/to/local_file2.pdf"),
+  MergeInputPath("path/to/local_file1.pdf"),
+  MergeInputBytes(fileBytes),
+  MergeInputPath("path/to/local_file2.pdf"),
 ];
 final outputPath = "path/to/output.pdf";
 
@@ -168,9 +168,9 @@ By default, images are added to the PDF without modifications. If needed, you ca
 final Uint8List fileBytes = await getFileBytes();
 
 final inputs = [
-  MergeInput.path("path/to/local_image1.jpg"),
-  MergeInput.bytes(fileBytes),
-  MergeInput.path("path/to/local_image2.png"),
+  MergeInputPath("path/to/local_image1.jpg"),
+  MergeInputBytes(fileBytes),
+  MergeInputPath("path/to/local_image2.png"),
 ];
 final outputPath = "path/to/output.pdf";
 
@@ -201,8 +201,8 @@ Example Usage:
 
 ```dart
 final inputs = [
-  MergeInput.path("path/to/image1.jpg"),
-  MergeInput.path("path/to/image2.jpg"),
+  MergeInputPath("path/to/image1.jpg"),
+  MergeInputPath("path/to/image2.jpg"),
 ];
 final outputPath = "path/to/output.pdf";
 
@@ -235,8 +235,8 @@ Extract images from a PDF file.
 By default, images are extracted in their original format. If needed, you can customize the scaling, compression, and aspect ratio using a configuration object.
 
 ```dart
-final input = MergeInput.path("path/to/input.pdf");
-// Or from bytes: final input = MergeInput.bytes(fileBytes);
+final input = MergeInputPath("path/to/input.pdf");
+// Or from bytes: final input = MergeInputBytes(fileBytes);
 final outputDirPath = "path/to/output";
 
 try {
@@ -264,7 +264,7 @@ The `ImageFromPdfConfig` class is used to configure how images are processed bef
 Example Usage:
 
 ```dart
-final input = MergeInput.path("path/to/input.pdf");
+final input = MergeInputPath("path/to/input.pdf");
 final outputDirPath = "path/to/output";
 
 try {

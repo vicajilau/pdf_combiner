@@ -27,7 +27,7 @@ class MergePdfsIsolate {
   }) async {
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-        inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
+        inputs: inputPaths.map(MergeInputPath.new).toList(),
         outputPath: outputPath,
       );
     }
@@ -54,7 +54,7 @@ class MergePdfsIsolate {
     }
 
     return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-      inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
+      inputs: inputPaths.map(MergeInputPath.new).toList(),
       outputPath: outputPath,
     );
   }

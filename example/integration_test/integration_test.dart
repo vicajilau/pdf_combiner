@@ -22,7 +22,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-        input: MergeInput.path(inputPaths[0]),
+        input: MergeInputPath(inputPaths[0]),
         outputDirPath: outputPath,
       );
 
@@ -37,7 +37,7 @@ void main() {
 
       await expectLater(
         () => PdfCombiner.createImageFromPDF(
-          input: MergeInput.path(inputPaths[0]),
+          input: MergeInputPath(inputPaths[0]),
           outputDirPath: outputPath,
         ),
         throwsA(
@@ -59,7 +59,7 @@ void main() {
 
       await expectLater(
         () => PdfCombiner.createImageFromPDF(
-          input: MergeInput.path(inputPaths[0]),
+          input: MergeInputPath(inputPaths[0]),
           outputDirPath: outputPath,
         ),
         throwsA(
@@ -79,7 +79,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-          input: MergeInput.path(inputPaths[0]), outputDirPath: outputPath);
+          input: MergeInputPath(inputPaths[0]), outputDirPath: outputPath);
 
       expect(result.length, 1);
       expect(result, ['${TestFileHelper.basePath}/image_1.png']);
@@ -91,7 +91,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath();
 
       final result = await PdfCombiner.createImageFromPDF(
-          input: MergeInput.path(inputPaths[0]),
+          input: MergeInputPath(inputPaths[0]),
           outputDirPath: outputPath,
           config: ImageFromPdfConfig(createOneImage: false));
 
@@ -107,7 +107,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.createPDFFromMultipleImages(
-        inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
+        inputs: inputPaths.map(MergeInputPath.new).toList(),
         outputPath: outputPath,
       );
 
@@ -138,7 +138,7 @@ void main() {
 
       await expectLater(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
+          inputs: inputPaths.map(MergeInputPath.new).toList(),
           outputPath: outputPath,
         ),
         throwsA(
@@ -162,7 +162,7 @@ void main() {
 
       await expectLater(
         () => PdfCombiner.createPDFFromMultipleImages(
-          inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
+          inputs: inputPaths.map(MergeInputPath.new).toList(),
           outputPath: outputPath,
         ),
         throwsA(
@@ -193,7 +193,7 @@ void main() {
 
       await tester.runAsync(() async {
         await PdfCombiner.createPDFFromMultipleImages(
-          inputs: [MergeInput.path(sampleHeicPath)],
+          inputs: [MergeInputPath(sampleHeicPath)],
           outputPath: outputPath,
         );
       });
@@ -212,7 +212,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
+        inputs: inputPaths.map(MergeInputPath.new).toList(),
         outputPath: outputPath,
       );
 
@@ -225,7 +225,7 @@ void main() {
       final outputPath = await helper.getOutputFilePath('merged_output.pdf');
 
       final result = await PdfCombiner.mergeMultiplePDFs(
-        inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
+        inputs: inputPaths.map(MergeInputPath.new).toList(),
         outputPath: outputPath,
       );
 
@@ -259,7 +259,7 @@ void main() {
 
       await expectLater(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
+          inputs: inputPaths.map(MergeInputPath.new).toList(),
           outputPath: outputPath,
         ),
         throwsA(
@@ -282,7 +282,7 @@ void main() {
 
       await expectLater(
         () => PdfCombiner.mergeMultiplePDFs(
-          inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
+          inputs: inputPaths.map(MergeInputPath.new).toList(),
           outputPath: outputPath,
         ),
         throwsA(

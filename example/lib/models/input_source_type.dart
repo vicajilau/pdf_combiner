@@ -1,0 +1,5 @@
+enum InputSourceType {
+  path,
+  bytes,
+}
+

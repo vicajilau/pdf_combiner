@@ -41,8 +41,8 @@ void main() {
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
           inputs: [
-            MergeInput.path('example/assets/image_1.jpeg'),
-            MergeInput.path('example/assets/image_2.png'),
+            MergeInputPath('example/assets/image_1.jpeg'),
+            MergeInputPath('example/assets/image_2.png'),
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -62,8 +62,8 @@ void main() {
 
       final result = await PdfCombiner.createPDFFromMultipleImages(
         inputs: [
-          MergeInput.path('example/assets/image_1.jpeg'),
-          MergeInput.path('example/assets/image_2.png'),
+          MergeInputPath('example/assets/image_1.jpeg'),
+          MergeInputPath('example/assets/image_2.png'),
         ],
         outputPath: outputPath,
       );
@@ -80,8 +80,8 @@ void main() {
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
           inputs: [
-            MergeInput.path('example/assets/image_1.jpeg'),
-            MergeInput.path('example/assets/image_2.png'),
+            MergeInputPath('example/assets/image_1.jpeg'),
+            MergeInputPath('example/assets/image_2.png'),
           ],
           outputPath: outputPath,
         ),
@@ -104,8 +104,8 @@ void main() {
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
           inputs: [
-            MergeInput.path('example/assets/image_1.jpeg'),
-            MergeInput.path('example/assets/image_2.png'),
+            MergeInputPath('example/assets/image_1.jpeg'),
+            MergeInputPath('example/assets/image_2.png'),
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -125,8 +125,8 @@ void main() {
       expect(
         () => PdfCombiner.createPDFFromMultipleImages(
           inputs: [
-            MergeInput.path('example/assets/image_1.jpeg'),
-            MergeInput.path('example/assets/image_2.png'),
+            MergeInputPath('example/assets/image_1.jpeg'),
+            MergeInputPath('example/assets/image_2.png'),
           ],
           outputPath: 'output/path.pdf',
         ),

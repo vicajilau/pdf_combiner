@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pdf_combiner/models/merge_input.dart';
 
-Future<MergeInputType?> showFileTypeDialog(BuildContext context) async =>
-    showDialog<MergeInputType>(
+import '../../models/input_source_type.dart';
+
+Future<InputSourceType?> showFileTypeDialog(BuildContext context) async =>
+    showDialog<InputSourceType>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
@@ -11,11 +12,11 @@ Future<MergeInputType?> showFileTypeDialog(BuildContext context) async =>
         actions: [
           TextButton(
             child: const Text('Path'),
-            onPressed: () => Navigator.of(context).pop(MergeInputType.path),
+            onPressed: () => Navigator.of(context).pop(InputSourceType.path),
           ),
           TextButton(
-            child: Text('Bytes'),
-            onPressed: () => Navigator.of(context).pop(MergeInputType.bytes),
+            child: const Text('Bytes'),
+            onPressed: () => Navigator.of(context).pop(InputSourceType.bytes),
           ),
         ],
       ),

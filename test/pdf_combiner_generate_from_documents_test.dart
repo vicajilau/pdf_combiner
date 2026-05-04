@@ -46,8 +46,8 @@ void main() {
 
       final result = await PdfCombiner.generatePDFFromDocuments(
         inputs: [
-          MergeInput.path('example/assets/document_1.pdf'),
-          MergeInput.path('example/assets/document_2.pdf'),
+          MergeInputPath('example/assets/document_1.pdf'),
+          MergeInputPath('example/assets/document_2.pdf'),
         ],
         outputPath: 'output/path.pdf',
       );
@@ -62,8 +62,8 @@ void main() {
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
           inputs: [
-            MergeInput.path('example/assets/image_1.jpeg'),
-            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInputPath('example/assets/image_1.jpeg'),
+            MergeInputPath('example/assets/document_1.pdf'),
           ],
           outputPath: 'path.jpg',
         ),
@@ -84,8 +84,8 @@ void main() {
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
           inputs: [
-            MergeInput.path('example/assets/document_1.pdf'),
-            MergeInput.path('example/assets/image_1.jpeg'),
+            MergeInputPath('example/assets/document_1.pdf'),
+            MergeInputPath('example/assets/image_1.jpeg'),
           ],
           outputPath: '',
         ),
@@ -127,8 +127,8 @@ void main() {
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
           inputs: [
-            MergeInput.path('example/assets/document_1.pdf'),
-            MergeInput.path('example/assets/document_2.pdf'),
+            MergeInputPath('example/assets/document_1.pdf'),
+            MergeInputPath('example/assets/document_2.pdf'),
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -148,8 +148,8 @@ void main() {
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
           inputs: [
-            MergeInput.path('example/assets/document_1.pdf'),
-            MergeInput.path('example/assets/document_2.pdf'),
+            MergeInputPath('example/assets/document_1.pdf'),
+            MergeInputPath('example/assets/document_2.pdf'),
           ],
           outputPath: 'output/path.pdf',
         ),
@@ -169,7 +169,7 @@ void main() {
       expect(
         () => PdfCombiner.generatePDFFromDocuments(
           inputs: [
-            MergeInput.path('example/assets/image_1.jpeg'),
+            MergeInputPath('example/assets/image_1.jpeg'),
           ],
           outputPath: 'output/path.pdf',
         ),

@@ -9,12 +9,14 @@ import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:platform_detail/platform_detail.dart';
 
+import '../models/input_source_type.dart';
+
 class PdfCombinerViewModel {
   List<MergeInput> selectedFiles = []; // List of selected files
   List<String> outputFiles = []; // Path for the combined output file
 
   /// Function to pick PDF files from the device (old method)
-  Future<void> pickFiles(MergeInputType fileType) async {
+  Future<void> pickFiles(InputSourceType fileType) async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png', 'heic'],
@@ -23,30 +25,26 @@ class PdfCombinerViewModel {
     );
     if (result == null) return;
     switch (fileType) {
-      case MergeInputType.path:
+      case InputSourceType.path:
         selectedFiles +=
             result.files.map((file) => MergeInputPath(file.path!)).toList();
         break;
-      case MergeInputType.bytes:
+      case InputSourceType.bytes:
         selectedFiles +=
             result.files.map((file) => MergeInputBytes(file.bytes!)).toList();
         break;
-      case MergeInputType.url:
-        throw UnsupportedError(
-          'MergeInputType.url is not supported by the file picker example.',
-        );
     }
   }
 
   /// Function to pick PDF files from the device
   Future<void> addFilesDragAndDrop(
-      MergeInputType fileType, List<DropItem> files) async {
+      InputSourceType fileType, List<DropItem> files) async {
     switch (fileType) {
-      case MergeInputType.path:
+      case InputSourceType.path:
         selectedFiles +=
             files.map((file) => MergeInputPath(file.path)).toList();
         break;
-      case MergeInputType.bytes:
+      case InputSourceType.bytes:
         selectedFiles += await Future.wait(
           files.map(
             (file) async => MergeInputBytes(
@@ -55,10 +53,6 @@ class PdfCombinerViewModel {
           ),
         );
         break;
-      case MergeInputType.url:
-        throw UnsupportedError(
-          'MergeInputType.url is not supported by drag and drop in the example.',
-        );
     }
 
     outputFiles = [];
