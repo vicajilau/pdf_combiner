@@ -8,7 +8,7 @@ import 'models/image_from_pdf_config.dart';
 import 'models/merge_input.dart';
 import 'models/pdf_from_multiple_image_config.dart';
 import 'responses/pdf_combiner_messages.dart';
-import 'utils/document_utils_io.dart';
+import 'utils/document_utils.dart';
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
 ///
