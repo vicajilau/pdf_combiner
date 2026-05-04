@@ -64,9 +64,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           children: [
               DropTarget(
                 onDragDone: (details) async {
-                  // Dialog hidden: default behaviour
-                  // - web: bytes
-                  // - other platforms: path
                   final fileType = PlatformDetail.isWeb
                       ? MergeInputType.bytes
                       : MergeInputType.path;
