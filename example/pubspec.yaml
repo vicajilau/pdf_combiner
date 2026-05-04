@@ -63,6 +63,12 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Plugin/project configuration. We explicitly disable Swift Package
+  # Manager integration for iOS plugins while keeping asset declarations
+  # in the same `flutter:` block so Flutter still packages the assets.
+  config:
+    enable-swift-package-manager: false
+
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
