@@ -6,10 +6,11 @@ import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
-import 'package:pdf_combiner_example/views/widgets/file_type_dialog.dart';
+// file_type_dialog intentionally not used: dialog hidden by default; developers may enable it if desired.
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
 import '../view_models/pdf_combiner_view_model.dart';
+import 'package:platform_detail/platform_detail.dart';
 
 extension on MergeInput {
   String fileName(int? index) {
@@ -18,6 +19,13 @@ extension on MergeInput {
         return p.basename(path ?? '');
       case MergeInputType.bytes:
         return 'File in bytes $index';
+      case MergeInputType.url:
+        final parsedUrl = Uri.tryParse(url ?? '');
+        final urlPath = parsedUrl?.path;
+        if (urlPath != null && urlPath.isNotEmpty) {
+          return p.basename(urlPath);
+        }
+        return url ?? 'Remote URL $index';
     }
   }
 }
@@ -54,14 +62,17 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            DropTarget(
-              onDragDone: (details) async {
-                final fileType =
-                    await showFileTypeDialog(context); // Show dialog
-                if (fileType == null) return;
-                await _viewModel.addFilesDragAndDrop(fileType, details.files);
-                setState(() {});
-              },
+              DropTarget(
+                onDragDone: (details) async {
+                  // Dialog hidden: default behaviour
+                  // - web: bytes
+                  // - other platforms: path
+                  final fileType = PlatformDetail.isWeb
+                      ? MergeInputType.bytes
+                      : MergeInputType.path;
+                  await _viewModel.addFilesDragAndDrop(fileType, details.files);
+                  setState(() {});
+                },
               child: (_viewModel.isEmpty())
                   ? Center(
                       child: Image.asset('assets/files/home.png'),
@@ -188,6 +199,10 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                               .getBytesFromPathOrBlob(_viewModel
                                                   .selectedFiles[index]
                                                   .toString()),
+                                          MergeInputType.url => FileMagicNumber
+                                              .getBytesFromPathOrBlob(_viewModel
+                                                  .selectedFiles[index]
+                                                  .toString()),
                                         },
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
@@ -270,8 +285,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   // Function to pick PDF files from the device
   Future<void> _pickFiles() async {
-    final fileType = await showFileTypeDialog(context);
-    if (fileType == null) return;
+    // Dialog hidden: default behaviour
+    // - web: bytes
+    // - other platforms: path
+    final fileType = PlatformDetail.isWeb
+        ? MergeInputType.bytes
+        : MergeInputType.path;
     await _viewModel.pickFiles(fileType);
     setState(() {});
   }
@@ -352,6 +371,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           }
           return;
         case MergeInputType.bytes:
+        case MergeInputType.url:
           return;
       }
     }

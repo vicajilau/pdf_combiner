@@ -25,12 +25,16 @@ class PdfCombinerViewModel {
     switch (fileType) {
       case MergeInputType.path:
         selectedFiles +=
-            result.files.map((file) => MergeInput.path(file.path!)).toList();
+            result.files.map((file) => MergeInputPath(file.path!)).toList();
         break;
       case MergeInputType.bytes:
         selectedFiles +=
-            result.files.map((file) => MergeInput.bytes(file.bytes!)).toList();
+            result.files.map((file) => MergeInputBytes(file.bytes!)).toList();
         break;
+      case MergeInputType.url:
+        throw UnsupportedError(
+          'MergeInputType.url is not supported by the file picker example.',
+        );
     }
   }
 
@@ -40,17 +44,21 @@ class PdfCombinerViewModel {
     switch (fileType) {
       case MergeInputType.path:
         selectedFiles +=
-            files.map((file) => MergeInput.path(file.path)).toList();
+            files.map((file) => MergeInputPath(file.path)).toList();
         break;
       case MergeInputType.bytes:
         selectedFiles += await Future.wait(
           files.map(
-            (file) async => MergeInput.bytes(
+            (file) async => MergeInputBytes(
               await file.readAsBytes(),
             ),
           ),
         );
         break;
+      case MergeInputType.url:
+        throw UnsupportedError(
+          'MergeInputType.url is not supported by drag and drop in the example.',
+        );
     }
 
     outputFiles = [];

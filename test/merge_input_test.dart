@@ -24,6 +24,16 @@ void main() {
       expect(input.type == MergeInputType.bytes, isTrue);
     });
 
+    test('url constructor creates MergeInput with url type', () {
+      final input = MergeInput.url('https://example.com/file.pdf');
+
+      expect(input.type, MergeInputType.url);
+      expect(input.url, 'https://example.com/file.pdf');
+      expect(input.path, isNull);
+      expect(input.bytes, isNull);
+      expect(input.sourceLabel, 'https://example.com/file.pdf');
+    });
+
     test('toString returns path for path type', () {
       final input = MergeInput.path('/path/to/file.pdf');
 
@@ -35,6 +45,12 @@ void main() {
       final input = MergeInput.bytes(bytes);
 
       expect(input.toString(), bytes.toString());
+    });
+
+    test('sourceLabel returns friendly label for bytes type', () {
+      final input = MergeInput.bytes(Uint8List.fromList([1, 2, 3]));
+
+      expect(input.sourceLabel, 'File in bytes');
     });
   });
 }

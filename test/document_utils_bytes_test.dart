@@ -8,6 +8,8 @@ import 'package:pdf_combiner/utils/document_utils.dart';
 
 void main() {
   group('DocumentUtils with bytes', () {
+    late String originalTempPath;
+
     final pdfBytes = Uint8List.fromList([
       0x25,
       0x50,
@@ -57,6 +59,14 @@ void main() {
       0x46,
       0x00,
     ]);
+
+    setUp(() {
+      originalTempPath = DocumentUtils.getTemporalFolderPath();
+    });
+
+    tearDown(() {
+      DocumentUtils.setTemporalFolderPath(originalTempPath);
+    });
 
     group('isPDF with bytes', () {
       test('returns true for PDF bytes', () async {
@@ -109,6 +119,43 @@ void main() {
         expect(result.startsWith(tempDir.path), isTrue);
         expect(File(result).existsSync(), isTrue);
 
+        await tempDir.delete(recursive: true);
+      });
+
+      test('preserves pdf extension for PDF bytes input', () async {
+        final tempDir = await Directory.systemTemp.createTemp('prep_pdf_test_');
+        DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+        final result =
+            await DocumentUtils.prepareInput(MergeInput.bytes(pdfBytes));
+
+        expect(p.extension(result), '.pdf');
+        expect(File(result).existsSync(), isTrue);
+
+        await tempDir.delete(recursive: true);
+      });
+
+      test('downloads URL input to a temp file with detected extension', () async {
+        final tempDir = await Directory.systemTemp.createTemp('prep_url_test_');
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+        server.listen((request) async {
+          request.response.headers.contentType =
+              ContentType('application', 'pdf');
+          request.response.add(pdfBytes);
+          await request.response.close();
+        });
+
+        final url =
+            'http://${server.address.host}:${server.port}/document.pdf';
+        final result = await DocumentUtils.prepareInput(MergeInput.url(url));
+
+        expect(p.extension(result), '.pdf');
+        expect(File(result).existsSync(), isTrue);
+        expect(await DocumentUtils.isPDF(MergeInput.url(url)), isTrue);
+
+        await server.close(force: true);
         await tempDir.delete(recursive: true);
       });
     });

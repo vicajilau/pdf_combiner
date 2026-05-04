@@ -2,9 +2,29 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:file_magic_number/file_magic_number.dart';
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:web/web.dart' as web;
+
+extension on MergeInput {
+  Future<Uint8List> readBytes() async {
+    switch (type) {
+      case MergeInputType.path:
+        return Uint8List.fromList(
+          await FileMagicNumber.getBytesFromPathOrBlob(path!),
+        );
+      case MergeInputType.bytes:
+        return bytes!;
+      case MergeInputType.url:
+        final response = await http.get(Uri.parse(url!));
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw Exception('Failed to download input URL: ${response.statusCode}');
+        }
+        return response.bodyBytes;
+    }
+  }
+}
 
 /// Utility class for handling document-related checks in a web environment.
 ///
@@ -37,15 +57,9 @@ class DocumentUtils {
 
   /// Determines whether the given file path/blob corresponds to a PDF file.
   static Future<bool> isPDF(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return await FileMagicNumber.detectFileTypeFromPathOrBlob(
-                input.path!) ==
-            FileMagicNumberType.pdf;
-      case MergeInputType.bytes:
-        return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
-            FileMagicNumberType.pdf;
-    }
+    final bytes = await input.readBytes();
+    return FileMagicNumber.detectFileTypeFromBytes(bytes) ==
+        FileMagicNumberType.pdf;
   }
 
   /// Checks if the given file path has a PDF extension.
@@ -54,16 +68,8 @@ class DocumentUtils {
 
   /// Determines whether the given file path/blob corresponds to an image file.
   static Future<bool> isImage(MergeInput input) async {
-    late FileMagicNumberType fileType;
-    switch (input.type) {
-      case MergeInputType.path:
-        fileType =
-            await FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!);
-        break;
-      case MergeInputType.bytes:
-        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
-        break;
-    }
+    final bytes = await input.readBytes();
+    final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
     return fileType == FileMagicNumberType.png ||
         fileType == FileMagicNumberType.jpg ||
         fileType == FileMagicNumberType.heic;
@@ -98,13 +104,15 @@ class DocumentUtils {
   /// Process a [MergeInput] and return a valid file path or blob URL.
   ///
   /// - [MergeInput.path]: Returns the path as-is.
-  /// - [MergeInput.bytes]: Creates a blob URL and returns it.
+  /// - [MergeInput.bytes] and [MergeInput.url]: Create a blob URL and return it.
   static Future<String> prepareInput(MergeInput input) async {
     switch (input.type) {
       case MergeInputType.path:
         return input.path!;
       case MergeInputType.bytes:
         return createBlobUrl(input.bytes!);
+      case MergeInputType.url:
+        return createBlobUrl(await input.readBytes());
     }
   }
 }
