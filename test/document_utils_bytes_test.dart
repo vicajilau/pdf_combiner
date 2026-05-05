@@ -134,8 +134,6 @@ void main() {
 
         await tempDir.delete(recursive: true);
       });
-
-      // URL-related test removed: URL-backed inputs are no longer supported.
     });
 
     group('setTemporalFolderPath', () {

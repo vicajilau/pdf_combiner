@@ -22,7 +22,6 @@ extension on MergeInput {
         return p.basename(path);
       case MergeInputBytes():
         return 'File in bytes $index';
-      // URL-backed inputs were removed; fallback to the generic sourceLabel.
       default:
         return sourceLabel;
     }

@@ -24,8 +24,6 @@ void main() {
       expect(input.requiresTemporaryResource, isTrue);
     });
 
-    // MergeInputUrl-related tests removed: URL-backed inputs are no longer supported.
-
     test('toString returns path for path type', () {
       final input = MergeInputPath('/path/to/file.pdf');
 

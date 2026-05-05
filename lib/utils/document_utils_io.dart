@@ -35,8 +35,6 @@ extension on FileMagicNumberType {
 class DocumentUtils {
   static String _temporalDir = Directory.systemTemp.path;
 
-  // URL download helper removed: URL-backed inputs are no longer supported.
-
   static Future<FileMagicNumberType> _detectInputType(MergeInput input) async {
     switch (input) {
       case MergeInputPath(:final path):

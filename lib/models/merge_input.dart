@@ -18,11 +18,7 @@ abstract class MergeInput {
         _ => null,
       };
 
-  /// (Removed) Remote URL support was previously provided by `MergeInputUrl`.
-  /// This getter is no longer available after the refactor that removed URL inputs.
-
   /// Returns a user-friendly identifier for logging and error messages.
-  /// Without URL inputs, this falls back to the path or a bytes label.
   String get sourceLabel => path ?? 'File in bytes';
 
   /// Indicates whether this input must be materialized as a temporary resource.
@@ -60,6 +56,3 @@ class MergeInputBytes extends MergeInput {
   @override
   String toString() => bytes.toString();
 }
-
-/// A [MergeInput] that references a remote URL.
-// MergeInputUrl removed in refactor: URL-backed inputs are no longer supported.

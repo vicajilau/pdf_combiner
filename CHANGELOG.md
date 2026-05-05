@@ -31,7 +31,7 @@
 * **BREAKING CHANGE**: `mergeMultiplePDFs` parameter changed from `inputPaths: List<String>` to `inputs: List<MergeInput>`.
 * **BREAKING CHANGE**: `createPDFFromMultipleImages` parameter changed from `inputPaths: List<String>` to `inputs: List<MergeInput>`.
 * **BREAKING CHANGE**: `createImageFromPDF` parameter changed from `inputPath: String` to `input: MergeInput`.
-* Added `MergeInput` support through explicit input classes for paths and bytes.
+* Added `MergeInput` class with two factory constructors: `MergeInput.path(String)` and `MergeInput.bytes(Uint8List)`.
 * Added support for mixing file paths and bytes in the same operation.
 * Added support for .heic file format.
 

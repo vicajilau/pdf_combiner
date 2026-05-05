@@ -122,7 +122,7 @@ class PdfCombiner {
 
         for (MergeInput input in inputs) {
           success = await DocumentUtils.isPDF(input);
-          path = input.path ?? input.url ?? path;
+          path = input.path ?? path;
         }
 
         final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
@@ -201,7 +201,7 @@ class PdfCombiner {
 
         while (i < inputs.length && success) {
           success = await DocumentUtils.isImage(inputs[i]);
-          path = inputs[i].path ?? inputs[i].url ?? path;
+          path = inputs[i].path ?? path;
           i++;
         }
 
