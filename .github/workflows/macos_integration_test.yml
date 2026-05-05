@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install MacOS Dependencies
+        run: |
+          sudo gem install cocoapods
 
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v4
