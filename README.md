@@ -60,7 +60,7 @@ sudo apt-get install libheif-dev
 
 ### MergeInput
 
-`MergeInput` represents an input for PDF operations through explicit subtypes: `MergeInputPath`, `MergeInputBytes`, and `MergeInputUrl`.
+`MergeInput` represents an input for PDF operations through explicit subtypes: `MergeInputPath` and `MergeInputBytes`.
 
 **Creating from a file path:**
 

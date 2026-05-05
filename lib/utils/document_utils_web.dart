@@ -2,7 +2,6 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:file_magic_number/file_magic_number.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:web/web.dart' as web;
@@ -16,12 +15,6 @@ extension on MergeInput {
         );
       case MergeInputBytes(:final bytes):
         return bytes;
-      case MergeInputUrl(:final url):
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-          throw Exception('Failed to download input URL: ${response.statusCode}');
-        }
-        return response.bodyBytes;
       default:
         throw UnsupportedError('Unsupported MergeInput subtype: $runtimeType');
     }
@@ -113,8 +106,6 @@ class DocumentUtils {
         return path;
       case MergeInputBytes(:final bytes):
         return createBlobUrl(bytes);
-      case MergeInputUrl():
-        return createBlobUrl(await input.readBytes());
       default:
         throw UnsupportedError('Unsupported MergeInput subtype: ${input.runtimeType}');
     }

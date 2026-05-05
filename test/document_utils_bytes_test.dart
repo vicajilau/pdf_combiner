@@ -135,29 +135,7 @@ void main() {
         await tempDir.delete(recursive: true);
       });
 
-      test('downloads URL input to a temp file with detected extension', () async {
-        final tempDir = await Directory.systemTemp.createTemp('prep_url_test_');
-        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-        DocumentUtils.setTemporalFolderPath(tempDir.path);
-
-        server.listen((request) async {
-          request.response.headers.contentType =
-              ContentType('application', 'pdf');
-          request.response.add(pdfBytes);
-          await request.response.close();
-        });
-
-        final url =
-            'http://${server.address.host}:${server.port}/document.pdf';
-        final result = await DocumentUtils.prepareInput(MergeInputUrl(url));
-
-        expect(p.extension(result), '.pdf');
-        expect(File(result).existsSync(), isTrue);
-        expect(await DocumentUtils.isPDF(MergeInputUrl(url)), isTrue);
-
-        await server.close(force: true);
-        await tempDir.delete(recursive: true);
-      });
+      // URL-related test removed: URL-backed inputs are no longer supported.
     });
 
     group('setTemporalFolderPath', () {

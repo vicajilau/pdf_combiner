@@ -22,13 +22,7 @@ extension on MergeInput {
         return p.basename(path);
       case MergeInputBytes():
         return 'File in bytes $index';
-      case MergeInputUrl(:final url):
-        final parsedUrl = Uri.tryParse(url);
-        final urlPath = parsedUrl?.path;
-        if (urlPath != null && urlPath.isNotEmpty) {
-          return p.basename(urlPath);
-        }
-        return url;
+      // URL-backed inputs were removed; fallback to the generic sourceLabel.
       default:
         return sourceLabel;
     }
@@ -41,10 +35,6 @@ extension on MergeInput {
       case MergeInputPath(:final path):
         return Uint8List.fromList(
           await FileMagicNumber.getBytesFromPathOrBlob(path),
-        );
-      case MergeInputUrl(:final url):
-        return Uint8List.fromList(
-          await FileMagicNumber.getBytesFromPathOrBlob(url),
         );
       default:
         return null;
