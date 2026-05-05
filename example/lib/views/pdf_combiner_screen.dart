@@ -8,7 +8,6 @@ import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
-// file_type_dialog intentionally not used: dialog hidden by default; developers may enable it if desired.
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
 
 import '../models/input_source_type.dart';
