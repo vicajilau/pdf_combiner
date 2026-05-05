@@ -585,10 +585,11 @@ packages:
   permission_handler:
     dependency: "direct main"
     description:
-      name: permission_handler
-      sha256: bc917da36261b00137bbc8896bf1482169cd76f866282368948f032c8c1caae1
-      url: "https://pub.dev"
-    source: hosted
+      path: permission_handler
+      ref: "feature/implement_spm"
+      resolved-ref: "38819e7e7ee86b50f99151ad7e169398ccd2973b"
+      url: "https://github.com/daniJimen/flutter-permission-handler.git"
+    source: git
     version: "12.0.1"
   permission_handler_android:
     dependency: transitive
