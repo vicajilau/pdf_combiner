@@ -16,20 +16,44 @@ import '../view_models/pdf_combiner_view_model.dart';
 import 'package:platform_detail/platform_detail.dart';
 
 extension on MergeInput {
-  String fileName(int? index) => switch (this) {
-        MergeInputPath(:final path) => p.basename(path),
-        MergeInputBytes() => 'File in bytes $index',
-        _ => sourceLabel,
-      };
+  String fileName(int? index) {
+    switch (this) {
+      case MergeInputPath(:final path):
+        return p.basename(path);
+      case MergeInputBytes():
+        return 'File in bytes $index';
+      case MergeInputUrl(:final url):
+        final parsedUrl = Uri.tryParse(url);
+        final urlPath = parsedUrl?.path;
+        if (urlPath != null && urlPath.isNotEmpty) {
+          return p.basename(urlPath);
+        }
+        return url;
+      default:
+        return sourceLabel;
+    }
+  }
 
-  Future<Uint8List?> previewBytes() async => switch (this) {
+  Future<Uint8List?> previewBytes() async {
+    try {
+      return switch (this) {
         MergeInputBytes(:final bytes) => bytes,
-        MergeInputPath(:final path) => Uint8List.fromList(
+        MergeInputPath(:final path) =>
+          Uint8List.fromList(
             await FileMagicNumber.getBytesFromPathOrBlob(path),
           ),
-        _ => null,
+        MergeInputUrl(:final url) =>
+          Uint8List.fromList(
+            await FileMagicNumber.getBytesFromPathOrBlob(url),
+          ),
+        _ => null
       };
+    } catch (e, _) {
+      return null;
+    }
+  }
 }
+
 
 class PdfCombinerScreen extends StatefulWidget {
   const PdfCombinerScreen({super.key});
@@ -116,13 +140,13 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
+                                            return const Text("Loading size...");
+                                          } else if (snapshot.hasError || snapshot.data == null) {
                                             return const Text(
-                                                "Loading size...");
-                                          } else if (snapshot.hasError) {
-                                            return const Icon(Icons.error);
+                                              'Vista previa no disponible. Comprueba CORS o la URL.',
+                                            );
                                           } else {
-                                            return Text(snapshot.data?.size() ??
-                                                "Unknown Size");
+                                            return Text(snapshot.data?.size() ?? "Unknown Size");
                                           }
                                         }),
                                     trailing: IconButton(
@@ -191,15 +215,14 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                         future: _viewModel.selectedFiles[index]
                                             .previewBytes(),
                                         builder: (context, snapshot) {
-                                          if (snapshot.connectionState ==
-                                              ConnectionState.waiting) {
+                                          if (snapshot.connectionState == ConnectionState.waiting) {
+                                            return const Text("Loading size...");
+                                          } else if (snapshot.hasError || snapshot.data == null) {
                                             return const Text(
-                                                "Loading size...");
-                                          } else if (snapshot.hasError) {
-                                            return const Icon(Icons.error);
+                                              'Vista previa no disponible. Comprueba CORS o la URL.',
+                                            );
                                           } else {
-                                            return Text(snapshot.data?.size() ??
-                                                "Unknown Size");
+                                            return Text(snapshot.data?.size() ?? "Unknown Size");
                                           }
                                         }),
                                   ),
@@ -277,11 +300,93 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     );
     if (fileType == null) return;
 
-    await _viewModel.pickFiles(fileType);
+    switch (fileType) {
+      case InputSourceType.path:
+      case InputSourceType.bytes:
+        await _viewModel.pickFiles(fileType);
+        break;
+      case InputSourceType.url:
+        final url = await _showUrlInputDialog();
+        if (url == null) return;
+        await _viewModel.addUrl(url);
+        break;
+    }
 
     setState(() {});
   }
 
+  Future<String?> _showUrlInputDialog() async {
+    final controller = TextEditingController();
+    String? url = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        String? errorText;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Add file from URL'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: TextInputType.url,
+              decoration: InputDecoration(
+                labelText: 'URL',
+                hintText: 'https://example.com/file.pdf',
+                errorText: errorText,
+              ),
+              onSubmitted: (_) {
+                final validationMessage = _validateUrl(controller.text.trim());
+                if (validationMessage != null) {
+                  setDialogState(() {
+                    errorText = validationMessage;
+                  });
+                  return;
+                }
+
+                Navigator.of(context).pop(controller.text.trim());
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final value = controller.text.trim();
+                  final validationMessage = _validateUrl(value);
+                  if (validationMessage != null) {
+                    setDialogState(() {
+                      errorText = validationMessage;
+                    });
+                    return;
+                  }
+
+                  Navigator.of(context).pop(value);
+                },
+                child: const Text('Add URL'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    controller.dispose();
+    return url;
+  }
+
+  String? _validateUrl(String value) {
+    if (value.isEmpty) {
+      return 'Enter a URL.';
+    }
+
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      return 'Enter a valid absolute URL.';
+    }
+
+    return null;
+  }
 
   // Function to pick PDF files from the device
   void _restart() {

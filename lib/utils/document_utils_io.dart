@@ -34,11 +34,37 @@ extension on FileMagicNumberType {
 class DocumentUtils {
   static String _temporalDir = Directory.systemTemp.path;
 
+  static Future<Uint8List> _downloadUrlBytes(String url) async {
+    final uri = Uri.parse(url);
+    final client = HttpClient();
+
+    try {
+      final request = await client.getUrl(uri);
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw HttpException(
+          'Failed to download input URL: ${response.statusCode}',
+          uri: uri,
+        );
+      }
+      final bytes = await response.fold<List<int>>(
+        <int>[],
+        (buffer, data) => buffer..addAll(data),
+      );
+      return Uint8List.fromList(bytes);
+    } finally {
+      client.close(force: true);
+    }
+  }
+
   static Future<FileMagicNumberType> _detectInputType(MergeInput input) async {
     switch (input) {
       case MergeInputPath(:final path):
         return FileMagicNumber.detectFileTypeFromPathOrBlob(path);
       case MergeInputBytes(:final bytes):
+        return FileMagicNumber.detectFileTypeFromBytes(bytes);
+      case MergeInputUrl(:final url):
+        final bytes = await _downloadUrlBytes(url);
         return FileMagicNumber.detectFileTypeFromBytes(bytes);
       default:
         throw UnsupportedError('Unsupported MergeInput subtype: ${input.runtimeType}');
@@ -51,14 +77,12 @@ class DocumentUtils {
         return Uint8List.fromList(await File(path).readAsBytes());
       case MergeInputBytes(:final bytes):
         return bytes;
+      case MergeInputUrl(:final url):
+        return _downloadUrlBytes(url);
       default:
         throw UnsupportedError('Unsupported MergeInput subtype: ${input.runtimeType}');
     }
   }
-
-  /// Exposes the private [_readInputBytes] for testing purposes.
-  @visibleForTesting
-  static Future<Uint8List> readInputBytesForTesting(MergeInput input) => _readInputBytes(input);
 
   /// Removes a list of temporary files from the file system.
   ///
