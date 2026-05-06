@@ -34,22 +34,20 @@ extension on MergeInput {
     }
   }
 
-    switch (this) {
-      case MergeInputBytes(:final bytes):
-        return bytes;
-      case MergeInputPath(:final path):
-        return Uint8List.fromList(
+  Future<Uint8List?> previewBytes() async => switch (this) {
+    MergeInputBytes(:final bytes) => bytes,
+    MergeInputPath(:final path) =>
+        Uint8List.fromList(
           await FileMagicNumber.getBytesFromPathOrBlob(path),
-        );
-      case MergeInputUrl(:final url):
-        return Uint8List.fromList(
+        ),
+    MergeInputUrl(:final url) =>
+        Uint8List.fromList(
           await FileMagicNumber.getBytesFromPathOrBlob(url),
-        );
-      default:
-        return null;
-    }
-  }
+        ),
+    _ => null
+  };
 }
+
 
 class PdfCombinerScreen extends StatefulWidget {
   const PdfCombinerScreen({super.key});
