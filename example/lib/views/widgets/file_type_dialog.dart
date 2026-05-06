@@ -15,6 +15,7 @@ Future<InputSourceType?> showFileTypeDialog(
           canUsePath
               ? 'Choose whether to add the files by path, bytes or URL.'
               : 'Choose whether to add the files by bytes or URL. Path is not available on web.',
+
         ),
         actions: [
           TextButton(

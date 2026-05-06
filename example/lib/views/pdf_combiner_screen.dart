@@ -34,7 +34,6 @@ extension on MergeInput {
     }
   }
 
-  Future<Uint8List?> previewBytes() async {
     switch (this) {
       case MergeInputBytes(:final bytes):
         return bytes;
@@ -84,14 +83,14 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-              DropTarget(
-                onDragDone: (details) async {
-                  final fileType = PlatformDetail.isWeb
-                      ? InputSourceType.bytes
-                      : InputSourceType.path;
-                  await _viewModel.addFilesDragAndDrop(fileType, details.files);
-                  setState(() {});
-                },
+            DropTarget(
+              onDragDone: (details) async {
+                final fileType = PlatformDetail.isWeb
+                    ? InputSourceType.bytes
+                    : InputSourceType.path;
+                await _viewModel.addFilesDragAndDrop(fileType, details.files);
+                setState(() {});
+              },
               child: (_viewModel.isEmpty())
                   ? Center(
                       child: Image.asset('assets/files/home.png'),
@@ -209,8 +208,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                       await _openInputFile(index);
                                     },
                                     subtitle: FutureBuilder(
-                                        future: _viewModel
-                                            .selectedFiles[index]
+                                        future: _viewModel.selectedFiles[index]
                                             .previewBytes(),
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==

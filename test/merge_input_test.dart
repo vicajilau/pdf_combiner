@@ -5,7 +5,7 @@ import 'package:pdf_combiner/models/merge_input.dart';
 
 void main() {
   group('MergeInput', () {
-    test('MergeInputPath expone el path y no bytes/url', () {
+    test('MergeInputPath expone el path y no bytes', () {
       final input = MergeInputPath('/path/to/file.pdf');
 
       expect(input, isA<MergeInputPath>());
