@@ -9,6 +9,7 @@ import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
+import 'package:pdf_combiner_example/views/widgets/file_type_dialog.dart';
 
 import '../models/input_source_type.dart';
 import '../view_models/pdf_combiner_view_model.dart';
@@ -72,14 +73,14 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-              DropTarget(
-                onDragDone: (details) async {
-                  final fileType = PlatformDetail.isWeb
-                      ? InputSourceType.bytes
-                      : InputSourceType.path;
-                  await _viewModel.addFilesDragAndDrop(fileType, details.files);
-                  setState(() {});
-                },
+            DropTarget(
+              onDragDone: (details) async {
+                final fileType = PlatformDetail.isWeb
+                    ? InputSourceType.bytes
+                    : InputSourceType.path;
+                await _viewModel.addFilesDragAndDrop(fileType, details.files);
+                setState(() {});
+              },
               child: (_viewModel.isEmpty())
                   ? Center(
                       child: Image.asset('assets/files/home.png'),
@@ -197,8 +198,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                       await _openInputFile(index);
                                     },
                                     subtitle: FutureBuilder(
-                                        future: _viewModel
-                                            .selectedFiles[index]
+                                        future: _viewModel.selectedFiles[index]
                                             .previewBytes(),
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
@@ -281,14 +281,98 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   // Function to pick PDF files from the device
   Future<void> _pickFiles() async {
-    // Dialog hidden: default behaviour
-    // - web: bytes
-    // - other platforms: path
-    final fileType = PlatformDetail.isWeb
-        ? InputSourceType.bytes
-        : InputSourceType.path;
-    await _viewModel.pickFiles(fileType);
+    final fileType = await showFileTypeDialog(
+      context,
+      canUsePath: !PlatformDetail.isWeb,
+    );
+    if (fileType == null) return;
+
+    switch (fileType) {
+      case InputSourceType.path:
+      case InputSourceType.bytes:
+        await _viewModel.pickFiles(fileType);
+        break;
+      case InputSourceType.url:
+        final url = await _showUrlInputDialog();
+        if (url == null) return;
+        await _viewModel.addUrl(url);
+        break;
+    }
+
     setState(() {});
+  }
+
+  Future<String?> _showUrlInputDialog() async {
+    final controller = TextEditingController();
+    String? url = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        String? errorText;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Add file from URL'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: TextInputType.url,
+              decoration: InputDecoration(
+                labelText: 'URL',
+                hintText: 'https://example.com/file.pdf',
+                errorText: errorText,
+              ),
+              onSubmitted: (_) {
+                final validationMessage = _validateUrl(controller.text.trim());
+                if (validationMessage != null) {
+                  setDialogState(() {
+                    errorText = validationMessage;
+                  });
+                  return;
+                }
+
+                Navigator.of(context).pop(controller.text.trim());
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final value = controller.text.trim();
+                  final validationMessage = _validateUrl(value);
+                  if (validationMessage != null) {
+                    setDialogState(() {
+                      errorText = validationMessage;
+                    });
+                    return;
+                  }
+
+                  Navigator.of(context).pop(value);
+                },
+                child: const Text('Add URL'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    controller.dispose();
+    return url;
+  }
+
+  String? _validateUrl(String value) {
+    if (value.isEmpty) {
+      return 'Enter a URL.';
+    }
+
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      return 'Enter a valid absolute URL.';
+    }
+
+    return null;
   }
 
   // Function to pick PDF files from the device
