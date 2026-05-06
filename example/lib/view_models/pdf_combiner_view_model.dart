@@ -17,10 +17,6 @@ class PdfCombinerViewModel {
 
   /// Function to pick PDF files from the device (old method)
   Future<void> pickFiles(InputSourceType fileType) async {
-    if (fileType == InputSourceType.url) {
-      throw ArgumentError('Use addUrl() for URL inputs.');
-    }
-
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png', 'heic'],
@@ -46,18 +42,8 @@ class PdfCombinerViewModel {
             .map((file) => MergeInputBytes(file.bytes!))
             .toList();
         break;
-      case InputSourceType.url:
-        throw ArgumentError('Use addUrl() for URL inputs.');
     }
 
-    outputFiles = [];
-  }
-
-  Future<void> addUrl(String url) async {
-    final normalizedUrl = url.trim();
-    if (normalizedUrl.isEmpty) return;
-
-    selectedFiles.add(MergeInputUrl(normalizedUrl));
     outputFiles = [];
   }
 
@@ -78,8 +64,6 @@ class PdfCombinerViewModel {
           ),
         );
         break;
-      case InputSourceType.url:
-        throw ArgumentError('URL inputs are not supported via drag and drop.');
     }
 
     outputFiles = [];

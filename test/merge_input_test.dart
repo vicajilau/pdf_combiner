@@ -5,13 +5,12 @@ import 'package:pdf_combiner/models/merge_input.dart';
 
 void main() {
   group('MergeInput', () {
-    test('MergeInputPath expone el path y no bytes/url', () {
+    test('MergeInputPath expone el path y no bytes', () {
       final input = MergeInputPath('/path/to/file.pdf');
 
       expect(input, isA<MergeInputPath>());
       expect(input.path, '/path/to/file.pdf');
       expect(input.bytes, isNull);
-      expect(input.url, isNull);
       expect(input.requiresTemporaryResource, isFalse);
     });
 
@@ -22,18 +21,6 @@ void main() {
       expect(input, isA<MergeInputBytes>());
       expect(input.bytes, bytes);
       expect(input.path, isNull);
-      expect(input.url, isNull);
-      expect(input.requiresTemporaryResource, isTrue);
-    });
-
-    test('MergeInputUrl expone la url y requiere recurso temporal', () {
-      final input = MergeInputUrl('https://example.com/file.pdf');
-
-      expect(input, isA<MergeInputUrl>());
-      expect(input.url, 'https://example.com/file.pdf');
-      expect(input.path, isNull);
-      expect(input.bytes, isNull);
-      expect(input.sourceLabel, 'https://example.com/file.pdf');
       expect(input.requiresTemporaryResource, isTrue);
     });
 
