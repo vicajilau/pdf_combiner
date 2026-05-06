@@ -1,0 +1,6 @@
+platform :osx, '10.15'
+
+target 'Runner' do
+  use_frameworks!
+end
+
