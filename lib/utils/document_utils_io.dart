@@ -6,6 +6,7 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:flutter/foundation.dart';
 
 extension on FileMagicNumberType {
   String extension() {
@@ -56,6 +57,10 @@ class DocumentUtils {
         throw UnsupportedError('Unsupported MergeInput subtype: ${input.runtimeType}');
     }
   }
+
+  /// Exposes the private [_readInputBytes] for testing purposes.
+  @visibleForTesting
+  static Future<Uint8List> readInputBytesForTesting(MergeInput input) => _readInputBytes(input);
 
   /// Removes a list of temporary files from the file system.
   ///

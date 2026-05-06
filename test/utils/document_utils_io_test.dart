@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
@@ -89,8 +90,23 @@ void main() {
 
       await tempDir.delete(recursive: true);
     });
+
+    test('readInputBytesForTesting reads bytes from path', () async {
+      final tempDir = await Directory.systemTemp.createTemp('read_bytes_test_');
+      final filePath = p.join(tempDir.path, 'somefile.bin');
+      final content = <int>[10, 20, 30, 40];
+      final file = await File(filePath).create(recursive: true);
+      await file.writeAsBytes(content, flush: true);
+
+      final bytes = await DocumentUtils.readInputBytesForTesting(MergeInputPath(filePath));
+      expect(bytes, Uint8List.fromList(content));
+
+      await tempDir.delete(recursive: true);
+    });
   });
 }
+
+
 
 
 
