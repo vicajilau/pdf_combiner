@@ -2,7 +2,7 @@ import 'dart:typed_data' show Uint8List;
 
 /// An abstract class representing an input for merging PDFs.
 ///
-/// Subclasses must provide the concrete input (path or bytes).
+/// Subclasses must provide the concrete input (path, bytes, url).
 abstract class MergeInput {
   const MergeInput();
 
@@ -18,8 +18,14 @@ abstract class MergeInput {
         _ => null,
       };
 
+  /// Returns the remote URL when this input is backed by a URL.
+  String? get url => switch (this) {
+        MergeInputUrl(:final url) => url,
+        _ => null,
+      };
+
   /// Returns a user-friendly identifier for logging and error messages.
-  String get sourceLabel => path ?? 'File in bytes';
+  String get sourceLabel => path ?? url ?? 'File in bytes';
 
   /// Indicates whether this input must be materialized as a temporary resource.
   bool get requiresTemporaryResource => this is! MergeInputPath;
@@ -28,6 +34,7 @@ abstract class MergeInput {
   String get temporaryFilePrefix => switch (this) {
         MergeInputPath() => 'path_input',
         MergeInputBytes() => 'bytes_input',
+        MergeInputUrl() => 'url_input',
         _ => throw StateError('Unsupported MergeInput subtype: $runtimeType'),
       };
 
@@ -55,4 +62,15 @@ class MergeInputBytes extends MergeInput {
 
   @override
   String toString() => bytes.toString();
+}
+
+/// A [MergeInput] that references a remote URL.
+class MergeInputUrl extends MergeInput {
+  @override
+  final String url;
+
+  const MergeInputUrl(this.url);
+
+  @override
+  String toString() => url;
 }

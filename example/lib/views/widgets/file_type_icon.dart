@@ -24,6 +24,9 @@ class FileTypeIcon extends StatelessWidget {
             if (input.path != null) {
               return FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!);
             }
+            if (input.url != null) {
+              return FileMagicNumber.detectFileTypeFromPathOrBlob(input.url!);
+            }
             return Future.value(null);
           }(),
           builder: (context, snapshot) {

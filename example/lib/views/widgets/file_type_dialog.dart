@@ -13,8 +13,8 @@ Future<InputSourceType?> showFileTypeDialog(
         title: const Text('How do you want to add the file?'),
         content: Text(
           canUsePath
-              ? 'Choose whether to add the files by path or bytes.'
-              : 'Choose whether to add the files by bytes. Path is not available on web.',
+              ? 'Choose whether to add the files by path, bytes or URL.'
+              : 'Choose whether to add the files by bytes or URL. Path is not available on web.',
         ),
         actions: [
           TextButton(
@@ -30,6 +30,10 @@ Future<InputSourceType?> showFileTypeDialog(
           TextButton(
             onPressed: () => Navigator.of(context).pop(InputSourceType.bytes),
             child: const Text('Bytes'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(InputSourceType.url),
+            child: const Text('URL'),
           ),
         ],
       ),
