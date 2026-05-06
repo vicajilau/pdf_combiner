@@ -99,7 +99,7 @@ class DocumentUtils {
   /// Process a [MergeInput] and return a valid file path or blob URL.
   ///
   /// - [MergeInput.path]: Returns the path as-is.
-  /// - [MergeInput.bytes] and [MergeInput.url]: Create a blob URL and return it.
+  /// - [MergeInput.bytes]: Creates a blob URL and returns it.
   static Future<String> prepareInput(MergeInput input) async {
     switch (input) {
       case MergeInputPath(:final path):

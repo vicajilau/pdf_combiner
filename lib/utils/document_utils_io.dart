@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
-
 import 'package:file_magic_number/file_magic_number.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-import 'package:flutter/foundation.dart';
 
 extension on FileMagicNumberType {
   String extension() {

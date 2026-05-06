@@ -2,7 +2,7 @@ import 'dart:typed_data' show Uint8List;
 
 /// An abstract class representing an input for merging PDFs.
 ///
-/// Subclasses must provide the concrete input (path, bytes, url).
+/// Subclasses must provide the concrete input (path or bytes).
 abstract class MergeInput {
   const MergeInput();
 
