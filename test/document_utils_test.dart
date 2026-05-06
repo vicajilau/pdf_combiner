@@ -178,7 +178,7 @@ void main() {
       final pdfPath = p.join(tempDir.path, 'test.pdf');
       await createFileWithBytes(pdfPath, pdfBytes);
 
-      final result = await DocumentUtils.isPDF(MergeInput.path(pdfPath));
+      final result = await DocumentUtils.isPDF(MergeInputPath(pdfPath));
       expect(result, isTrue);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -189,7 +189,7 @@ void main() {
       final pngPath = p.join(tempDir.path, 'image.png');
       await createFileWithBytes(pngPath, pngBytes);
 
-      final result = await DocumentUtils.isPDF(MergeInput.path(pngPath));
+      final result = await DocumentUtils.isPDF(MergeInputPath(pngPath));
       expect(result, isFalse);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -198,7 +198,7 @@ void main() {
     test('false when there is an exception (non-existent path)', () async {
       final nonExistent = p.join(Directory.systemTemp.path, 'no_such_file.pdf');
       expect(
-        () => DocumentUtils.isPDF(MergeInput.path(nonExistent)),
+        () => DocumentUtils.isPDF(MergeInputPath(nonExistent)),
         throwsA(isA<Exception>()),
       );
     });
@@ -211,7 +211,7 @@ void main() {
       final pngPath = p.join(tempDir.path, 'img.png');
       await createFileWithBytes(pngPath, pngBytes);
 
-      final result = await DocumentUtils.isImage(MergeInput.path(pngPath));
+      final result = await DocumentUtils.isImage(MergeInputPath(pngPath));
       expect(result, isTrue);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -223,7 +223,7 @@ void main() {
       final jpgPath = p.join(tempDir.path, 'img.jpg');
       await createFileWithBytes(jpgPath, jpgBytes);
 
-      final result = await DocumentUtils.isImage(MergeInput.path(jpgPath));
+      final result = await DocumentUtils.isImage(MergeInputPath(jpgPath));
       expect(result, isTrue);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -235,7 +235,7 @@ void main() {
       final pdfPath = p.join(tempDir.path, 'doc.pdf');
       await createFileWithBytes(pdfPath, pdfBytes);
 
-      final result = await DocumentUtils.isImage(MergeInput.path(pdfPath));
+      final result = await DocumentUtils.isImage(MergeInputPath(pdfPath));
       expect(result, isFalse);
 
       await Directory(tempDir.path).delete(recursive: true);
@@ -245,7 +245,7 @@ void main() {
       final nonExistent =
           p.join(Directory.systemTemp.path, 'no_such_image.png');
       expect(
-        () => DocumentUtils.isImage(MergeInput.path(nonExistent)),
+        () => DocumentUtils.isImage(MergeInputPath(nonExistent)),
         throwsA(isA<Exception>()),
       );
     });

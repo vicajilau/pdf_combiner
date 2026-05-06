@@ -1,3 +1,5 @@
+import 'dart:typed_data' show Uint8List;
+
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
@@ -6,20 +8,27 @@ import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner_example/utils/uint8list_extension.dart';
-import 'package:pdf_combiner_example/views/widgets/file_type_dialog.dart';
 import 'package:pdf_combiner_example/views/widgets/file_type_icon.dart';
+import 'package:pdf_combiner_example/views/widgets/file_type_dialog.dart';
 
+import '../models/input_source_type.dart';
 import '../view_models/pdf_combiner_view_model.dart';
+import 'package:platform_detail/platform_detail.dart';
 
 extension on MergeInput {
-  String fileName(int? index) {
-    switch (type) {
-      case MergeInputType.path:
-        return p.basename(path ?? '');
-      case MergeInputType.bytes:
-        return 'File in bytes $index';
-    }
-  }
+  String fileName(int? index) => switch (this) {
+        MergeInputPath(:final path) => p.basename(path),
+        MergeInputBytes() => 'File in bytes $index',
+        _ => sourceLabel,
+      };
+
+  Future<Uint8List?> previewBytes() async => switch (this) {
+        MergeInputBytes(:final bytes) => bytes,
+        MergeInputPath(:final path) => Uint8List.fromList(
+            await FileMagicNumber.getBytesFromPathOrBlob(path),
+          ),
+        _ => null,
+      };
 }
 
 class PdfCombinerScreen extends StatefulWidget {
@@ -56,9 +65,9 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           children: [
             DropTarget(
               onDragDone: (details) async {
-                final fileType =
-                    await showFileTypeDialog(context); // Show dialog
-                if (fileType == null) return;
+                final fileType = PlatformDetail.isWeb
+                    ? InputSourceType.bytes
+                    : InputSourceType.path;
                 await _viewModel.addFilesDragAndDrop(fileType, details.files);
                 setState(() {});
               },
@@ -93,7 +102,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                   ),
                                   child: ListTile(
                                     leading: FileTypeIcon(
-                                        input: MergeInput.path(
+                                        input: MergeInputPath(
                                             _viewModel.outputFiles[index])),
                                     title: Text(
                                       p.basename(_viewModel.outputFiles[index]),
@@ -179,16 +188,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                       await _openInputFile(index);
                                     },
                                     subtitle: FutureBuilder(
-                                        future: switch (_viewModel
-                                            .selectedFiles[index].type) {
-                                          MergeInputType.bytes => Future.value(
-                                              _viewModel
-                                                  .selectedFiles[index].bytes),
-                                          MergeInputType.path => FileMagicNumber
-                                              .getBytesFromPathOrBlob(_viewModel
-                                                  .selectedFiles[index]
-                                                  .toString()),
-                                        },
+                                        future: _viewModel.selectedFiles[index]
+                                            .previewBytes(),
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
@@ -270,11 +271,17 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   // Function to pick PDF files from the device
   Future<void> _pickFiles() async {
-    final fileType = await showFileTypeDialog(context);
+    final fileType = await showFileTypeDialog(
+      context,
+      canUsePath: !PlatformDetail.isWeb,
+    );
     if (fileType == null) return;
+
     await _viewModel.pickFiles(fileType);
+
     setState(() {});
   }
+
 
   // Function to pick PDF files from the device
   void _restart() {
@@ -342,17 +349,12 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   Future<void> _openInputFile(int index) async {
     if (index < _viewModel.selectedFiles.length) {
-      switch (_viewModel.selectedFiles[index].type) {
-        case MergeInputType.path:
-          final result =
-              await OpenFile.open(_viewModel.selectedFiles[index].toString());
-          if (result.type != ResultType.done) {
-            _showSnackbarSafely(
-                'Failed to open file. Error: ${result.message}');
-          }
-          return;
-        case MergeInputType.bytes:
-          return;
+      final input = _viewModel.selectedFiles[index];
+      if (input case MergeInputPath(:final path)) {
+        final result = await OpenFile.open(path);
+        if (result.type != ResultType.done) {
+          _showSnackbarSafely('Failed to open file. Error: ${result.message}');
+        }
       }
     }
   }

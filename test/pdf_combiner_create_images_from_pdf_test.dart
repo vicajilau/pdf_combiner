@@ -21,7 +21,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          input: MergeInput.path('example/assets/document_1.pdf'),
+          input: MergeInputPath('example/assets/document_1.pdf'),
           outputDirPath: 'output/path',
         ),
         throwsA(
@@ -39,7 +39,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          input: MergeInput.path('example/assets/document_1.pdf'),
+          input: MergeInputPath('example/assets/document_1.pdf'),
           outputDirPath: 'output/path',
         ),
         throwsA(
@@ -57,7 +57,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          input: MergeInput.path('example/assets/document_1.pdf'),
+          input: MergeInputPath('example/assets/document_1.pdf'),
           outputDirPath: 'output/path',
           config: ImageFromPdfConfig(
             rescale: ImageScale(width: 500, height: 200),
@@ -79,7 +79,7 @@ void main() {
 
       expect(
         () => PdfCombiner.createImageFromPDF(
-          input: MergeInput.path('example/assets/document_1.pdf'),
+          input: MergeInputPath('example/assets/document_1.pdf'),
           outputDirPath: 'output/path',
         ),
         throwsA(
@@ -97,7 +97,7 @@ void main() {
       final outputDirPath = 'output/path';
 
       final result = await PdfCombiner.createImageFromPDF(
-        input: MergeInput.path('example/assets/document_1.pdf'),
+        input: MergeInputPath('example/assets/document_1.pdf'),
         outputDirPath: outputDirPath,
         config: ImageFromPdfConfig(createOneImage: true),
       );
@@ -112,7 +112,7 @@ void main() {
       final outputDirPath = 'output/path';
 
       final result = await PdfCombiner.createImageFromPDF(
-        input: MergeInput.path('example/assets/document_1.pdf'),
+        input: MergeInputPath('example/assets/document_1.pdf'),
         outputDirPath: outputDirPath,
       );
 

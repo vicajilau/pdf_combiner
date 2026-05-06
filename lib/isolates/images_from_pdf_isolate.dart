@@ -30,7 +30,7 @@ class ImagesFromPdfIsolate {
   }) async {
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.createImageFromPDF(
-        input: MergeInput.path(inputPath),
+        input: MergeInputPath(inputPath),
         outputPath: outputDirectory,
         config: config,
       );
@@ -62,7 +62,7 @@ class ImagesFromPdfIsolate {
     }
 
     return await PdfCombinerPlatform.instance.createImageFromPDF(
-      input: MergeInput.path(inputPath),
+      input: MergeInputPath(inputPath),
       outputPath: outputDirectory,
       config: config,
     );
