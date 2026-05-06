@@ -24,7 +24,5 @@ jobs:
 
       - name: Run integration_test
         run: |
-          cd example/macos
-          pod deintegrate
-          cd ../
+          cd example
           flutter test integration_test -d macos
