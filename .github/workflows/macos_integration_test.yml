@@ -19,15 +19,8 @@ jobs:
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v4
 
-      - name: Install Flutter Dependencies (example)
-        working-directory: example
-        run: flutter pub get --verbose
-
-      - name: Prepare macOS build (resolve native packages)
-        working-directory: example
-        run: |
-          flutter pub get --verbose
-          flutter build macos -v
+      - name: Install Flutter Dependencies
+        run: flutter pub get
 
       - name: Run integration_test
         run: |
