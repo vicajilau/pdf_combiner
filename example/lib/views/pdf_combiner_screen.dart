@@ -34,18 +34,24 @@ extension on MergeInput {
     }
   }
 
-  Future<Uint8List?> previewBytes() async => switch (this) {
-    MergeInputBytes(:final bytes) => bytes,
-    MergeInputPath(:final path) =>
-        Uint8List.fromList(
-          await FileMagicNumber.getBytesFromPathOrBlob(path),
-        ),
-    MergeInputUrl(:final url) =>
-        Uint8List.fromList(
-          await FileMagicNumber.getBytesFromPathOrBlob(url),
-        ),
-    _ => null
-  };
+  Future<Uint8List?> previewBytes() async {
+    try {
+      return switch (this) {
+        MergeInputBytes(:final bytes) => bytes,
+        MergeInputPath(:final path) =>
+          Uint8List.fromList(
+            await FileMagicNumber.getBytesFromPathOrBlob(path),
+          ),
+        MergeInputUrl(:final url) =>
+          Uint8List.fromList(
+            await FileMagicNumber.getBytesFromPathOrBlob(url),
+          ),
+        _ => null
+      };
+    } catch (e, _) {
+      return null;
+    }
+  }
 }
 
 
@@ -134,13 +140,13 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
+                                            return const Text("Loading size...");
+                                          } else if (snapshot.hasError || snapshot.data == null) {
                                             return const Text(
-                                                "Loading size...");
-                                          } else if (snapshot.hasError) {
-                                            return const Icon(Icons.error);
+                                              'Vista previa no disponible. Comprueba CORS o la URL.',
+                                            );
                                           } else {
-                                            return Text(snapshot.data?.size() ??
-                                                "Unknown Size");
+                                            return Text(snapshot.data?.size() ?? "Unknown Size");
                                           }
                                         }),
                                     trailing: IconButton(
@@ -209,15 +215,14 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                         future: _viewModel.selectedFiles[index]
                                             .previewBytes(),
                                         builder: (context, snapshot) {
-                                          if (snapshot.connectionState ==
-                                              ConnectionState.waiting) {
+                                          if (snapshot.connectionState == ConnectionState.waiting) {
+                                            return const Text("Loading size...");
+                                          } else if (snapshot.hasError || snapshot.data == null) {
                                             return const Text(
-                                                "Loading size...");
-                                          } else if (snapshot.hasError) {
-                                            return const Icon(Icons.error);
+                                              'Vista previa no disponible. Comprueba CORS o la URL.',
+                                            );
                                           } else {
-                                            return Text(snapshot.data?.size() ??
-                                                "Unknown Size");
+                                            return Text(snapshot.data?.size() ?? "Unknown Size");
                                           }
                                         }),
                                   ),
