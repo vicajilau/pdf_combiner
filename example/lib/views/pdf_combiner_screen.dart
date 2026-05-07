@@ -143,7 +143,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                             return const Text("Loading size...");
                                           } else if (snapshot.hasError || snapshot.data == null) {
                                             return const Text(
-                                              'Vista previa no disponible. Comprueba CORS o la URL.',
+                                              'Preview not available. Check CORS or the URL',
                                             );
                                           } else {
                                             return Text(snapshot.data?.size() ?? "Unknown Size");
@@ -219,7 +219,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                             return const Text("Loading size...");
                                           } else if (snapshot.hasError || snapshot.data == null) {
                                             return const Text(
-                                              'Vista previa no disponible. Comprueba CORS o la URL.',
+                                              'Preview not available. Check CORS or the URL',
                                             );
                                           } else {
                                             return Text(snapshot.data?.size() ?? "Unknown Size");
