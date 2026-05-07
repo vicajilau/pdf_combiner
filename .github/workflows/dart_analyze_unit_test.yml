@@ -12,7 +12,7 @@ jobs:
         sdk: [stable]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v4
@@ -30,7 +30,7 @@ jobs:
         run: flutter test --coverage
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: vicajilau/pdf_combiner
