@@ -252,31 +252,5 @@ void main() {
         expect(result, ['$tempPath/image1.png']);
       });
     });
-
-    group('DocumentUtils.prepareInput', () {
-      test('creates temp directory if not exists', () async {
-        final nonExistentPath = '$tempPath/non_existent_dir';
-        DocumentUtils.setTemporalFolderPath(nonExistentPath);
-
-        final pngBytes = Uint8List.fromList([
-          0x89,
-          0x50,
-          0x4E,
-          0x47,
-          0x0D,
-          0x0A,
-          0x1A,
-          0x0A,
-        ]);
-
-        final result =
-            await DocumentUtils.prepareInput(MergeInputBytes(pngBytes));
-
-        expect(result.startsWith(nonExistentPath), isTrue);
-        expect(Directory(nonExistentPath).existsSync(), isTrue);
-
-        await Directory(nonExistentPath).delete(recursive: true);
-      });
-    });
   });
 }

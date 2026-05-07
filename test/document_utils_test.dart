@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -7,6 +8,12 @@ import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 import 'mocks/mock_document_utils.dart';
+
+// Fake MergeInput subtype used by tests to exercise default branches.
+class FakeInput extends MergeInput {
+  @override
+  String toString() => 'fake';
+}
 
 void main() {
   late bool originalIsMock;
@@ -250,4 +257,199 @@ void main() {
       );
     });
   });
+
+  group('DocumentUtils with bytes', () {
+    late String originalTempPath;
+
+    // reuse the byte arrays defined above (they are List<int>) and create
+    // typed Uint8List instances where needed
+    setUp(() {
+      originalTempPath = DocumentUtils.getTemporalFolderPath();
+    });
+
+    tearDown(() {
+      DocumentUtils.setTemporalFolderPath(originalTempPath);
+    });
+
+    group('isPDF with bytes', () {
+      test('returns true for PDF bytes', () async {
+        final input = MergeInputBytes(Uint8List.fromList(pdfBytes));
+        final result = await DocumentUtils.isPDF(input);
+        expect(result, isTrue);
+      });
+
+      test('returns false for non-PDF bytes', () async {
+        final input = MergeInputBytes(Uint8List.fromList(pngBytes));
+        final result = await DocumentUtils.isPDF(input);
+        expect(result, isFalse);
+      });
+    });
+
+    group('isImage with bytes', () {
+      test('returns true for PNG bytes', () async {
+        final input = MergeInputBytes(Uint8List.fromList(pngBytes));
+        final result = await DocumentUtils.isImage(input);
+        expect(result, isTrue);
+      });
+
+      test('returns true for JPG bytes', () async {
+        final input = MergeInputBytes(Uint8List.fromList(jpgBytes));
+        final result = await DocumentUtils.isImage(input);
+        expect(result, isTrue);
+      });
+
+      test('returns false for PDF bytes', () async {
+        final input = MergeInputBytes(Uint8List.fromList(pdfBytes));
+        final result = await DocumentUtils.isImage(input);
+        expect(result, isFalse);
+      });
+    });
+
+    group('prepareInput', () {
+      test('returns path for path type input', () async {
+        final input = MergeInputPath('/some/path.pdf');
+        final result = await DocumentUtils.prepareInput(input);
+        expect(result, '/some/path.pdf');
+      });
+
+      test('creates temp file for bytes type input', () async {
+        final tempDir = await Directory.systemTemp.createTemp('prep_test_');
+        DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+        final input = MergeInputBytes(Uint8List.fromList(pngBytes));
+        final result = await DocumentUtils.prepareInput(input);
+
+        expect(result.startsWith(tempDir.path), isTrue);
+        expect(File(result).existsSync(), isTrue);
+
+        await tempDir.delete(recursive: true);
+      });
+
+      test('preserves pdf extension for PDF bytes input', () async {
+        final tempDir = await Directory.systemTemp.createTemp('prep_pdf_test_');
+        DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+        final result =
+            await DocumentUtils.prepareInput(MergeInputBytes(Uint8List.fromList(pdfBytes)));
+
+        expect(p.extension(result), '.pdf');
+        expect(File(result).existsSync(), isTrue);
+
+        await tempDir.delete(recursive: true);
+      });
+
+      test('creates temp file for JPG bytes input preserving .jpg extension', () async {
+        final tempDir = await Directory.systemTemp.createTemp('prep_jpg_test_');
+        DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+        final result =
+            await DocumentUtils.prepareInput(MergeInputBytes(Uint8List.fromList(jpgBytes)));
+
+        expect(p.extension(result), '.jpg');
+        expect(File(result).existsSync(), isTrue);
+
+        await tempDir.delete(recursive: true);
+      });
+
+      test('creates temp file for unknown bytes input using .bin extension', () async {
+        final tempDir = await Directory.systemTemp.createTemp('prep_bin_test_');
+        DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+        final unknown = Uint8List.fromList([0x00, 0x11, 0x22, 0x33]);
+        final result = await DocumentUtils.prepareInput(MergeInputBytes(unknown));
+
+        expect(p.extension(result), '.bin');
+        expect(File(result).existsSync(), isTrue);
+
+        await tempDir.delete(recursive: true);
+      });
+
+      test('downloads URL input to a temp file with detected extension', () async {
+        final tempDir = await Directory.systemTemp.createTemp('prep_url_test_');
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+        server.listen((request) async {
+          request.response.headers.contentType =
+              ContentType('application', 'pdf');
+          request.response.add(Uint8List.fromList(pdfBytes));
+          await request.response.close();
+        });
+
+        final url = 'http://${server.address.host}:${server.port}/document.pdf';
+        final result = await DocumentUtils.prepareInput(MergeInputUrl(url));
+
+        expect(p.extension(result), '.pdf');
+        expect(File(result).existsSync(), isTrue);
+        expect(await DocumentUtils.isPDF(MergeInputUrl(url)), isTrue);
+
+        await server.close(force: true);
+        await tempDir.delete(recursive: true);
+      });
+
+      test('creates temp directory if not exists', () async {
+        final nonExistentPath = p.join(Directory.systemTemp.path, 'non_existent_dir_for_test');
+        DocumentUtils.setTemporalFolderPath(nonExistentPath);
+
+        final result =
+            await DocumentUtils.prepareInput(MergeInputBytes(Uint8List.fromList(pngBytes)));
+
+        expect(result.startsWith(nonExistentPath), isTrue);
+        expect(Directory(nonExistentPath).existsSync(), isTrue);
+
+        await Directory(nonExistentPath).delete(recursive: true);
+      });
+    });
+
+    group('setTemporalFolderPath', () {
+      test('changes temporal folder path', () {
+        final originalPath = DocumentUtils.getTemporalFolderPath();
+        final testPath = p.join(Directory.systemTemp.path, 'custom_temp');
+
+        DocumentUtils.setTemporalFolderPath(testPath);
+        expect(DocumentUtils.getTemporalFolderPath(), testPath);
+
+        DocumentUtils.setTemporalFolderPath(originalPath);
+      });
+    });
+  });
+
+  group('http error handling for URL inputs', () {
+    test('prepareInput and isPDF throw HttpException on non-2xx response', () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+
+      server.listen((request) async {
+        request.response.statusCode = 404;
+        await request.response.close();
+      });
+
+      final url = 'http://${server.address.host}:${server.port}/not_found.pdf';
+
+      try {
+        await expectLater(
+          DocumentUtils.prepareInput(MergeInputUrl(url)),
+          throwsA(isA<HttpException>()),
+        );
+
+        await expectLater(
+          DocumentUtils.isPDF(MergeInputUrl(url)),
+          throwsA(isA<HttpException>()),
+        );
+      } finally {
+        await server.close(force: true);
+      }
+    });
+  });
+
+  group('detect default and private-read branches', () {
+    test('isPDF throws UnsupportedError for unknown MergeInput subtype', () async {
+      final fake = FakeInput();
+
+      await expectLater(
+        DocumentUtils.isPDF(fake),
+        throwsA(isA<UnsupportedError>()),
+      );
+    });
+
+    });
 }

@@ -3,6 +3,11 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 
+class FakeInput extends MergeInput {
+  @override
+  String toString() => 'fake';
+}
+
 void main() {
   group('MergeInput', () {
     test('MergeInputPath expone el path y no bytes', () {
@@ -54,6 +59,24 @@ void main() {
       final input = MergeInputBytes(Uint8List.fromList([1, 2, 3]));
 
       expect(input.sourceLabel, 'File in bytes');
+    });
+
+    test('temporaryFilePrefix for each subtype and sourceLabel for path', () {
+      final pathInput = MergeInputPath('/path/to/file.pdf');
+      final bytesInput = MergeInputBytes(Uint8List.fromList([1, 2, 3]));
+      final urlInput = MergeInputUrl('https://example.com/file.pdf');
+
+      expect(pathInput.temporaryFilePrefix, 'path_input');
+      expect(pathInput.sourceLabel, '/path/to/file.pdf');
+
+      expect(bytesInput.temporaryFilePrefix, 'bytes_input');
+      expect(urlInput.temporaryFilePrefix, 'url_input');
+      expect(urlInput.toString(), 'https://example.com/file.pdf');
+    });
+
+    test('temporaryFilePrefix throws StateError for unknown subtype', () {
+      final fake = FakeInput();
+      expect(() => fake.temporaryFilePrefix, throwsA(isA<StateError>()));
     });
   });
 }
