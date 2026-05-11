@@ -89,8 +89,8 @@ void main() {
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
             inputs: [
-              MergeInput.path('example/assets/document_1.pdf'),
-              MergeInput.path('example/assets/document_2.pdf'),
+              MergeInputPath('example/assets/document_1.pdf'),
+              MergeInputPath('example/assets/document_2.pdf'),
             ],
             outputPath: 'output.pdf',
           ),
@@ -107,8 +107,8 @@ void main() {
         expect(
           () async => await PdfCombiner.mergeMultiplePDFs(
             inputs: [
-              MergeInput.path('example/assets/document_1.pdf'),
-              MergeInput.path('example/assets/document_2.pdf'),
+              MergeInputPath('example/assets/document_1.pdf'),
+              MergeInputPath('example/assets/document_2.pdf'),
             ],
             outputPath: 'output.pdf',
           ),
@@ -135,7 +135,7 @@ void main() {
           try {
             await expectLater(
               () => PdfCombiner.createPDFFromMultipleImages(
-                inputs: [MergeInput.path(file1.path)],
+                inputs: [MergeInputPath(file1.path)],
                 outputPath: 'output_images.pdf',
               ),
               throwsA(isA<PdfCombinerException>()
@@ -166,7 +166,7 @@ void main() {
           try {
             await expectLater(
               () => PdfCombiner.createPDFFromMultipleImages(
-                inputs: [MergeInput.path(file1.path)],
+                inputs: [MergeInputPath(file1.path)],
                 outputPath: 'output_images.pdf',
               ),
               throwsA(isA<PdfCombinerException>().having((e) => e.message,
@@ -200,7 +200,7 @@ void main() {
         try {
           expect(
             () async => await PdfCombiner.createImageFromPDF(
-              input: MergeInput.path('input.pdf'),
+              input: MergeInputPath('input.pdf'),
               outputDirPath: 'output_dir',
             ),
             throwsA(isA<PdfCombinerException>()

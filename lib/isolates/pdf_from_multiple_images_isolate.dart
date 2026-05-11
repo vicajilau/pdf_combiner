@@ -30,7 +30,7 @@ class PdfFromMultipleImagesIsolate {
   }) async {
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
-        inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
+        inputs: inputPaths.map(MergeInputPath.new).toList(),
         outputPath: outputPath,
         config: config,
       );
@@ -62,7 +62,7 @@ class PdfFromMultipleImagesIsolate {
     }
 
     return await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
-      inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
+      inputs: inputPaths.map(MergeInputPath.new).toList(),
       outputPath: outputPath,
       config: config,
     );
