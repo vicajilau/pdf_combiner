@@ -1,3 +1,9 @@
+## 6.0.5
+
+### General
+
+* Refactor `MergeInput` into explicit subclasses (removes support for URL-based inputs) and updates example, tests, and CI — PR-141: https://github.com/vicajilau/pdf_combiner/pull/141
+
 ## 6.0.4
 
 ### General
