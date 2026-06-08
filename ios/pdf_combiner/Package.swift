@@ -11,11 +11,15 @@ let package = Package(
     products: [
         .library(name: "pdf-combiner", targets: ["pdf_combiner"])
     ],
-    dependencies: [],
+    dependencies: [
+        .package(name: "FlutterFramework", path: "../FlutterFramework"),
+    ],
     targets: [
         .target(
             name: "pdf_combiner",
-            dependencies: [],
+            dependencies: [
+                .product(name: "FlutterFramework", package: "FlutterFramework"),
+            ],
             resources: [
                 .process("PrivacyInfo.xcprivacy"),
             ]
