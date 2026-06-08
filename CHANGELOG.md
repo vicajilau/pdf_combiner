@@ -1,3 +1,13 @@
+## 6.0.5
+
+### iOS & macOS
+
+* Added missing `FlutterFramework` dependency to `Package.swift` for Swift Package Manager support.
+
+### Windows
+
+* Added `_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS` compile definition to suppress MSVC deprecation errors in standard library coroutine headers.
+
 ## 6.0.4
 
 ### General
