@@ -16,8 +16,8 @@ void main() {
       expect(
         () async => await PdfCombinerPlatform.instance.mergeMultiplePDFs(
           inputs: [
-            MergeInput.path('path/to/pdf1.pdf'),
-            MergeInput.path('path/to/pdf2.pdf'),
+            MergeInputPath('path/to/pdf1.pdf'),
+            MergeInputPath('path/to/pdf2.pdf'),
           ],
           outputPath: 'path/to/output.pdf',
         ),
@@ -29,8 +29,8 @@ void main() {
       expect(
         () async => await PdfCombinerPlatform.instance
             .createPDFFromMultipleImages(inputs: [
-          MergeInput.path('path/to/image1.png'),
-          MergeInput.path('path/to/image2.png'),
+          MergeInputPath('path/to/image1.png'),
+          MergeInputPath('path/to/image2.png'),
         ], outputPath: 'path/to/output.pdf'),
         throwsA(isA<UnimplementedError>()),
       );
@@ -39,7 +39,7 @@ void main() {
     test('createImageFromPDF throws UnimplementedError', () async {
       expect(
         () async => await PdfCombinerPlatform.instance.createImageFromPDF(
-          input: MergeInput.path('path/to/pdf.pdf'),
+          input: MergeInputPath('path/to/pdf.pdf'),
           outputPath: 'path/to/output/images',
         ),
         throwsA(isA<UnimplementedError>()),

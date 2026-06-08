@@ -20,7 +20,7 @@ void main() {
       });
       DocumentUtils.setTemporalFolderPath("./example/assets/temp");
       var result = await PdfCombiner.generatePDFFromDocuments(
-        inputs: [MergeInput.path("./example/assets/image_1.jpeg")],
+        inputs: [MergeInputPath("./example/assets/image_1.jpeg")],
         outputPath: "./example/assets/temp/document_0.pdf",
       );
       expect(result, "./example/assets/temp/document_0.pdf");

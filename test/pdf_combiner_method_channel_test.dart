@@ -34,8 +34,8 @@ void main() {
 
     final result = await platform.mergeMultiplePDFs(
       inputs: [
-        MergeInput.path('file1.pdf'),
-        MergeInput.path('file2.pdf'),
+        MergeInputPath('file1.pdf'),
+        MergeInputPath('file2.pdf'),
       ],
       outputPath: '/output/path',
     );
@@ -61,8 +61,8 @@ void main() {
 
     final result = await platform.createPDFFromMultipleImages(
       inputs: [
-        MergeInput.path('image1.jpg'),
-        MergeInput.path('image2.png'),
+        MergeInputPath('image1.jpg'),
+        MergeInputPath('image2.png'),
       ],
       outputPath: '/output/path',
     );
@@ -88,7 +88,7 @@ void main() {
     });
 
     final result = await platform.createImageFromPDF(
-      input: MergeInput.path('file.pdf'),
+      input: MergeInputPath('file.pdf'),
       outputPath: '/output/path',
       config: ImageFromPdfConfig(
           rescale: ImageScale(width: 400, height: 400), createOneImage: false),

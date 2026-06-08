@@ -17,6 +17,18 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
   @visibleForTesting
   final MethodChannel methodChannel = const MethodChannel('pdf_combiner');
 
+  String _requirePath(MergeInput input) {
+    final path = input.path;
+    if (path != null) {
+      return path;
+    }
+    throw ArgumentError.value(
+      input,
+      'input',
+      'MethodChannelPdfCombiner only accepts path-based inputs.',
+    );
+  }
+
   /// Merges multiple PDF files into a single PDF.
   ///
   /// This method sends a request to the native platform to merge the PDF files
@@ -34,7 +46,7 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
-    final inputPaths = inputs.map((input) => input.path).toList();
+    final inputPaths = inputs.map(_requirePath).toList();
     final result = await methodChannel.invokeMethod<String>(
       'mergeMultiplePDF',
       {'paths': inputPaths, 'outputDirPath': outputPath},
@@ -64,7 +76,7 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
-    final inputPaths = inputs.map((input) => input.path).toList();
+    final inputPaths = inputs.map(_requirePath).toList();
     final result = await methodChannel.invokeMethod<String>(
       'createPDFFromMultipleImage',
       {
@@ -103,7 +115,7 @@ class MethodChannelPdfCombiner extends PdfCombinerPlatform {
     final result = await methodChannel.invokeMethod<List<dynamic>>(
       'createImageFromPDF',
       {
-        'path': input.path,
+        'path': _requirePath(input),
         'outputDirPath': outputPath,
         'height': config.rescale.height,
         'width': config.rescale.width,

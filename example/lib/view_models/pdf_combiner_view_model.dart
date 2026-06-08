@@ -9,43 +9,56 @@ import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:platform_detail/platform_detail.dart';
 
+import '../models/input_source_type.dart';
+
 class PdfCombinerViewModel {
   List<MergeInput> selectedFiles = []; // List of selected files
   List<String> outputFiles = []; // Path for the combined output file
 
   /// Function to pick PDF files from the device (old method)
-  Future<void> pickFiles(MergeInputType fileType) async {
+  Future<void> pickFiles(InputSourceType fileType) async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png', 'heic'],
       allowMultiple: true, // Allow picking multiple files
-      withData: true,
+      withData: fileType == InputSourceType.bytes,
     );
     if (result == null) return;
+
+    _addPlatformFiles(result.files, fileType);
+  }
+
+  void _addPlatformFiles(List<PlatformFile> files, InputSourceType fileType) {
     switch (fileType) {
-      case MergeInputType.path:
-        selectedFiles +=
-            result.files.map((file) => MergeInput.path(file.path!)).toList();
+      case InputSourceType.path:
+        selectedFiles += files
+            .where((file) => file.path != null)
+            .map((file) => MergeInputPath(file.path!))
+            .toList();
         break;
-      case MergeInputType.bytes:
-        selectedFiles +=
-            result.files.map((file) => MergeInput.bytes(file.bytes!)).toList();
+      case InputSourceType.bytes:
+        selectedFiles += files
+            .where((file) => file.bytes != null)
+            .map((file) => MergeInputBytes(file.bytes!))
+            .toList();
         break;
     }
+
+    outputFiles = [];
   }
 
   /// Function to pick PDF files from the device
   Future<void> addFilesDragAndDrop(
-      MergeInputType fileType, List<DropItem> files) async {
+      InputSourceType fileType, List<DropItem> files) async {
     switch (fileType) {
-      case MergeInputType.path:
+      case InputSourceType.path:
         selectedFiles +=
-            files.map((file) => MergeInput.path(file.path)).toList();
+            files.map((file) => MergeInputPath(file.path)).toList();
         break;
-      case MergeInputType.bytes:
+      case InputSourceType.bytes:
         selectedFiles += await Future.wait(
           files.map(
-            (file) async => MergeInput.bytes(
+            (file) async => MergeInputBytes(
               await file.readAsBytes(),
             ),
           ),

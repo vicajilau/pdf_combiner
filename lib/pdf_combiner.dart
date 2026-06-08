@@ -1,15 +1,14 @@
 import 'dart:async';
 
-import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
-import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
-import 'package:pdf_combiner/models/merge_input.dart';
-import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
-import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
-import 'package:pdf_combiner/utils/document_utils.dart';
-
+import 'exception/pdf_combiner_exception.dart';
+import 'isolates/images_from_pdf_isolate.dart';
 import 'isolates/merge_pdfs_isolate.dart';
 import 'isolates/pdf_from_multiple_images_isolate.dart';
 import 'models/image_from_pdf_config.dart';
+import 'models/merge_input.dart';
+import 'models/pdf_from_multiple_image_config.dart';
+import 'responses/pdf_combiner_messages.dart';
+import 'utils/document_utils.dart';
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
 ///
@@ -69,7 +68,7 @@ class PdfCombiner {
         } else if (!isPDF && !isImage) {
           throw PdfCombinerException(
             PdfCombinerMessages.errorMessageMixed(
-              input.path ?? input.bytes.toString(),
+              input.sourceLabel,
             ),
           );
         }
@@ -80,7 +79,7 @@ class PdfCombiner {
           );
           temporalPaths.add(response);
 
-          mutablePaths[i] = MergeInput.path(response);
+          mutablePaths[i] = MergeInputPath(response);
         }
       }
       final response = await PdfCombiner.mergeMultiplePDFs(
@@ -123,7 +122,7 @@ class PdfCombiner {
 
         for (MergeInput input in inputs) {
           success = await DocumentUtils.isPDF(input);
-          path = input.path;
+          path = input.path ?? path;
         }
 
         final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
@@ -137,12 +136,8 @@ class PdfCombiner {
             inputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
-                switch (input.type) {
-                  case MergeInputType.bytes:
-                    temportalFilePaths.add(result);
-                    break;
-                  case MergeInputType.path:
-                    break;
+                if (input.requiresTemporaryResource) {
+                  temportalFilePaths.add(result);
                 }
                 return result;
               },
@@ -206,7 +201,7 @@ class PdfCombiner {
 
         while (i < inputs.length && success) {
           success = await DocumentUtils.isImage(inputs[i]);
-          path = inputs[i].path;
+          path = inputs[i].path ?? path;
           i++;
         }
 
@@ -218,12 +213,8 @@ class PdfCombiner {
             inputs.map(
               (input) async {
                 final result = await DocumentUtils.prepareInput(input);
-                switch (input.type) {
-                  case MergeInputType.bytes:
-                    temportalFilePaths.add(result);
-                    break;
-                  case MergeInputType.path:
-                    break;
+                if (input.requiresTemporaryResource) {
+                  temportalFilePaths.add(result);
                 }
                 return result;
               },
@@ -284,29 +275,13 @@ class PdfCombiner {
       bool success = await DocumentUtils.isPDF(input);
 
       if (!success) {
-        String inputTypeMessage;
-
-        switch (input.type) {
-          case MergeInputType.bytes:
-            inputTypeMessage = "File in bytes";
-            break;
-
-          case MergeInputType.path:
-            inputTypeMessage = input.path!;
-            break;
-        }
-
         throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(
-          inputTypeMessage,
+          input.sourceLabel,
         ));
       } else {
         final inputPath = await DocumentUtils.prepareInput(input);
-        switch (input.type) {
-          case MergeInputType.bytes:
-            temportalFilePath = inputPath;
-            break;
-          case MergeInputType.path:
-            break;
+        if (input.requiresTemporaryResource) {
+          temportalFilePath = inputPath;
         }
         final response = await ImagesFromPdfIsolate.createImageFromPDF(
           inputPath: inputPath,
