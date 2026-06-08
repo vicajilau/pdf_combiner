@@ -1,8 +1,18 @@
-## 6.0.5
+## 6.0.6
 
 ### General
 
 * Refactor `MergeInput` into explicit subclasses (removes support for URL-based inputs) and updates example, tests, and CI — PR-141: https://github.com/vicajilau/pdf_combiner/pull/141
+
+## 6.0.5
+
+### iOS & macOS
+
+* Added missing `FlutterFramework` dependency to `Package.swift` for Swift Package Manager support.
+
+### Windows
+
+* Added `_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS` compile definition to suppress MSVC deprecation errors in standard library coroutine headers.
 
 ## 6.0.4
 
