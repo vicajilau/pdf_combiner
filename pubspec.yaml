@@ -16,6 +16,7 @@ dependencies:
   plugin_platform_interface: ^2.1.8
   web: ^1.1.1
   file_magic_number: ^1.4.2
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
