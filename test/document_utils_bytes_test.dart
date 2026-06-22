@@ -8,6 +8,8 @@ import 'package:pdf_combiner/utils/document_utils.dart';
 
 void main() {
   group('DocumentUtils with bytes', () {
+    late String originalTempPath;
+
     final pdfBytes = Uint8List.fromList([
       0x25,
       0x50,
@@ -58,15 +60,23 @@ void main() {
       0x00,
     ]);
 
+    setUp(() {
+      originalTempPath = DocumentUtils.getTemporalFolderPath();
+    });
+
+    tearDown(() {
+      DocumentUtils.setTemporalFolderPath(originalTempPath);
+    });
+
     group('isPDF with bytes', () {
       test('returns true for PDF bytes', () async {
-        final input = MergeInput.bytes(pdfBytes);
+        final input = MergeInputBytes(pdfBytes);
         final result = await DocumentUtils.isPDF(input);
         expect(result, isTrue);
       });
 
       test('returns false for non-PDF bytes', () async {
-        final input = MergeInput.bytes(pngBytes);
+        final input = MergeInputBytes(pngBytes);
         final result = await DocumentUtils.isPDF(input);
         expect(result, isFalse);
       });
@@ -74,19 +84,19 @@ void main() {
 
     group('isImage with bytes', () {
       test('returns true for PNG bytes', () async {
-        final input = MergeInput.bytes(pngBytes);
+        final input = MergeInputBytes(pngBytes);
         final result = await DocumentUtils.isImage(input);
         expect(result, isTrue);
       });
 
       test('returns true for JPG bytes', () async {
-        final input = MergeInput.bytes(jpgBytes);
+        final input = MergeInputBytes(jpgBytes);
         final result = await DocumentUtils.isImage(input);
         expect(result, isTrue);
       });
 
       test('returns false for PDF bytes', () async {
-        final input = MergeInput.bytes(pdfBytes);
+        final input = MergeInputBytes(pdfBytes);
         final result = await DocumentUtils.isImage(input);
         expect(result, isFalse);
       });
@@ -94,7 +104,7 @@ void main() {
 
     group('prepareInput', () {
       test('returns path for path type input', () async {
-        final input = MergeInput.path('/some/path.pdf');
+        final input = MergeInputPath('/some/path.pdf');
         final result = await DocumentUtils.prepareInput(input);
         expect(result, '/some/path.pdf');
       });
@@ -103,10 +113,23 @@ void main() {
         final tempDir = await Directory.systemTemp.createTemp('prep_test_');
         DocumentUtils.setTemporalFolderPath(tempDir.path);
 
-        final input = MergeInput.bytes(pngBytes);
+        final input = MergeInputBytes(pngBytes);
         final result = await DocumentUtils.prepareInput(input);
 
         expect(result.startsWith(tempDir.path), isTrue);
+        expect(File(result).existsSync(), isTrue);
+
+        await tempDir.delete(recursive: true);
+      });
+
+      test('preserves pdf extension for PDF bytes input', () async {
+        final tempDir = await Directory.systemTemp.createTemp('prep_pdf_test_');
+        DocumentUtils.setTemporalFolderPath(tempDir.path);
+
+        final result =
+            await DocumentUtils.prepareInput(MergeInputBytes(pdfBytes));
+
+        expect(p.extension(result), '.pdf');
         expect(File(result).existsSync(), isTrue);
 
         await tempDir.delete(recursive: true);

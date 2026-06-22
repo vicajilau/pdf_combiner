@@ -71,7 +71,7 @@ void main() {
 
         expect(
           () => PdfCombiner.generatePDFFromDocuments(
-            inputs: [MergeInput.path(txtFile.path)],
+            inputs: [MergeInputPath(txtFile.path)],
             outputPath: '$tempPath/output.pdf',
           ),
           throwsA(
@@ -91,8 +91,8 @@ void main() {
 
         final result = await PdfCombiner.generatePDFFromDocuments(
           inputs: [
-            MergeInput.path('example/assets/image_1.jpeg'),
-            MergeInput.path('example/assets/document_1.pdf'),
+            MergeInputPath('example/assets/image_1.jpeg'),
+            MergeInputPath('example/assets/document_1.pdf'),
           ],
           outputPath: '$tempPath/output.pdf',
         );
@@ -108,7 +108,7 @@ void main() {
 
         expect(
           () => PdfCombiner.mergeMultiplePDFs(
-            inputs: [MergeInput.path(txtFile.path)],
+            inputs: [MergeInputPath(txtFile.path)],
             outputPath: '$tempPath/output.pdf',
           ),
           throwsA(
@@ -138,7 +138,7 @@ void main() {
         ]);
 
         final result = await PdfCombiner.mergeMultiplePDFs(
-          inputs: [MergeInput.bytes(pdfBytes)],
+          inputs: [MergeInputBytes(pdfBytes)],
           outputPath: '$tempPath/output.pdf',
         );
 
@@ -153,7 +153,7 @@ void main() {
 
         expect(
           () => PdfCombiner.createPDFFromMultipleImages(
-            inputs: [MergeInput.path(txtFile.path)],
+            inputs: [MergeInputPath(txtFile.path)],
             outputPath: '$tempPath/output.pdf',
           ),
           throwsA(
@@ -182,7 +182,7 @@ void main() {
         ]);
 
         final result = await PdfCombiner.createPDFFromMultipleImages(
-          inputs: [MergeInput.bytes(pngBytes)],
+          inputs: [MergeInputBytes(pngBytes)],
           outputPath: '$tempPath/output.pdf',
         );
 
@@ -197,7 +197,7 @@ void main() {
 
         expect(
           () => PdfCombiner.createImageFromPDF(
-            input: MergeInput.path(txtFile.path),
+            input: MergeInputPath(txtFile.path),
             outputDirPath: tempPath,
           ),
           throwsA(
@@ -216,7 +216,7 @@ void main() {
 
         expect(
           () => PdfCombiner.createImageFromPDF(
-            input: MergeInput.bytes(notPdfBytes),
+            input: MergeInputBytes(notPdfBytes),
             outputDirPath: tempPath,
           ),
           throwsA(
@@ -245,7 +245,7 @@ void main() {
         ]);
 
         final result = await PdfCombiner.createImageFromPDF(
-          input: MergeInput.bytes(pdfBytes),
+          input: MergeInputBytes(pdfBytes),
           outputDirPath: tempPath,
         );
 
@@ -270,7 +270,7 @@ void main() {
         ]);
 
         final result =
-            await DocumentUtils.prepareInput(MergeInput.bytes(pngBytes));
+            await DocumentUtils.prepareInput(MergeInputBytes(pngBytes));
 
         expect(result.startsWith(nonExistentPath), isTrue);
         expect(Directory(nonExistentPath).existsSync(), isTrue);

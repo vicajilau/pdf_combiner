@@ -6,6 +6,21 @@ import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:web/web.dart' as web;
 
+extension on MergeInput {
+  Future<Uint8List> readBytes() async {
+    switch (this) {
+      case MergeInputPath(:final path):
+        return Uint8List.fromList(
+          await FileMagicNumber.getBytesFromPathOrBlob(path),
+        );
+      case MergeInputBytes(:final bytes):
+        return bytes;
+      default:
+        throw UnsupportedError('Unsupported MergeInput subtype: $runtimeType');
+    }
+  }
+}
+
 /// Utility class for handling document-related checks in a web environment.
 ///
 /// This implementation is designed for web platforms where `dart:io` is not available.
@@ -37,15 +52,9 @@ class DocumentUtils {
 
   /// Determines whether the given file path/blob corresponds to a PDF file.
   static Future<bool> isPDF(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return await FileMagicNumber.detectFileTypeFromPathOrBlob(
-                input.path!) ==
-            FileMagicNumberType.pdf;
-      case MergeInputType.bytes:
-        return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
-            FileMagicNumberType.pdf;
-    }
+    final bytes = await input.readBytes();
+    return FileMagicNumber.detectFileTypeFromBytes(bytes) ==
+        FileMagicNumberType.pdf;
   }
 
   /// Checks if the given file path has a PDF extension.
@@ -54,16 +63,8 @@ class DocumentUtils {
 
   /// Determines whether the given file path/blob corresponds to an image file.
   static Future<bool> isImage(MergeInput input) async {
-    late FileMagicNumberType fileType;
-    switch (input.type) {
-      case MergeInputType.path:
-        fileType =
-            await FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!);
-        break;
-      case MergeInputType.bytes:
-        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
-        break;
-    }
+    final bytes = await input.readBytes();
+    final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
     return fileType == FileMagicNumberType.png ||
         fileType == FileMagicNumberType.jpg ||
         fileType == FileMagicNumberType.heic;
@@ -100,11 +101,13 @@ class DocumentUtils {
   /// - [MergeInput.path]: Returns the path as-is.
   /// - [MergeInput.bytes]: Creates a blob URL and returns it.
   static Future<String> prepareInput(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return input.path!;
-      case MergeInputType.bytes:
-        return createBlobUrl(input.bytes!);
+    switch (input) {
+      case MergeInputPath(:final path):
+        return path;
+      case MergeInputBytes(:final bytes):
+        return createBlobUrl(bytes);
+      default:
+        throw UnsupportedError('Unsupported MergeInput subtype: ${input.runtimeType}');
     }
   }
 }
