@@ -112,60 +112,26 @@ class PdfCombiner {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
-    final temportalFilePaths = <String>[];
     if (inputs.isEmpty) {
       throw PdfCombinerException(
           PdfCombinerMessages.emptyParameterMessage("inputPaths"));
     } else {
       try {
-        bool success = true;
-        String? path;
+        final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
+          inputs: inputs,
+          outputPath: outputPath,
+        );
 
-        for (MergeInput input in inputs) {
-          success = await DocumentUtils.isPDF(input);
-          path = input.path;
+        if (response != null &&
+            (response == outputPath || response.startsWith("blob:"))) {
+          return response;
         }
 
-        final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
-        if (!outputPathIsPDF) {
-          throw PdfCombinerException(
-              PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath));
-        } else if (!success) {
-          throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(path));
-        } else {
-          final inputPaths = await Future.wait(
-            inputs.map(
-              (input) async {
-                final result = await DocumentUtils.prepareInput(input);
-                switch (input.type) {
-                  case MergeInputType.bytes:
-                    temportalFilePaths.add(result);
-                    break;
-                  case MergeInputType.path:
-                    break;
-                }
-                return result;
-              },
-            ),
-          );
-          final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
-            inputPaths: inputPaths,
-            outputPath: outputPath,
-          );
-
-          if (response != null &&
-              (response == outputPath || response.startsWith("blob:"))) {
-            return response;
-          }
-
-          final exception = PdfCombinerException(
-              response ?? PdfCombinerMessages.errorMessage);
-          throw exception;
-        }
+        final exception = PdfCombinerException(
+            response ?? PdfCombinerMessages.errorMessage);
+        throw exception;
       } catch (e) {
         throw e is Exception ? e : PdfCombinerException(e.toString());
-      } finally {
-        DocumentUtils.removeTemporalFiles(temportalFilePaths);
       }
     }
   }

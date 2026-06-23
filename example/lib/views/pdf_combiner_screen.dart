@@ -272,8 +272,16 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   Future<void> _pickFiles() async {
     final fileType = await showFileTypeDialog(context);
     if (fileType == null) return;
-    await _viewModel.pickFiles(fileType);
-    setState(() {});
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      await _viewModel.pickFiles(fileType);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   // Function to pick PDF files from the device
@@ -287,6 +295,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     setState(() {
       _isLoading = true;
     });
+    // Ensure the loading indicator is rendered before starting the action
+    await Future.delayed(Duration.zero);
     try {
       await action();
       _showSnackbarSafely(
