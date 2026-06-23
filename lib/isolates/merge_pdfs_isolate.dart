@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
+import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
+import 'package:pdf_combiner/utils/document_utils.dart';
 
 import '../communication/pdf_combiner_platform_interface.dart';
 
@@ -22,17 +25,17 @@ class MergePdfsIsolate {
   ///
   /// Returns the path of the merged PDF, or `null` if an error occurs.
   static Future<String?> mergeMultiplePDFs({
-    required List<String> inputPaths,
+    required List<MergeInput> inputs,
     required String outputPath,
   }) async {
     if (PdfCombiner.isMock) {
       return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-        inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
+        inputs: inputs,
         outputPath: outputPath,
       );
     }
     return await compute(_combinePDFs, {
-      'inputPaths': inputPaths,
+      'inputs': inputs,
       'outputPath': outputPath,
       'token': kIsWeb ? null : RootIsolateToken.instance!,
     });
@@ -45,17 +48,54 @@ class MergePdfsIsolate {
   ///   - `outputPath`: The path where the merged PDF should be saved.
   ///   - `token`: The isolate token for Flutter's binary messenger or `null` for web.
   static Future<String?> _combinePDFs(Map<String, dynamic> params) async {
-    final List<String> inputPaths = params['inputPaths'];
+    final List<MergeInput> inputs = params['inputs'];
     final String outputPath = params['outputPath'];
     final RootIsolateToken? token = params['token'];
+    final temportalFilePaths = <String>[];
 
     if (token != null) {
       BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     }
 
-    return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-      inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
-      outputPath: outputPath,
-    );
+    try {
+      bool allPdfs = true;
+      String? firstInvalidPath;
+
+      for (MergeInput input in inputs) {
+        if (!(await DocumentUtils.isPDF(input))) {
+          allPdfs = false;
+          firstInvalidPath = input.path ?? "File in bytes";
+          break;
+        }
+      }
+
+      final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+      if (!outputPathIsPDF) {
+        return PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath);
+      } else if (!allPdfs) {
+        return PdfCombinerMessages.errorMessagePDF(firstInvalidPath!);
+      } else {
+        final inputPaths = await Future.wait(
+          inputs.map(
+            (input) async {
+              final result = await DocumentUtils.prepareInput(input);
+              if (input.type == MergeInputType.bytes) {
+                temportalFilePaths.add(result);
+              }
+              return result;
+            },
+          ),
+        );
+
+        return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
+          inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
+          outputPath: outputPath,
+        );
+      }
+    } catch (e) {
+      return e is PdfCombinerException ? e.message : e.toString();
+    } finally {
+      DocumentUtils.removeTemporalFiles(temportalFilePaths);
+    }
   }
 }
