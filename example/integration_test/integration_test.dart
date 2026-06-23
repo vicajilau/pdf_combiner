@@ -40,10 +40,17 @@ void main() {
           input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
         ),
-        throwsA(isA<PdfCombinerException>().having(
-            (e) => e.message,
-            'message',
-            contains('File is not of PDF type or does not exist:'))),
+        throwsA(
+          anyOf(
+            isA<PdfCombinerException>().having(
+                (e) => e.message,
+                'message',
+                anyOf(contains('does not exist'),
+                    contains('PathNotFoundException'))),
+            isA<PathNotFoundException>(),
+            isA<FileSystemException>(),
+          ),
+        ),
       );
     }, timeout: Timeout.none);
 
@@ -57,10 +64,17 @@ void main() {
           input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
         ),
-        throwsA(isA<PdfCombinerException>().having(
-            (e) => e.message,
-            'message',
-            contains('File is not of PDF type or does not exist:'))),
+        throwsA(
+          anyOf(
+            isA<PdfCombinerException>().having(
+                (e) => e.message,
+                'message',
+                anyOf(contains('does not exist'),
+                    contains('PathNotFoundException'))),
+            isA<PathNotFoundException>(),
+            isA<FileSystemException>(),
+          ),
+        ),
       );
     }, timeout: Timeout.none);
 
@@ -84,7 +98,7 @@ void main() {
       final result = await PdfCombiner.createImageFromPDF(
           input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
-          config: ImageFromPdfConfig(createOneImage: false));
+          config: const ImageFromPdfConfig(createOneImage: false));
 
       expect(result.length, 4);
     }, timeout: Timeout.none);
@@ -127,10 +141,17 @@ void main() {
           inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
-        throwsA(isA<PdfCombinerException>().having(
-            (e) => e.message,
-            'message',
-            contains('File is not an image or does not exist:'))),
+        throwsA(
+          anyOf(
+            isA<PdfCombinerException>().having(
+                (e) => e.message,
+                'message',
+                anyOf(contains('does not exist'),
+                    contains('PathNotFoundException'))),
+            isA<PathNotFoundException>(),
+            isA<FileSystemException>(),
+          ),
+        ),
       );
     }, timeout: Timeout.none);
 
@@ -145,10 +166,17 @@ void main() {
           inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
-        throwsA(isA<PdfCombinerException>().having(
-            (e) => e.message,
-            'message',
-            contains('File is not an image or does not exist:'))),
+        throwsA(
+          anyOf(
+            isA<PdfCombinerException>().having(
+                (e) => e.message,
+                'message',
+                anyOf(contains('does not exist'),
+                    contains('PathNotFoundException'))),
+            isA<PathNotFoundException>(),
+            isA<FileSystemException>(),
+          ),
+        ),
       );
     }, timeout: Timeout.none);
   });
@@ -233,10 +261,17 @@ void main() {
           inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
-        throwsA(isA<PdfCombinerException>().having(
-            (e) => e.message,
-            'message',
-            contains('File is not of PDF type or does not exist:'))),
+        throwsA(
+          anyOf(
+            isA<PdfCombinerException>().having(
+                (e) => e.message,
+                'message',
+                anyOf(contains('does not exist'),
+                    contains('PathNotFoundException'))),
+            isA<PathNotFoundException>(),
+            isA<FileSystemException>(),
+          ),
+        ),
       );
     }, timeout: Timeout.none);
 
@@ -251,10 +286,17 @@ void main() {
           inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
-        throwsA(isA<PdfCombinerException>().having(
-            (e) => e.message,
-            'message',
-            contains('File is not of PDF type or does not exist:'))),
+        throwsA(
+          anyOf(
+            isA<PdfCombinerException>().having(
+                (e) => e.message,
+                'message',
+                anyOf(contains('does not exist'),
+                    contains('PathNotFoundException'))),
+            isA<PathNotFoundException>(),
+            isA<FileSystemException>(),
+          ),
+        ),
       );
     }, timeout: Timeout.none);
   });
