@@ -19,7 +19,7 @@ class PdfCombinerViewModel {
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png', 'heic'],
       allowMultiple: true, // Allow picking multiple files
-      withData: true,
+      withData: fileType == MergeInputType.bytes,
     );
     if (result == null) return;
     switch (fileType) {
