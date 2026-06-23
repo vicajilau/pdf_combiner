@@ -30,7 +30,7 @@ class PdfCombinerPlugin : FlutterPlugin, MethodCallHandler {
                 val paths = call.argument<List<String>>("paths")
                 val outputDirPath = call.argument<String>("outputDirPath")
                 if (paths != null && outputDirPath != null) {
-                    MergeMultiplePDF(context, result).merge(context,paths, outputDirPath)
+                    MergeMultiplePDF(result).merge(context,paths, outputDirPath)
                 } else {
                     result.error("INVALID_ARGUMENTS", "paths or outputDirPath cannot be null", null)
                 }
@@ -65,7 +65,7 @@ class PdfCombinerPlugin : FlutterPlugin, MethodCallHandler {
                 val createOneImage = call.argument<Boolean>("createOneImage")
 
                 if (path != null && outputDirPath != null && compression != null && maxWidth != null && maxHeight != null && createOneImage != null) {
-                    CreateImageFromPDF(context, result).create(
+                    CreateImageFromPDF(result).create(
                         path, outputDirPath, ImageFromPdfConfig(
                             ImageScale(maxWidth, maxHeight),
                             CompressionLevel(compression), createOneImage
