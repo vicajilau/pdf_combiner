@@ -13,13 +13,11 @@ class PdfCombinerViewModel {
   List<MergeInput> selectedFiles = []; // List of selected files
   List<String> outputFiles = []; // Path for the combined output file
 
-  /// Function to pick PDF files from the device (old method)
+  /// Function to pick PDF files from the device
   Future<void> pickFiles(MergeInputType fileType) async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png', 'heic'],
-      allowMultiple: true, // Allow picking multiple files
-      withData: true,
     );
     if (result == null) return;
     switch (fileType) {
@@ -28,8 +26,10 @@ class PdfCombinerViewModel {
             result.files.map((file) => MergeInput.path(file.path!)).toList();
         break;
       case MergeInputType.bytes:
-        selectedFiles +=
-            result.files.map((file) => MergeInput.bytes(file.bytes!)).toList();
+        selectedFiles += await Future.wait(
+          result.files
+              .map((file) async => MergeInput.bytes(await file.readAsBytes())),
+        );
         break;
     }
   }

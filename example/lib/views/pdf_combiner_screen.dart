@@ -140,7 +140,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                           flex: calculateFlexInputFiles(),
                           child: ReorderableListView.builder(
                             itemCount: _viewModel.selectedFiles.length,
-                            onReorder: _onReorderFiles,
+                            onReorderItem: _onReorderFiles,
                             itemBuilder: (context, index) {
                               return Dismissible(
                                 key: ValueKey(_viewModel.selectedFiles[index]),
@@ -359,9 +359,6 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
 
   void _onReorderFiles(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
       final file = _viewModel.selectedFiles.removeAt(oldIndex);
       _viewModel.selectedFiles.insert(newIndex, file);
     });
