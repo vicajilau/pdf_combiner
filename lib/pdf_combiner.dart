@@ -58,44 +58,39 @@ class PdfCombiner {
       throw (PdfCombinerException(
           PdfCombinerMessages.emptyParameterMessage("outputPath")));
     } else {
-      try {
-        for (int i = 0; i < inputs.length; i++) {
-          final input = inputs[i];
-          final isPDF = await DocumentUtils.isPDF(input);
-          final isImage = await DocumentUtils.isImage(input);
-          final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
-          if (!outputPathIsPDF) {
-            throw (PdfCombinerException(
-                PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath)));
-          } else if (!isPDF && !isImage) {
-            throw PdfCombinerException(
-              PdfCombinerMessages.errorMessageMixed(
-                input.path ?? input.bytes.toString(),
-              ),
-            );
-          }
-          if (isImage) {
-            final response = await PdfCombiner.createPDFFromMultipleImages(
-              inputs: [input],
-              outputPath: '${DocumentUtils.getTemporalFolderPath()}/$i.pdf',
-            );
-            temporalPaths.add(response);
-
-            mutablePaths[i] = MergeInput.path(response);
-          }
+      for (int i = 0; i < inputs.length; i++) {
+        final input = inputs[i];
+        final isPDF = await DocumentUtils.isPDF(input);
+        final isImage = await DocumentUtils.isImage(input);
+        final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+        if (!outputPathIsPDF) {
+          throw (PdfCombinerException(
+              PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath)));
+        } else if (!isPDF && !isImage) {
+          throw PdfCombinerException(
+            PdfCombinerMessages.errorMessageMixed(
+              input.path ?? input.bytes.toString(),
+            ),
+          );
         }
-        final response = await PdfCombiner.mergeMultiplePDFs(
-          inputs: mutablePaths,
-          outputPath: outputPath,
-        );
+        if (isImage) {
+          final response = await PdfCombiner.createPDFFromMultipleImages(
+            inputs: [input],
+            outputPath: '${DocumentUtils.getTemporalFolderPath()}/$i.pdf',
+          );
+          temporalPaths.add(response);
 
-        DocumentUtils.removeTemporalFiles(temporalPaths);
-
-        return response;
-      } catch (e) {
-        DocumentUtils.removeTemporalFiles(temporalPaths);
-        throw e is PdfCombinerException ? e : PdfCombinerException(e.toString());
+          mutablePaths[i] = MergeInput.path(response);
+        }
       }
+      final response = await PdfCombiner.mergeMultiplePDFs(
+        inputs: mutablePaths,
+        outputPath: outputPath,
+      );
+
+      DocumentUtils.removeTemporalFiles(temporalPaths);
+
+      return response;
     }
   }
 
@@ -122,20 +117,37 @@ class PdfCombiner {
           PdfCombinerMessages.emptyParameterMessage("inputPaths"));
     } else {
       try {
-        final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
-          inputs: inputs,
-          outputPath: outputPath,
-        );
+        bool success = true;
+        String? path;
 
-        if (response != null &&
-            (response == outputPath || response.startsWith("blob:"))) {
-          return response;
+        for (MergeInput input in inputs) {
+          success = await DocumentUtils.isPDF(input);
+          path = input.path;
         }
 
-        throw PdfCombinerException(
-            response ?? PdfCombinerMessages.errorMessage);
+        final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+        if (!outputPathIsPDF) {
+          throw PdfCombinerException(
+              PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath));
+        } else if (!success) {
+          throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(path));
+        } else {
+          final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
+            inputs: inputs,
+            outputPath: outputPath,
+          );
+
+          if (response != null &&
+              (response == outputPath || response.startsWith("blob:"))) {
+            return response;
+          }
+
+          final exception = PdfCombinerException(
+              response ?? PdfCombinerMessages.errorMessage);
+          throw exception;
+        }
       } catch (e) {
-        throw e is PdfCombinerException ? e : PdfCombinerException(e.toString());
+        throw e is Exception ? e : PdfCombinerException(e.toString());
       }
     }
   }
@@ -214,7 +226,7 @@ class PdfCombiner {
           }
         }
       } catch (e) {
-        throw e is PdfCombinerException ? e : PdfCombinerException(e.toString());
+        throw e is Exception ? e : PdfCombinerException(e.toString());
       } finally {
         DocumentUtils.removeTemporalFiles(temportalFilePaths);
       }
@@ -296,7 +308,7 @@ class PdfCombiner {
         }
       }
     } catch (e) {
-      throw e is PdfCombinerException ? e : PdfCombinerException(e.toString());
+      throw e is Exception ? e : PdfCombinerException(e.toString());
     } finally {
       if (temportalFilePath != null) {
         DocumentUtils.removeTemporalFiles([temportalFilePath]);
