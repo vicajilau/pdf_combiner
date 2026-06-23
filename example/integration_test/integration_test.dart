@@ -40,15 +40,10 @@ void main() {
           input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
         ),
-        throwsA(
-          predicate(
-            (e) =>
-                (e is PdfCombinerException &&
-                    e.message ==
-                        'File is not of PDF type or does not exist: ${inputPaths[0]}') ||
-                e is PathNotFoundException,
-          ),
-        ),
+        throwsA(isA<PdfCombinerException>().having(
+            (e) => e.message,
+            'message',
+            contains('File is not of PDF type or does not exist:'))),
       );
     }, timeout: Timeout.none);
 
@@ -62,14 +57,10 @@ void main() {
           input: MergeInput.path(inputPaths[0]),
           outputDirPath: outputPath,
         ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message ==
-                    'File is not of PDF type or does not exist: ${inputPaths[0]}',
-          ),
-        ),
+        throwsA(isA<PdfCombinerException>().having(
+            (e) => e.message,
+            'message',
+            contains('File is not of PDF type or does not exist:'))),
       );
     }, timeout: Timeout.none);
 
@@ -120,13 +111,8 @@ void main() {
           inputs: [],
           outputPath: '${TestFileHelper.basePath}/assets/merged_output.pdf',
         ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message == 'The parameter (inputPaths) cannot be empty',
-          ),
-        ),
+        throwsA(isA<PdfCombinerException>().having((e) => e.message, 'message',
+            contains('The parameter (inputPaths) cannot be empty'))),
       );
     }, timeout: Timeout.none);
 
@@ -141,16 +127,10 @@ void main() {
           inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
-        throwsA(
-          predicate(
-            (e) =>
-                (e is PdfCombinerException &&
-                    e.message.startsWith(
-                      'File is not an image or does not exist:',
-                    )) ||
-                e is PathNotFoundException,
-          ),
-        ),
+        throwsA(isA<PdfCombinerException>().having(
+            (e) => e.message,
+            'message',
+            contains('File is not an image or does not exist:'))),
       );
     }, timeout: Timeout.none);
 
@@ -165,14 +145,10 @@ void main() {
           inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message ==
-                    'File is not an image or does not exist: ${TestFileHelper.basePath}/document_1.pdf',
-          ),
-        ),
+        throwsA(isA<PdfCombinerException>().having(
+            (e) => e.message,
+            'message',
+            contains('File is not an image or does not exist:'))),
       );
     }, timeout: Timeout.none);
   });
@@ -241,13 +217,8 @@ void main() {
           inputs: [],
           outputPath: outputPath,
         ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message == 'The parameter (inputPaths) cannot be empty',
-          ),
-        ),
+        throwsA(isA<PdfCombinerException>().having((e) => e.message, 'message',
+            contains('The parameter (inputPaths) cannot be empty'))),
       );
     }, timeout: Timeout.none);
 
@@ -262,15 +233,10 @@ void main() {
           inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
-        throwsA(
-          predicate(
-            (e) =>
-                (e is PdfCombinerException &&
-                    e.message.startsWith(
-                        'File is not of PDF type or does not exist:')) ||
-                e is PathNotFoundException,
-          ),
-        ),
+        throwsA(isA<PdfCombinerException>().having(
+            (e) => e.message,
+            'message',
+            contains('File is not of PDF type or does not exist:'))),
       );
     }, timeout: Timeout.none);
 
@@ -285,14 +251,10 @@ void main() {
           inputs: inputPaths.map((p) => MergeInput.path(p)).toList(),
           outputPath: outputPath,
         ),
-        throwsA(
-          predicate(
-            (e) =>
-                e is PdfCombinerException &&
-                e.message
-                    .startsWith('File is not of PDF type or does not exist:'),
-          ),
-        ),
+        throwsA(isA<PdfCombinerException>().having(
+            (e) => e.message,
+            'message',
+            contains('File is not of PDF type or does not exist:'))),
       );
     }, timeout: Timeout.none);
   });

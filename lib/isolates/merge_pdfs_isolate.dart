@@ -29,6 +29,9 @@ class MergePdfsIsolate {
     required String outputPath,
   }) async {
     if (PdfCombiner.isMock) {
+      final error = await _validate(inputs, outputPath);
+      if (error != null) return error;
+
       return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
         inputs: inputs,
         outputPath: outputPath,
@@ -39,6 +42,28 @@ class MergePdfsIsolate {
       'outputPath': outputPath,
       'token': kIsWeb ? null : RootIsolateToken.instance!,
     });
+  }
+
+  static Future<String?> _validate(
+      List<MergeInput> inputs, String outputPath) async {
+    bool allPdfs = true;
+    String? firstInvalidPath;
+
+    for (MergeInput input in inputs) {
+      if (!(await DocumentUtils.isPDF(input))) {
+        allPdfs = false;
+        firstInvalidPath = input.path ?? "File in bytes";
+        break;
+      }
+    }
+
+    final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
+    if (!outputPathIsPDF) {
+      return PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath);
+    } else if (!allPdfs) {
+      return PdfCombinerMessages.errorMessagePDF(firstInvalidPath!);
+    }
+    return null;
   }
 
   /// Background process that merges multiple PDFs.
@@ -58,40 +83,25 @@ class MergePdfsIsolate {
     }
 
     try {
-      bool allPdfs = true;
-      String? firstInvalidPath;
+      final error = await _validate(inputs, outputPath);
+      if (error != null) return error;
 
-      for (MergeInput input in inputs) {
-        if (!(await DocumentUtils.isPDF(input))) {
-          allPdfs = false;
-          firstInvalidPath = input.path ?? "File in bytes";
-          break;
-        }
-      }
+      final inputPaths = await Future.wait(
+        inputs.map(
+          (input) async {
+            final result = await DocumentUtils.prepareInput(input);
+            if (input.type == MergeInputType.bytes) {
+              temportalFilePaths.add(result);
+            }
+            return result;
+          },
+        ),
+      );
 
-      final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
-      if (!outputPathIsPDF) {
-        return PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath);
-      } else if (!allPdfs) {
-        return PdfCombinerMessages.errorMessagePDF(firstInvalidPath!);
-      } else {
-        final inputPaths = await Future.wait(
-          inputs.map(
-            (input) async {
-              final result = await DocumentUtils.prepareInput(input);
-              if (input.type == MergeInputType.bytes) {
-                temportalFilePaths.add(result);
-              }
-              return result;
-            },
-          ),
-        );
-
-        return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-          inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
-          outputPath: outputPath,
-        );
-      }
+      return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
+        inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
+        outputPath: outputPath,
+      );
     } catch (e) {
       return e is PdfCombinerException ? e.message : e.toString();
     } finally {
