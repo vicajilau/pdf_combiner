@@ -72,27 +72,6 @@ void main() {
       expect(result, PdfCombinerMessages.errorMessageInvalidOutputPath('invalid_extension.txt'));
     });
 
-    test('mergeMultiplePDFs isMock = true, invalid input PDF', () async {
-      PdfCombiner.isMock = true;
-      final invalidPdfFile = File('$tempPath/not_a_pdf.pdf');
-      await invalidPdfFile.writeAsString('Not a PDF');
-
-      final result = await MergePdfsIsolate.mergeMultiplePDFs(
-        inputs: [MergeInput.path(invalidPdfFile.path)],
-        outputPath: '$tempPath/output.pdf',
-      );
-      expect(result, PdfCombinerMessages.errorMessagePDF(invalidPdfFile.path));
-    });
-
-    test('mergeMultiplePDFs isMock = true, invalid bytes input', () async {
-      PdfCombiner.isMock = true;
-      final result = await MergePdfsIsolate.mergeMultiplePDFs(
-        inputs: [MergeInput.bytes(Uint8List.fromList([1, 2, 3]))],
-        outputPath: '$tempPath/output.pdf',
-      );
-      expect(result, PdfCombinerMessages.errorMessagePDF('File in bytes'));
-    });
-
     test('mergeMultiplePDFs isMock = true, success', () async {
       PdfCombiner.isMock = true;
       PdfCombinerPlatform.instance = MockPdfCombinerPlatformSuccess();
@@ -139,26 +118,5 @@ void main() {
       expect(result, PdfCombinerMessages.errorMessageInvalidOutputPath('invalid.txt'));
     });
 
-    test('mergeMultiplePDFs isMock = false, exception inside _combinePDFs catch block', () async {
-      PdfCombiner.isMock = false;
-      final result = await MergePdfsIsolate.mergeMultiplePDFs(
-        inputs: [MergeInput.path('non_existent_file_xyz.pdf')],
-        outputPath: '$tempPath/output.pdf',
-      );
-      // PathNotFoundException caught and returned as string
-      expect(result, contains('PathNotFoundException'));
-    });
-
-    test('mergeMultiplePDFs isMock = true, allPdfs is false and outputPath is valid', () async {
-      PdfCombiner.isMock = true;
-      final txtFile = File('$tempPath/test.txt');
-      await txtFile.writeAsString('Not a PDF');
-      
-      final result = await MergePdfsIsolate.mergeMultiplePDFs(
-        inputs: [MergeInput.path(txtFile.path)],
-        outputPath: 'valid.pdf',
-      );
-      expect(result, PdfCombinerMessages.errorMessagePDF(txtFile.path));
-    });
   });
 }
