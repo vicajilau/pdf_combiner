@@ -1,3 +1,9 @@
+## 6.0.6
+
+### Android
+
+* Migrate library to build in kotlin
+
 ## 6.0.5
 
 ### iOS & macOS
