@@ -6,14 +6,11 @@ import android.graphics.Paint
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.createBitmap
-
 
 class ImageFromPdfConfig(
     val rescale: ImageScale,
@@ -23,16 +20,17 @@ class ImageFromPdfConfig(
 
 class CreateImageFromPDF(private val result: MethodChannel.Result) {
 
-    private val scope = CoroutineScope(Dispatchers.Default)
 
-    fun create(
+    suspend fun create(
         inputPath: String, outputPath: String, config: ImageFromPdfConfig
     ) {
-        scope.launch {
             try {
-                withContext(Dispatchers.IO) {
+                withContext(Dispatchers.Default) {
                     val pdfImagesPath: MutableList<String> = mutableListOf()
-                    val fileDescriptor = ParcelFileDescriptor.open(File(inputPath), ParcelFileDescriptor.MODE_READ_ONLY)
+                    val fileDescriptor = ParcelFileDescriptor.open(
+                        File(inputPath),
+                        ParcelFileDescriptor.MODE_READ_ONLY
+                    )
                     val renderer = PdfRenderer(fileDescriptor)
                     val pdfImages: MutableList<Bitmap> = mutableListOf()
 
@@ -40,28 +38,49 @@ class CreateImageFromPDF(private val result: MethodChannel.Result) {
                         for (pageIndex in 0 until renderer.pageCount) {
                             val page = renderer.openPage(pageIndex)
                             val bitmap = createBitmap(page.width, page.height)
-                            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                            page.render(
+                                bitmap,
+                                null,
+                                null,
+                                PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
+                            )
                             val imageName = "image_${pageIndex + 1}.png"
-                            val outputFile = File(outputPath, imageName)
-                            
-                            FileOutputStream(outputFile).use { out ->
-                                bitmap.compress(Bitmap.CompressFormat.PNG, config.compression.value, out)
-                                pdfImages.add(bitmap)
-                                pdfImagesPath.add(outputFile.absolutePath)
+
+                            withContext(Dispatchers.IO) {
+                                val outputFile = File(outputPath, imageName)
+                                FileOutputStream(outputFile).use { out ->
+                                    bitmap.compress(
+                                        Bitmap.CompressFormat.PNG,
+                                        config.compression.value,
+                                        out
+                                    )
+                                    pdfImages.add(bitmap)
+                                    pdfImagesPath.add(outputFile.absolutePath)
+                                }
+                                page.close()
                             }
-                            page.close()
                         }
 
                         if (config.createOneImage) {
                             val filepath = File(outputPath, "image.png").absolutePath
-                            val mergedBitmap = mergeThemAll(pdfImages, config.rescale.maxWidth, config.rescale.maxHeight)
+                            val mergedBitmap = mergeThemAll(
+                                pdfImages,
+                                config.rescale.maxWidth,
+                                config.rescale.maxHeight
+                            )
                             if (mergedBitmap != null) {
-                                FileOutputStream(filepath).use { out ->
-                                    mergedBitmap.compress(Bitmap.CompressFormat.PNG, config.compression.value, out)
+                                withContext(Dispatchers.IO) {
+                                    FileOutputStream(filepath).use { out ->
+                                        mergedBitmap.compress(
+                                            Bitmap.CompressFormat.PNG,
+                                            config.compression.value,
+                                            out
+                                        )
+                                    }
+                                    pdfImagesPath.clear()
+                                    pdfImagesPath.add(filepath)
+                                    mergedBitmap.recycle()
                                 }
-                                pdfImagesPath.clear()
-                                pdfImagesPath.add(filepath)
-                                mergedBitmap.recycle()
                             }
                         }
                     } finally {
@@ -76,7 +95,6 @@ class CreateImageFromPDF(private val result: MethodChannel.Result) {
             } catch (e: Exception) {
                 result.error("IMAGE_CREATION_ERROR", e.message, null)
             }
-        }
     }
 
     private fun mergeThemAll(
