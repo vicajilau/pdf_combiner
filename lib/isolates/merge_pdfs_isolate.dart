@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
@@ -90,8 +89,6 @@ class MergePdfsIsolate {
         inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
         outputPath: outputPath,
       );
-    } catch (e) {
-      return e is PdfCombinerException ? e.message : e.toString();
     } finally {
       DocumentUtils.removeTemporalFiles(temportalFilePaths);
     }
