@@ -63,7 +63,7 @@ class MergePdfsIsolate {
     final List<MergeInput> inputs = params['inputs'];
     final String outputPath = params['outputPath'];
     final RootIsolateToken? token = params['token'];
-    final temportalFilePaths = <String>[];
+    final temporalFilePaths = <String>[];
 
     if (token != null) {
       BackgroundIsolateBinaryMessenger.ensureInitialized(token);
@@ -78,7 +78,7 @@ class MergePdfsIsolate {
           (input) async {
             final result = await DocumentUtils.prepareInput(input);
             if (input.type == MergeInputType.bytes) {
-              temportalFilePaths.add(result);
+              temporalFilePaths.add(result);
             }
             return result;
           },
@@ -90,7 +90,7 @@ class MergePdfsIsolate {
         outputPath: outputPath,
       );
     } finally {
-      DocumentUtils.removeTemporalFiles(temportalFilePaths);
+      DocumentUtils.removeTemporalFiles(temporalFilePaths);
     }
   }
 }
