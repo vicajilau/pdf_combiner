@@ -6,7 +6,9 @@ import android.graphics.Paint
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
@@ -20,13 +22,15 @@ class ImageFromPdfConfig(
 
 class CreateImageFromPDF(private val result: MethodChannel.Result) {
 
+    private val scope = CoroutineScope(Dispatchers.Main)
 
-    suspend fun create(
+    fun create(
         inputPath: String, outputPath: String, config: ImageFromPdfConfig
     ) {
+        scope.launch {
             try {
-                withContext(Dispatchers.Default) {
-                    val pdfImagesPath: MutableList<String> = mutableListOf()
+                val pdfImagesPath = withContext(Dispatchers.Default) {
+                    val pathsList: MutableList<String> = mutableListOf()
                     val fileDescriptor = ParcelFileDescriptor.open(
                         File(inputPath),
                         ParcelFileDescriptor.MODE_READ_ONLY
@@ -55,7 +59,7 @@ class CreateImageFromPDF(private val result: MethodChannel.Result) {
                                         out
                                     )
                                     pdfImages.add(bitmap)
-                                    pdfImagesPath.add(outputFile.absolutePath)
+                                    pathsList.add(outputFile.absolutePath)
                                 }
                                 page.close()
                             }
@@ -77,8 +81,8 @@ class CreateImageFromPDF(private val result: MethodChannel.Result) {
                                             out
                                         )
                                     }
-                                    pdfImagesPath.clear()
-                                    pdfImagesPath.add(filepath)
+                                    pathsList.clear()
+                                    pathsList.add(filepath)
                                     mergedBitmap.recycle()
                                 }
                             }
@@ -90,11 +94,13 @@ class CreateImageFromPDF(private val result: MethodChannel.Result) {
                             bitmap.recycle()
                         }
                     }
-                    result.success(pdfImagesPath)
+                    pathsList
                 }
+                result.success(pdfImagesPath)
             } catch (e: Exception) {
                 result.error("IMAGE_CREATION_ERROR", e.message, null)
             }
+        }
     }
 
     private fun mergeThemAll(

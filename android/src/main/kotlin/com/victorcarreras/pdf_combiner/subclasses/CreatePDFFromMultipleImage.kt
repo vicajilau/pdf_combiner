@@ -22,7 +22,7 @@ class PdfFromMultipleImageConfig(val rescale: ImageScale, val keepAspectRatio: B
 
 class CreatePDFFromMultipleImage(private val result: MethodChannel.Result) {
 
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     fun create(
         inputPaths: List<String>,
@@ -81,7 +81,7 @@ class CreatePDFFromMultipleImage(private val result: MethodChannel.Result) {
     ): Bitmap? {
         val originalBitmap = BitmapFactory.decodeFile(imagePath) ?: return null
 
-        return if (keepAspectRatio) {
+        val scaledBitmap = if (keepAspectRatio) {
             val aspectRatio = originalBitmap.width.toFloat() / originalBitmap.height.toFloat()
             val targetWidth: Int
             val targetHeight: Int
@@ -98,5 +98,9 @@ class CreatePDFFromMultipleImage(private val result: MethodChannel.Result) {
         } else {
             originalBitmap.scale(width, height)
         }
+        if (scaledBitmap != originalBitmap) {
+            originalBitmap.recycle()
+        }
+        return scaledBitmap
     }
 }

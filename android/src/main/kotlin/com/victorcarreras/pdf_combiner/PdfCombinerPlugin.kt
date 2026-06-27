@@ -8,7 +8,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import kotlinx.coroutines.runBlocking
+
 
 /** PdfCombinerPlugin */
 class PdfCombinerPlugin : FlutterPlugin, MethodCallHandler {
@@ -66,14 +66,12 @@ class PdfCombinerPlugin : FlutterPlugin, MethodCallHandler {
                 val createOneImage = call.argument<Boolean>("createOneImage")
 
                 if (path != null && outputDirPath != null && compression != null && maxWidth != null && maxHeight != null && createOneImage != null) {
-                    runBlocking {
-                        CreateImageFromPDF(result).create(
-                            path, outputDirPath, ImageFromPdfConfig(
-                                ImageScale(maxWidth, maxHeight),
-                                CompressionLevel(compression), createOneImage
-                            )
+                    CreateImageFromPDF(result).create(
+                        path, outputDirPath, ImageFromPdfConfig(
+                            ImageScale(maxWidth, maxHeight),
+                            CompressionLevel(compression), createOneImage
                         )
-                    }
+                    )
                 } else {
                     result.error(
                         "INVALID_ARGUMENTS",
