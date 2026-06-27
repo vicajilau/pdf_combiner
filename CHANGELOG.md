@@ -1,10 +1,10 @@
-## 6.0.6
+## 6.0.5
 
 ### Android
 
 * Migrate library to build in kotlin
-
-## 6.0.5
+* Refactored Kotlin implementation to use `CoroutineScope(Dispatchers.Main)` and execute background tasks safely on `Dispatchers.Default`, preventing blocking of the main UI thread.
+* Fixed a critical bitmap memory leak in the Android rescaling function by properly recycling the original bitmap resources.
 
 ### iOS & macOS
 
