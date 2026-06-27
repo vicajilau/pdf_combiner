@@ -63,21 +63,54 @@ void main() {
     test('mergeMultiplePDFs isMock = true, invalid outputPath', () async {
       PdfCombiner.isMock = true;
       final pdfFile = File('$tempPath/test.pdf');
-      await pdfFile.writeAsBytes([0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, 0x0A, 0x25, 0x25, 0x45, 0x4F, 0x46]);
+      await pdfFile.writeAsBytes([
+        0x25,
+        0x50,
+        0x44,
+        0x46,
+        0x2D,
+        0x31,
+        0x2E,
+        0x34,
+        0x0A,
+        0x25,
+        0x25,
+        0x45,
+        0x4F,
+        0x46
+      ]);
 
       final result = await MergePdfsIsolate.mergeMultiplePDFs(
         inputs: [MergeInput.path(pdfFile.path)],
         outputPath: 'invalid_extension.txt',
       );
-      expect(result, PdfCombinerMessages.errorMessageInvalidOutputPath('invalid_extension.txt'));
+      expect(
+          result,
+          PdfCombinerMessages.errorMessageInvalidOutputPath(
+              'invalid_extension.txt'));
     });
 
     test('mergeMultiplePDFs isMock = true, success', () async {
       PdfCombiner.isMock = true;
       PdfCombinerPlatform.instance = MockPdfCombinerPlatformSuccess();
-      
+
       final pdfFile = File('$tempPath/test.pdf');
-      await pdfFile.writeAsBytes([0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, 0x0A, 0x25, 0x25, 0x45, 0x4F, 0x46]);
+      await pdfFile.writeAsBytes([
+        0x25,
+        0x50,
+        0x44,
+        0x46,
+        0x2D,
+        0x31,
+        0x2E,
+        0x34,
+        0x0A,
+        0x25,
+        0x25,
+        0x45,
+        0x4F,
+        0x46
+      ]);
 
       final result = await MergePdfsIsolate.mergeMultiplePDFs(
         inputs: [MergeInput.path(pdfFile.path)],
@@ -86,9 +119,26 @@ void main() {
       expect(result, '$tempPath/output.pdf');
     });
 
-    test('mergeMultiplePDFs isMock = false, coverage of _combinePDFs via compute', () async {
+    test(
+        'mergeMultiplePDFs isMock = false, coverage of _combinePDFs via compute',
+        () async {
       PdfCombiner.isMock = false;
-      final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, 0x0A, 0x25, 0x25, 0x45, 0x4F, 0x46]);
+      final pdfBytes = Uint8List.fromList([
+        0x25,
+        0x50,
+        0x44,
+        0x46,
+        0x2D,
+        0x31,
+        0x2E,
+        0x34,
+        0x0A,
+        0x25,
+        0x25,
+        0x45,
+        0x4F,
+        0x46
+      ]);
       final pdfFile = File('$tempPath/test.pdf');
       await pdfFile.writeAsBytes(pdfBytes);
 
@@ -105,9 +155,26 @@ void main() {
       }
     });
 
-    test('mergeMultiplePDFs isMock = false, _validate returns error in _combinePDFs', () async {
+    test(
+        'mergeMultiplePDFs isMock = false, _validate returns error in _combinePDFs',
+        () async {
       PdfCombiner.isMock = false;
-      final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, 0x0A, 0x25, 0x25, 0x45, 0x4F, 0x46]);
+      final pdfBytes = Uint8List.fromList([
+        0x25,
+        0x50,
+        0x44,
+        0x46,
+        0x2D,
+        0x31,
+        0x2E,
+        0x34,
+        0x0A,
+        0x25,
+        0x25,
+        0x45,
+        0x4F,
+        0x46
+      ]);
       final pdfFile = File('$tempPath/test_valid.pdf');
       await pdfFile.writeAsBytes(pdfBytes);
 
@@ -115,8 +182,8 @@ void main() {
         inputs: [MergeInput.path(pdfFile.path)],
         outputPath: 'invalid.txt',
       );
-      expect(result, PdfCombinerMessages.errorMessageInvalidOutputPath('invalid.txt'));
+      expect(result,
+          PdfCombinerMessages.errorMessageInvalidOutputPath('invalid.txt'));
     });
-
   });
 }

@@ -45,7 +45,6 @@ class MergePdfsIsolate {
 
   static Future<String?> _validate(
       List<MergeInput> inputs, String outputPath) async {
-
     final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
     if (!outputPathIsPDF) {
       return PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath);
