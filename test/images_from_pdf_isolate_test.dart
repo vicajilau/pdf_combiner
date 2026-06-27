@@ -56,8 +56,8 @@ void main() {
       final result = await MergePdfsIsolate.mergeMultiplePDFs(
           inputs: [MergeInput.path('example/assets/document_1.pdf')],
           outputPath: 'output/');
-      expect(result,
-          PdfCombinerMessages.errorMessageInvalidOutputPath('output/'));
+      expect(
+          result, PdfCombinerMessages.errorMessageInvalidOutputPath('output/'));
     });
 
     test('PdfFromMultipleImagesIsolate', () async {
