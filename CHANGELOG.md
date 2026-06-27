@@ -1,4 +1,8 @@
-## 6.0.5
+## 6.1.0
+
+### General
+
+* Fixed an issue where some live images were not properly detected as images.
 
 ### Android
 

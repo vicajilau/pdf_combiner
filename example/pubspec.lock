@@ -205,10 +205,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_magic_number
-      sha256: cd0ec23eb2511206152baa87edb90b4862dc1690b1fbe5ebcf06654d3ee3112b
+      sha256: f37f1f7d8847ee79c7a4afa576605df9bfefb2bdccab352e262099bb2d1fb8dc
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.2"
+    version: "2.0.0"
   file_picker:
     dependency: "direct main"
     description:
@@ -411,10 +411,10 @@ packages:
     dependency: transitive
     description:
       name: mime
-      sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"
+      sha256: "801fd0b26f14a4a58ccb09d5892c3fbdeff209594300a542492cf13fba9d247a"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "1.0.6"
   node_preamble:
     dependency: transitive
     description:
