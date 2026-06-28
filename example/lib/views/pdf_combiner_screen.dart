@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,26 @@ class PdfCombinerScreen extends StatefulWidget {
 class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   final PdfCombinerViewModel _viewModel = PdfCombinerViewModel();
   bool _isLoading = false;
+
+  final Map<MergeInput, Future<Uint8List?>> _inputBytesCache = {};
+  final Map<String, Future<Uint8List?>> _outputBytesCache = {};
+
+  Future<Uint8List?> _getInputFileBytes(MergeInput input) {
+    return _inputBytesCache.putIfAbsent(input, () {
+      switch (input.type) {
+        case MergeInputType.bytes:
+          return Future.value(input.bytes);
+        case MergeInputType.path:
+          return FileMagicNumber.getBytesFromPathOrBlob(input.toString());
+      }
+    });
+  }
+
+  Future<Uint8List?> _getOutputFileBytes(String path) {
+    return _outputBytesCache.putIfAbsent(path, () {
+      return FileMagicNumber.getBytesFromPathOrBlob(path);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +123,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                     ),
                                     onTap: () => _openOutputFile(index),
                                     subtitle: FutureBuilder(
-                                        future: FileMagicNumber
-                                            .getBytesFromPathOrBlob(
-                                                _viewModel.outputFiles[index]),
+                                        future: _getOutputFileBytes(
+                                            _viewModel.outputFiles[index]),
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
@@ -149,6 +170,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                   final file = _viewModel.selectedFiles[index];
                                   setState(() {
                                     _viewModel.removeFileAt(index);
+                                    _inputBytesCache.remove(file);
                                   });
                                   _showSnackbarSafely(
                                       'File ${file.fileName(index + 1)} removed.');
@@ -179,16 +201,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
                                       await _openInputFile(index);
                                     },
                                     subtitle: FutureBuilder(
-                                        future: switch (_viewModel
-                                            .selectedFiles[index].type) {
-                                          MergeInputType.bytes => Future.value(
-                                              _viewModel
-                                                  .selectedFiles[index].bytes),
-                                          MergeInputType.path => FileMagicNumber
-                                              .getBytesFromPathOrBlob(_viewModel
-                                                  .selectedFiles[index]
-                                                  .toString()),
-                                        },
+                                        future: _getInputFileBytes(
+                                            _viewModel.selectedFiles[index]),
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
@@ -287,6 +301,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   // Function to pick PDF files from the device
   void _restart() {
     _viewModel.restart();
+    _inputBytesCache.clear();
+    _outputBytesCache.clear();
     setState(() {});
     _showSnackbarSafely('App restarted!');
   }
@@ -298,6 +314,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
     // Ensure the loading indicator is rendered before starting the action
     await Future.delayed(Duration.zero);
     try {
+      _outputBytesCache.clear();
       await action();
       _showSnackbarSafely(
         'File/s generated successfully: ${_viewModel.outputFiles}',
