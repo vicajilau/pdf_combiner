@@ -103,15 +103,17 @@ class DocumentUtils {
   /// **Returns:** `true` if the file is a valid PDF, `false` otherwise
   /// (including when an error occurs during detection)
   static Future<bool> isPDF(MergeInput input) async {
+    late FileMagicNumberType fileType;
     switch (input.type) {
       case MergeInputType.path:
-        return await FileMagicNumber.detectFileTypeFromPathOrBlob(
-                input.path!) ==
-            FileMagicNumberType.pdf;
+        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(input.path!);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
+        break;
       case MergeInputType.bytes:
-        return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
-            FileMagicNumberType.pdf;
+        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        break;
     }
+    return fileType == FileMagicNumberType.pdf;
   }
 
   /// Checks if the given file path has a PDF extension.
@@ -145,8 +147,8 @@ class DocumentUtils {
     late FileMagicNumberType fileType;
     switch (input.type) {
       case MergeInputType.path:
-        fileType =
-            await FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!);
+        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(input.path!);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
         break;
       case MergeInputType.bytes:
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
