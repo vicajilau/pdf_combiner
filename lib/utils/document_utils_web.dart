@@ -35,30 +35,30 @@ class DocumentUtils {
   /// implementation.
   static void setTemporalFolderPath(String path) => _temporalDir = path;
 
-  /// Determines whether the given file path/blob corresponds to a PDF file.
   static Future<bool> isPDF(MergeInput input) async {
+    late FileMagicNumberType fileType;
     switch (input.type) {
       case MergeInputType.path:
-        return await FileMagicNumber.detectFileTypeFromPathOrBlob(
-                input.path!) ==
-            FileMagicNumberType.pdf;
+        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(input.path!);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
+        break;
       case MergeInputType.bytes:
-        return FileMagicNumber.detectFileTypeFromBytes(input.bytes!) ==
-            FileMagicNumberType.pdf;
+        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        break;
     }
+    return fileType == FileMagicNumberType.pdf;
   }
 
   /// Checks if the given file path has a PDF extension.
   static bool hasPDFExtension(String filePath) =>
       p.extension(filePath).toLowerCase() == ".pdf";
 
-  /// Determines whether the given file path/blob corresponds to an image file.
   static Future<bool> isImage(MergeInput input) async {
     late FileMagicNumberType fileType;
     switch (input.type) {
       case MergeInputType.path:
-        fileType =
-            await FileMagicNumber.detectFileTypeFromPathOrBlob(input.path!);
+        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(input.path!);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
         break;
       case MergeInputType.bytes:
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
