@@ -1,9 +1,28 @@
 ## 6.1.1
 
+### General
+
+* Improved `DocumentUtils.prepareInput` to dynamically detect file formats (PDF, PNG, JPG, HEIC) using magic numbers for byte inputs instead of forcing `.png` extension.
+* Added unit tests to verify proper file extension creation for byte arrays in `prepareInput`.
+
+### Android
+
+* Fixed a crash (`IllegalArgumentException`) when extracting a PDF to a single combined image with original dimensions (0, 0).
+* Aligned image rescaling logic for individual page extraction with iOS (individual pages are now resized if a scale is configured).
+
 ### iOS & macOS
 
 * Fixed a critical crash (`EXC_BAD_ACCESS` in `CGPDFAdvancesGetHorizontalAdvance`) when merging multiple PDF files caused by premature deallocation of source `PDFDocument` objects. [#156](https://github.com/vicajilau/pdf_combiner/issues/156)
 * Simplified page creation helper using native `PDFPage(image:)` initialization.
+* Added `autoreleasepool` wrapping to PDF page rendering loops to prevent memory accumulation and potential out-of-memory crashes on large documents.
+
+### macOS
+
+* Fixed a bug where pages were vertically combined in reverse order (from last page to first page).
+
+### Web
+
+* Added script load safety checks before executing JS interop calls, resolving potential race condition crashes on early invocations.
 
 ## 6.1.0
 

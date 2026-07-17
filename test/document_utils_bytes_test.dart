@@ -99,15 +99,37 @@ void main() {
         expect(result, '/some/path.pdf');
       });
 
-      test('creates temp file for bytes type input', () async {
+      test('creates temp file for bytes type input and handles extensions properly', () async {
         final tempDir = await Directory.systemTemp.createTemp('prep_test_');
         DocumentUtils.setTemporalFolderPath(tempDir.path);
 
-        final input = MergeInput.bytes(pngBytes);
-        final result = await DocumentUtils.prepareInput(input);
+        // Test PNG bytes
+        final inputPng = MergeInput.bytes(pngBytes);
+        final resultPng = await DocumentUtils.prepareInput(inputPng);
+        expect(resultPng.startsWith(tempDir.path), isTrue);
+        expect(File(resultPng).existsSync(), isTrue);
+        expect(p.extension(resultPng), '.png');
 
-        expect(result.startsWith(tempDir.path), isTrue);
-        expect(File(result).existsSync(), isTrue);
+        // Test PDF bytes
+        final inputPdf = MergeInput.bytes(pdfBytes);
+        final resultPdf = await DocumentUtils.prepareInput(inputPdf);
+        expect(resultPdf.startsWith(tempDir.path), isTrue);
+        expect(File(resultPdf).existsSync(), isTrue);
+        expect(p.extension(resultPdf), '.pdf');
+
+        // Test JPG bytes
+        final inputJpg = MergeInput.bytes(jpgBytes);
+        final resultJpg = await DocumentUtils.prepareInput(inputJpg);
+        expect(resultJpg.startsWith(tempDir.path), isTrue);
+        expect(File(resultJpg).existsSync(), isTrue);
+        expect(p.extension(resultJpg), '.jpg');
+
+        // Test unknown bytes
+        final inputUnknown = MergeInput.bytes(Uint8List.fromList([1, 2, 3, 4]));
+        final resultUnknown = await DocumentUtils.prepareInput(inputUnknown);
+        expect(resultUnknown.startsWith(tempDir.path), isTrue);
+        expect(File(resultUnknown).existsSync(), isTrue);
+        expect(p.extension(resultUnknown), '.dat');
 
         await tempDir.delete(recursive: true);
       });

@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 class ImageFromPdfConfig(
     val rescale: ImageScale,
@@ -41,13 +42,22 @@ class CreateImageFromPDF(private val result: MethodChannel.Result) {
                     try {
                         for (pageIndex in 0 until renderer.pageCount) {
                             val page = renderer.openPage(pageIndex)
-                            val bitmap = createBitmap(page.width, page.height)
+                            var bitmap = createBitmap(page.width, page.height)
                             page.render(
                                 bitmap,
                                 null,
                                 null,
                                 PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
                             )
+                            val targetWidth = config.rescale.maxWidth
+                            val targetHeight = config.rescale.maxHeight
+                            if (targetWidth > 0 && targetHeight > 0) {
+                                val scaledBitmap = bitmap.scale(targetWidth, targetHeight)
+                                if (scaledBitmap != bitmap) {
+                                    bitmap.recycle()
+                                }
+                                bitmap = scaledBitmap
+                            }
                             val imageName = "image_${pageIndex + 1}.png"
 
                             withContext(Dispatchers.IO) {
@@ -108,15 +118,23 @@ class CreateImageFromPDF(private val result: MethodChannel.Result) {
     ): Bitmap? {
         if (orderImagesList.isEmpty()) return null
         
-        val result = createBitmap(maxWidth, maxHeight * orderImagesList.size, Bitmap.Config.RGB_565)
+        val targetWidth = if (maxWidth > 0) maxWidth else orderImagesList.maxOf { it.width }
+        val totalHeight = if (maxHeight > 0) {
+            maxHeight * orderImagesList.size
+        } else {
+            orderImagesList.sumOf { it.height }
+        }
+        
+        val result = createBitmap(targetWidth, totalHeight, Bitmap.Config.RGB_565)
         val canvas = Canvas(result)
         val paint = Paint()
         var chunkHeightCal = 0
         for (i in orderImagesList.indices) {
+            val bitmap = orderImagesList[i]
             canvas.drawBitmap(
-                orderImagesList[i], 0F, chunkHeightCal.toFloat(), paint
+                bitmap, 0F, chunkHeightCal.toFloat(), paint
             )
-            chunkHeightCal += maxHeight
+            chunkHeightCal += if (maxHeight > 0) maxHeight else bitmap.height
         }
         return result
     }
