@@ -14,8 +14,12 @@ Future<MergeInputType?> showFileTypeDialog(BuildContext context) async =>
             onPressed: () => Navigator.of(context).pop(MergeInputType.path),
           ),
           TextButton(
-            child: Text('Bytes'),
+            child: const Text('Bytes'),
             onPressed: () => Navigator.of(context).pop(MergeInputType.bytes),
+          ),
+          TextButton(
+            child: const Text('URL'),
+            onPressed: () => Navigator.of(context).pop(MergeInputType.url),
           ),
         ],
       ),

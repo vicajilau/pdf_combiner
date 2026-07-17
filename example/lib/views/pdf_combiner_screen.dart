@@ -286,10 +286,21 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   int calculateFlexOutputFiles() =>
       _viewModel.outputFiles.length <= _viewModel.selectedFiles.length ? 1 : 2;
 
-  // Function to pick PDF files from the device
+  // Function to pick PDF files or input URL
   Future<void> _pickFiles() async {
     final fileType = await showFileTypeDialog(context);
     if (fileType == null) return;
+    if (!mounted) return;
+
+    if (fileType == MergeInputType.url) {
+      final url = await _showUrlInputDialog(context);
+      if (url == null || url.trim().isEmpty) return;
+      setState(() {
+        _viewModel.selectedFiles.add(MergeInput.url(url.trim()));
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -300,6 +311,35 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<String?> _showUrlInputDialog(BuildContext context) {
+    final controller = TextEditingController(
+        text:
+            'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf');
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Document URL'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'https://example.com/document.pdf',
+          ),
+          keyboardType: TextInputType.url,
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: const Text('Add'),
+            onPressed: () => Navigator.of(context).pop(controller.text),
+          ),
+        ],
+      ),
+    );
   }
 
   // Function to pick PDF files from the device
