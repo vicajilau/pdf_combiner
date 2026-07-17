@@ -123,19 +123,16 @@ class DocumentUtils {
   /// **Returns:** `true` if the file is a valid PDF, `false` otherwise
   /// (including when an error occurs during detection)
   static Future<bool> isPDF(MergeInput input) async {
-    late FileMagicNumberType fileType;
-    switch (input.type) {
-      case MergeInputType.path:
-        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(input.path!);
+    final FileMagicNumberType fileType;
+    switch (input) {
+      case PathMergeInput(:final path):
+        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(path);
         fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        break;
-      case MergeInputType.bytes:
-        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
-        break;
-      case MergeInputType.url:
-        final bytes = await getUrlBytes(input.url!);
+      case BytesMergeInput(:final bytes):
         fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        break;
+      case UrlMergeInput(:final url):
+        final bytes = await getUrlBytes(url);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
     }
     return fileType == FileMagicNumberType.pdf;
   }
@@ -170,19 +167,16 @@ class DocumentUtils {
   /// **Returns:** `true` if the file is a PNG or JPEG image, `false` otherwise
   /// (including when an error occurs during detection)
   static Future<bool> isImage(MergeInput input) async {
-    late FileMagicNumberType fileType;
-    switch (input.type) {
-      case MergeInputType.path:
-        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(input.path!);
+    final FileMagicNumberType fileType;
+    switch (input) {
+      case PathMergeInput(:final path):
+        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(path);
         fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        break;
-      case MergeInputType.bytes:
-        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
-        break;
-      case MergeInputType.url:
-        final bytes = await getUrlBytes(input.url!);
+      case BytesMergeInput(:final bytes):
         fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        break;
+      case UrlMergeInput(:final url):
+        final bytes = await getUrlBytes(url);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
     }
     return fileType == FileMagicNumberType.png ||
         fileType == FileMagicNumberType.jpg ||
@@ -199,53 +193,53 @@ class DocumentUtils {
   ///
   /// **Returns:** The path to the prepared input file
   static Future<String> prepareInput(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return input.path!;
-      case MergeInputType.bytes:
-      case MergeInputType.url:
-        final Uint8List bytes;
-        if (input.type == MergeInputType.bytes) {
-          bytes = input.bytes!;
-        } else {
-          bytes = await getUrlBytes(input.url!);
-        }
-        final tempDirPath = getTemporalFolderPath();
-        final tempDir = Directory(tempDirPath);
-        if (!await tempDir.exists()) {
-          await tempDir.create(recursive: true);
-        }
-        final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        String ext;
-        String prefix;
-        switch (fileType) {
-          case FileMagicNumberType.pdf:
-            ext = '.pdf';
-            prefix = 'pdf_input';
-            break;
-          case FileMagicNumberType.png:
-            ext = '.png';
-            prefix = 'image_input';
-            break;
-          case FileMagicNumberType.jpg:
-            ext = '.jpg';
-            prefix = 'image_input';
-            break;
-          case FileMagicNumberType.heic:
-            ext = '.heic';
-            prefix = 'image_input';
-            break;
-          default:
-            ext = '.dat';
-            prefix = 'input';
-        }
-
-        final fileName =
-            '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}$ext';
-        final tempPath = p.join(tempDirPath, fileName);
-        final file = File(tempPath);
-        await file.writeAsBytes(bytes);
-        return tempPath;
+    switch (input) {
+      case PathMergeInput(:final path):
+        return path;
+      case BytesMergeInput(:final bytes):
+        return await _writeBytesToTempFile(bytes);
+      case UrlMergeInput(:final url):
+        final bytes = await getUrlBytes(url);
+        return await _writeBytesToTempFile(bytes);
     }
+  }
+
+  static Future<String> _writeBytesToTempFile(Uint8List bytes) async {
+    final tempDirPath = getTemporalFolderPath();
+    final tempDir = Directory(tempDirPath);
+    if (!await tempDir.exists()) {
+      await tempDir.create(recursive: true);
+    }
+    final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
+    String ext;
+    String prefix;
+    switch (fileType) {
+      case FileMagicNumberType.pdf:
+        ext = '.pdf';
+        prefix = 'pdf_input';
+        break;
+      case FileMagicNumberType.png:
+        ext = '.png';
+        prefix = 'image_input';
+        break;
+      case FileMagicNumberType.jpg:
+        ext = '.jpg';
+        prefix = 'image_input';
+        break;
+      case FileMagicNumberType.heic:
+        ext = '.heic';
+        prefix = 'image_input';
+        break;
+      default:
+        ext = '.dat';
+        prefix = 'input';
+    }
+
+    final fileName =
+        '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}$ext';
+    final tempPath = p.join(tempDirPath, fileName);
+    final file = File(tempPath);
+    await file.writeAsBytes(bytes);
+    return tempPath;
   }
 }
