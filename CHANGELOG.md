@@ -1,3 +1,10 @@
+## 6.1.1
+
+### iOS & macOS
+
+* Fixed a critical crash (`EXC_BAD_ACCESS` in `CGPDFAdvancesGetHorizontalAdvance`) when merging multiple PDF files caused by premature deallocation of source `PDFDocument` objects. [#156](https://github.com/vicajilau/pdf_combiner/issues/156)
+* Simplified page creation helper using native `PDFPage(image:)` initialization.
+
 ## 6.1.0
 
 ### General

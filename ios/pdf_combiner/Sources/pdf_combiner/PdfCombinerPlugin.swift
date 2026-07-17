@@ -76,9 +76,11 @@ private extension PdfCombinerPlugin {
         }
         let mergedPDF = PDFDocument()
         var pageIndex = 0
+        var sourceDocuments: [PDFDocument] = []
         
         for path in paths {
             guard let pdfDocument = PDFDocument(url: URL(fileURLWithPath: path)) else { continue }
+            sourceDocuments.append(pdfDocument)
 
             for index in 0..<pdfDocument.pageCount {
                 guard let page = pdfDocument.page(at: index) else { continue }
@@ -267,27 +269,8 @@ private extension PdfCombinerPlugin {
     }
     
     func createNewPage(with image: UIImage) -> PDFPage? {
-           let pdfData = NSMutableData()
-           var mediaBox = CGRect(origin: .zero, size: image.size)
-           guard let consumer = CGDataConsumer(data: pdfData as CFMutableData),
-                 let context = CGContext(consumer: consumer, mediaBox: &mediaBox, nil) else {
-               return nil
-           }
-              
-           context.beginPDFPage(nil)
-              
-           let cgImage = image.cgImage
-           context.draw(cgImage!, in: mediaBox)
-              
-           context.endPDFPage()
-           context.closePDF()
-              
-           if let document = PDFDocument(data: pdfData as Data),
-               let page = document.page(at: 0) {
-               return page
-           }
-           return nil
-       }
+        return PDFPage(image: image)
+    }
 }
 
 extension UIDevice {
