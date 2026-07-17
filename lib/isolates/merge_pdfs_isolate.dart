@@ -76,7 +76,7 @@ class MergePdfsIsolate {
         inputs.map(
           (input) async {
             final result = await DocumentUtils.prepareInput(input);
-            if (input.type == MergeInputType.bytes) {
+            if (input.type == MergeInputType.bytes || input.type == MergeInputType.url) {
               temporalFilePaths.add(result);
             }
             return result;

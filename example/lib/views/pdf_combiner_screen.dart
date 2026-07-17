@@ -20,6 +20,8 @@ extension on MergeInput {
         return p.basename(path ?? '');
       case MergeInputType.bytes:
         return 'File in bytes $index';
+      case MergeInputType.url:
+        return 'File from URL $index';
     }
   }
 }
@@ -45,10 +47,11 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           return Future.value(input.bytes);
         case MergeInputType.path:
           return FileMagicNumber.getBytesFromPathOrBlob(input.toString());
+        case MergeInputType.url:
+          return Future.value(null);
       }
     });
   }
-
   Future<Uint8List?> _getOutputFileBytes(String path) {
     return _outputBytesCache.putIfAbsent(path, () {
       return FileMagicNumber.getBytesFromPathOrBlob(path);
@@ -379,6 +382,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           }
           return;
         case MergeInputType.bytes:
+        case MergeInputType.url:
           return;
       }
     }

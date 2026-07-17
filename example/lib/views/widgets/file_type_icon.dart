@@ -38,6 +38,7 @@ class _FileTypeIconState extends State<FileTypeIcon> {
           FileMagicNumber.detectFileTypeFromBytes(widget.input.bytes!)),
       MergeInputType.path =>
         FileMagicNumber.detectFileTypeFromPathOrBlob(widget.input.path!),
+      MergeInputType.url => Future.value(FileMagicNumberType.unknown),
     };
   }
 
@@ -49,6 +50,7 @@ class _FileTypeIconState extends State<FileTypeIcon> {
           case MergeInputType.path:
             OpenFile.open(widget.input.path!);
           case MergeInputType.bytes:
+          case MergeInputType.url:
             null;
         }
       },

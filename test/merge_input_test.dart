@@ -21,7 +21,19 @@ void main() {
       expect(input.type, MergeInputType.bytes);
       expect(input.bytes, bytes);
       expect(input.path, isNull);
+      expect(input.url, isNull);
       expect(input.type == MergeInputType.bytes, isTrue);
+    });
+
+    test('url constructor creates MergeInput with url type', () {
+      final url = 'https://example.com/file.pdf';
+      final input = MergeInput.url(url);
+
+      expect(input.type, MergeInputType.url);
+      expect(input.url, url);
+      expect(input.path, isNull);
+      expect(input.bytes, isNull);
+      expect(input.type == MergeInputType.url, isTrue);
     });
 
     test('toString returns path for path type', () {
@@ -35,6 +47,13 @@ void main() {
       final input = MergeInput.bytes(bytes);
 
       expect(input.toString(), bytes.toString());
+    });
+
+    test('toString returns url string for url type', () {
+      final url = 'https://example.com/file.pdf';
+      final input = MergeInput.url(url);
+
+      expect(input.toString(), url);
     });
   });
 }
