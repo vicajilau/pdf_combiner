@@ -157,54 +157,56 @@ private extension PdfCombinerPlugin {
         let group = DispatchGroup()
 
         for pageNumber in 0..<pdfDocument.pageCount {
-            group.enter()
-            guard let pdfPage = pdfDocument.page(at: pageNumber) else {
-                group.leave(); continue
-            }
-            
-            let pageRect = pdfPage.bounds(for: .mediaBox)
-            let renderSize = pageRect.size
-
-            let image = NSImage(size: renderSize)
-            image.lockFocus()
-            
-            guard let context = NSGraphicsContext.current?.cgContext else {
-                image.unlockFocus()
-                group.leave()
-                continue
-            }
-            
-            context.saveGState()
-            // context.translateBy(x: 0, y: renderSize.height)
-            // context.scaleBy(x: 1, y: -1)
-            context.setFillColor(NSColor.white.cgColor)
-            context.fill(CGRect(origin: .zero,
-                                size: CGSize(width: renderSize.width, height: renderSize.height)))
-            pdfPage.draw(with: .mediaBox, to: context)
-            context.restoreGState()
-            image.unlockFocus()
-            
-            var resizedImage = image
-            if width > 0 && height > 0 {
-                resizedImage = image.resize(width: width, height: height)
-            }
-            
-            if !createOneImage {
-                if let finalPath = createFileName(path: outputDirPath, with: pageNumber) {
-                    do {
-                        try resizedImage.save(to: finalPath, quality: compressionQuality)
-                        pdfImagesPath.append(finalPath.relativePath)
-                    } catch {}
+            autoreleasepool {
+                group.enter()
+                guard let pdfPage = pdfDocument.page(at: pageNumber) else {
+                    group.leave(); return
                 }
-            } else {
-                imagePages.append(.init(page: pageNumber, image: resizedImage))
+                
+                let pageRect = pdfPage.bounds(for: .mediaBox)
+                let renderSize = pageRect.size
+
+                let image = NSImage(size: renderSize)
+                image.lockFocus()
+                
+                guard let context = NSGraphicsContext.current?.cgContext else {
+                    image.unlockFocus()
+                    group.leave()
+                    return
+                }
+                
+                context.saveGState()
+                // context.translateBy(x: 0, y: renderSize.height)
+                // context.scaleBy(x: 1, y: -1)
+                context.setFillColor(NSColor.white.cgColor)
+                context.fill(CGRect(origin: .zero,
+                                    size: CGSize(width: renderSize.width, height: renderSize.height)))
+                pdfPage.draw(with: .mediaBox, to: context)
+                context.restoreGState()
+                image.unlockFocus()
+                
+                var resizedImage = image
+                if width > 0 && height > 0 {
+                    resizedImage = image.resize(width: width, height: height)
+                }
+                
+                if !createOneImage {
+                    if let finalPath = createFileName(path: outputDirPath, with: pageNumber) {
+                        do {
+                            try resizedImage.save(to: finalPath, quality: compressionQuality)
+                            pdfImagesPath.append(finalPath.relativePath)
+                        } catch {}
+                    }
+                } else {
+                    imagePages.append(.init(page: pageNumber, image: resizedImage))
+                }
+                group.leave()
             }
-            group.leave()
         }
 
         group.notify(queue: .global()) { [weak self] in
             if createOneImage {
-                let images = imagePages.sorted { $0.page > $1.page }.map(\.self.image)
+                let images = imagePages.sorted { $0.page < $1.page }.map(\.self.image)
                 guard let imageMerged = NSImage.mergeVertically(images: images) else {
                     completionHandler(.failure(PDFCombinerErrors.generatePDFFailed)); return
                 }

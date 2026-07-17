@@ -6,25 +6,6 @@ import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
-extension on MergeInputType {
-  String extension() {
-    switch (this) {
-      case MergeInputType.path:
-        return '.pdf';
-      case MergeInputType.bytes:
-        return '.png';
-    }
-  }
-
-  String filenamePrefix() {
-    switch (this) {
-      case MergeInputType.path:
-        return 'pdf_input';
-      case MergeInputType.bytes:
-        return 'image_input';
-    }
-  }
-}
 
 /// Utility class for handling document-related checks in a file system environment.
 ///
@@ -178,8 +159,35 @@ class DocumentUtils {
         if (!await tempDir.exists()) {
           await tempDir.create(recursive: true);
         }
+        
+        final fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        String ext;
+        String prefix;
+        
+        switch (fileType) {
+          case FileMagicNumberType.pdf:
+            ext = '.pdf';
+            prefix = 'pdf_input';
+            break;
+          case FileMagicNumberType.png:
+            ext = '.png';
+            prefix = 'image_input';
+            break;
+          case FileMagicNumberType.jpg:
+            ext = '.jpg';
+            prefix = 'image_input';
+            break;
+          case FileMagicNumberType.heic:
+            ext = '.heic';
+            prefix = 'image_input';
+            break;
+          default:
+            ext = '.dat';
+            prefix = 'input';
+        }
+
         final fileName =
-            '${input.type.filenamePrefix()}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}${input.type.extension()}';
+            '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}$ext';
         final tempPath = p.join(tempDirPath, fileName);
         final file = File(tempPath);
         await file.writeAsBytes(input.bytes!);

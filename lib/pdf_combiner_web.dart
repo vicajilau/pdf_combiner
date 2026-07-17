@@ -18,42 +18,65 @@ import 'utils/document_utils.dart';
 class PdfCombinerWeb extends PdfCombinerPlatform {
   PdfCombinerWeb();
 
+  static Future<void>? _scriptsLoadFuture;
+
   /// Registers the PdfCombinerWeb instance as the platform implementation.
   /// This method is called by the Flutter framework to link the platform interface
   /// with the web implementation.
   static void registerWith(Registrar registrar) {
-    _loadJsScripts();
+    _ensureScriptsLoaded().catchError((Object _) {
+      // Ignore failures during initial load to prevent crashes on startup,
+      // but they will trigger during function invocations.
+    });
     PdfCombinerPlatform.instance = PdfCombinerWeb();
   }
 
-  static void _loadJsScripts() {
-    final pdfMinScript = document.createElement('script');
-    final pdfWorkerScript = document.createElement('script');
-    final pdfLibScript = document.createElement('script');
-    final pdfCombinerScript = document.createElement('script');
-    final pdfHeicScript = document.createElement('script');
+  static Future<void> _ensureScriptsLoaded() {
+    if (_scriptsLoadFuture != null) {
+      return _scriptsLoadFuture!;
+    }
 
-    pdfMinScript.setAttribute('src',
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
-    pdfMinScript.setAttribute('type', 'text/javascript');
-    pdfWorkerScript.setAttribute('src',
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
-    pdfWorkerScript.setAttribute('type', 'text/javascript');
-    pdfLibScript.setAttribute('src',
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
-    pdfLibScript.setAttribute('type', 'text/javascript');
-    pdfHeicScript.setAttribute(
-        'src', 'https://unpkg.com/heic2any/dist/heic2any.min.js');
-    pdfHeicScript.setAttribute('type', 'text/javascript');
-    pdfCombinerScript.setAttribute('src',
-        'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js');
-    pdfCombinerScript.setAttribute('type', 'text/javascript');
+    final completer = Completer<void>();
+    _scriptsLoadFuture = completer.future;
 
-    document.head?.appendChild(pdfMinScript);
-    document.head?.appendChild(pdfWorkerScript);
-    document.head?.appendChild(pdfLibScript);
-    document.head?.appendChild(pdfHeicScript);
-    document.head?.appendChild(pdfCombinerScript);
+    final scripts = [
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
+      'https://unpkg.com/heic2any/dist/heic2any.min.js',
+      'assets/packages/pdf_combiner/lib/web/assets/js/pdf_combiner.js'
+    ];
+
+    int loadedCount = 0;
+
+    void checkDone() {
+      loadedCount++;
+      if (loadedCount == scripts.length) {
+        if (!completer.isCompleted) completer.complete();
+      }
+    }
+
+    for (final src in scripts) {
+      final script = document.createElement('script') as HTMLScriptElement;
+      script.src = src;
+      script.type = 'text/javascript';
+
+      script.onload = (() {
+        checkDone();
+      }).toJS;
+
+      script.onerror = ((Event _) {
+        if (!completer.isCompleted) {
+          completer.completeError(
+            Exception('Failed to load dependency script: $src'),
+          );
+        }
+      }).toJS;
+
+      document.head?.appendChild(script);
+    }
+
+    return _scriptsLoadFuture!;
   }
 
   /// Merges multiple PDF files into a single PDF.
@@ -73,6 +96,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     required List<MergeInput> inputs,
     required String outputPath,
   }) async {
+    await _ensureScriptsLoaded();
     final inputPaths = await Future.wait(inputs.map(
         (MergeInput input) async => await DocumentUtils.prepareInput(input)));
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
@@ -103,6 +127,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     required String outputPath,
     PdfFromMultipleImageConfig config = const PdfFromMultipleImageConfig(),
   }) async {
+    await _ensureScriptsLoaded();
     final inputPaths = await Future.wait(inputs.map(
         (MergeInput input) async => await DocumentUtils.prepareInput(input)));
     final JSArray<JSString> jsInputPaths = inputPaths.toJSArray();
@@ -134,6 +159,7 @@ class PdfCombinerWeb extends PdfCombinerPlatform {
     required String outputPath,
     ImageFromPdfConfig config = const ImageFromPdfConfig(),
   }) async {
+    await _ensureScriptsLoaded();
     final String inputPath = await DocumentUtils.prepareInput(input);
     final JSString jsInputPath = inputPath.toJS;
     final JSArray<JSString> result = config.createOneImage

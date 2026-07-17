@@ -156,43 +156,45 @@ private extension PdfCombinerPlugin {
         let group = DispatchGroup()
 
         for pageNumber in 0..<pdfDocument.pageCount {
-            group.enter()
-            guard let pdfPage = pdfDocument.page(at: pageNumber) else {
-                group.leave(); continue
-            }
-            
-            let mediaBoxRect = pdfPage.bounds(for: .mediaBox)
-            let renderSize = mediaBoxRect.size
-            
-            let renderer = UIGraphicsImageRenderer(size: renderSize)
-            let image = renderer.image { context in
-                UIColor.white.set()
-                context.fill(CGRect(origin: .zero, size: renderSize))
-                let cgContext = context.cgContext
-                cgContext.translateBy(x: 0.0, y: renderSize.height)
-                cgContext.scaleBy(x: 1, y: -1)
-                
-                pdfPage.draw(with: .mediaBox, to: cgContext)
-            }
-            
-            var resizedImage = image
-            if width > 0 && height > 0 {
-                resizedImage = image.resize(width: width, height: height)
-            }
-            
-            if !createOneImage {
-                if let fileURL = createFileName(path: outputDirPath, with: pageNumber),
-                   let jpgData = resizedImage.jpegData(compressionQuality: compressionQuality),
-                   let pngData = UIImage(data: jpgData)?.pngData() {
-                    do {
-                        try pngData.write(to: fileURL)
-                        pdfImagesPath.append(fileURL.relativePath)
-                    } catch { }
+            autoreleasepool {
+                group.enter()
+                guard let pdfPage = pdfDocument.page(at: pageNumber) else {
+                    group.leave(); return
                 }
-            } else {
-                imagePages.append(.init(page: pageNumber, image: resizedImage))
+                
+                let mediaBoxRect = pdfPage.bounds(for: .mediaBox)
+                let renderSize = mediaBoxRect.size
+                
+                let renderer = UIGraphicsImageRenderer(size: renderSize)
+                let image = renderer.image { context in
+                    UIColor.white.set()
+                    context.fill(CGRect(origin: .zero, size: renderSize))
+                    let cgContext = context.cgContext
+                    cgContext.translateBy(x: 0.0, y: renderSize.height)
+                    cgContext.scaleBy(x: 1, y: -1)
+                    
+                    pdfPage.draw(with: .mediaBox, to: cgContext)
+                }
+                
+                var resizedImage = image
+                if width > 0 && height > 0 {
+                    resizedImage = image.resize(width: width, height: height)
+                }
+                
+                if !createOneImage {
+                    if let fileURL = createFileName(path: outputDirPath, with: pageNumber),
+                       let jpgData = resizedImage.jpegData(compressionQuality: compressionQuality),
+                       let pngData = UIImage(data: jpgData)?.pngData() {
+                        do {
+                            try pngData.write(to: fileURL)
+                            pdfImagesPath.append(fileURL.relativePath)
+                        } catch { }
+                    }
+                } else {
+                    imagePages.append(.init(page: pageNumber, image: resizedImage))
+                }
+                group.leave()
             }
-            group.leave()
         }
 
         group.notify(queue: .global()) { [weak self] in
