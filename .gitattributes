@@ -7,6 +7,8 @@
 *.yaml text eol=lf
 pubspec.lock text eol=lf
 pubspec.yaml text eol=lf
+*.cmake text eol=lf
+CMakeLists.txt text eol=lf
 
 # Source files - always use LF
 *.java text eol=lf
