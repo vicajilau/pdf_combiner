@@ -3,7 +3,9 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:pdf_combiner/pdf_combiner.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
 
 void main() {
@@ -99,6 +101,27 @@ void main() {
       final input = MergeInput.url(url);
 
       expect(DocumentUtils.isPDF(input), throwsA(isA<Exception>()));
+    });
+
+    test('createImageFromPDF throws error for URL input that is not PDF',
+        () async {
+      final tempDir = await Directory.systemTemp.createTemp('create_img_test_');
+      final url = '$baseUrl/test.png'; // PNG, not a PDF
+      final input = MergeInput.url(url);
+
+      expect(
+        () => PdfCombiner.createImageFromPDF(
+          input: input,
+          outputDirPath: tempDir.path,
+        ),
+        throwsA(
+          predicate(
+            (e) => e is PdfCombinerException && e.message.contains(url),
+          ),
+        ),
+      );
+
+      await tempDir.delete(recursive: true);
     });
   });
 }

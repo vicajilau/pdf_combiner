@@ -19,32 +19,31 @@ class MergePdfsIsolate {
   /// This method spawns an isolate (or uses `compute` on the web) to process
   /// the PDF merging asynchronously.
   ///
-  /// - `inputs`: A list of file paths of the input PDFs.
+  /// - `inputPaths`: A list of file paths of the input PDFs.
   /// - `outputPath`: The file path where the merged PDF will be saved.
   ///
   /// Returns the path of the merged PDF, or `null` if an error occurs.
   static Future<String?> mergeMultiplePDFs({
-    required List<MergeInput> inputs,
+    required List<String> inputPaths,
     required String outputPath,
   }) async {
     if (PdfCombiner.isMock) {
-      final error = await _validate(inputs, outputPath);
+      final error = await _validate(outputPath);
       if (error != null) return error;
 
       return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-        inputs: inputs,
+        inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
         outputPath: outputPath,
       );
     }
     return await compute(_combinePDFs, {
-      'inputs': inputs,
+      'inputPaths': inputPaths,
       'outputPath': outputPath,
       'token': kIsWeb ? null : RootIsolateToken.instance!,
     });
   }
 
-  static Future<String?> _validate(
-      List<MergeInput> inputs, String outputPath) async {
+  static Future<String?> _validate(String outputPath) async {
     final outputPathIsPDF = DocumentUtils.hasPDFExtension(outputPath);
     if (!outputPathIsPDF) {
       return PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath);
@@ -59,38 +58,20 @@ class MergePdfsIsolate {
   ///   - `outputPath`: The path where the merged PDF should be saved.
   ///   - `token`: The isolate token for Flutter's binary messenger or `null` for web.
   static Future<String?> _combinePDFs(Map<String, dynamic> params) async {
-    final List<MergeInput> inputs = params['inputs'];
+    final List<String> inputPaths = params['inputPaths'];
     final String outputPath = params['outputPath'];
     final RootIsolateToken? token = params['token'];
-    final temporalFilePaths = <String>[];
 
     if (token != null) {
       BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     }
 
-    try {
-      final error = await _validate(inputs, outputPath);
-      if (error != null) return error;
+    final error = await _validate(outputPath);
+    if (error != null) return error;
 
-      final inputPaths = await Future.wait(
-        inputs.map(
-          (input) async {
-            final result = await DocumentUtils.prepareInput(input);
-            if (input.type == MergeInputType.bytes ||
-                input.type == MergeInputType.url) {
-              temporalFilePaths.add(result);
-            }
-            return result;
-          },
-        ),
-      );
-
-      return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
-        inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
-        outputPath: outputPath,
-      );
-    } finally {
-      DocumentUtils.removeTemporalFiles(temporalFilePaths);
-    }
+    return await PdfCombinerPlatform.instance.mergeMultiplePDFs(
+      inputs: inputPaths.map((e) => MergeInput.path(e)).toList(),
+      outputPath: outputPath,
+    );
   }
 }

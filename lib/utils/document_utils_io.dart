@@ -96,7 +96,19 @@ class DocumentUtils {
 
   /// Retrieves downloaded bytes from cache or downloads them if not present.
   static Future<Uint8List> getUrlBytes(String url) {
-    return _downloadedUrlBytesCache.putIfAbsent(url, () => _downloadUrl(url));
+    return _downloadedUrlBytesCache.putIfAbsent(url, () async {
+      try {
+        return await _downloadUrl(url);
+      } catch (e) {
+        _downloadedUrlBytesCache.remove(url);
+        rethrow;
+      }
+    });
+  }
+
+  /// Clears the cached downloaded bytes.
+  static void clearCache() {
+    _downloadedUrlBytesCache.clear();
   }
 
   /// Determines whether the given file path corresponds to a PDF file.

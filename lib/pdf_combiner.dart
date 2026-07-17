@@ -116,6 +116,7 @@ class PdfCombiner {
       throw PdfCombinerException(
           PdfCombinerMessages.emptyParameterMessage("inputPaths"));
     } else {
+      final temporalFilePaths = <String>[];
       try {
         bool success = true;
         String? failedInputStr;
@@ -136,8 +137,25 @@ class PdfCombiner {
           throw PdfCombinerException(
               PdfCombinerMessages.errorMessagePDF(failedInputStr));
         } else {
+          final inputPaths = await Future.wait(
+            inputs.map(
+              (input) async {
+                final result = await DocumentUtils.prepareInput(input);
+                switch (input.type) {
+                  case MergeInputType.bytes:
+                  case MergeInputType.url:
+                    temporalFilePaths.add(result);
+                    break;
+                  case MergeInputType.path:
+                    break;
+                }
+                return result;
+              },
+            ),
+          );
+
           final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
-            inputs: inputs,
+            inputPaths: inputPaths,
             outputPath: outputPath,
           );
 
@@ -152,6 +170,9 @@ class PdfCombiner {
         }
       } catch (e) {
         throw e is Exception ? e : PdfCombinerException(e.toString());
+      } finally {
+        DocumentUtils.removeTemporalFiles(temporalFilePaths);
+        DocumentUtils.clearCache();
       }
     }
   }
@@ -236,6 +257,7 @@ class PdfCombiner {
         throw e is Exception ? e : PdfCombinerException(e.toString());
       } finally {
         DocumentUtils.removeTemporalFiles(temportalFilePaths);
+        DocumentUtils.clearCache();
       }
     }
   }
@@ -323,6 +345,7 @@ class PdfCombiner {
       if (temportalFilePath != null) {
         DocumentUtils.removeTemporalFiles([temportalFilePath]);
       }
+      DocumentUtils.clearCache();
     }
   }
 }

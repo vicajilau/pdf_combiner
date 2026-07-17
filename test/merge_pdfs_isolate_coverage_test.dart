@@ -81,7 +81,7 @@ void main() {
       ]);
 
       final result = await MergePdfsIsolate.mergeMultiplePDFs(
-        inputs: [MergeInput.path(pdfFile.path)],
+        inputPaths: [pdfFile.path],
         outputPath: 'invalid_extension.txt',
       );
       expect(
@@ -113,7 +113,7 @@ void main() {
       ]);
 
       final result = await MergePdfsIsolate.mergeMultiplePDFs(
-        inputs: [MergeInput.path(pdfFile.path)],
+        inputPaths: [pdfFile.path],
         outputPath: '$tempPath/output.pdf',
       );
       expect(result, '$tempPath/output.pdf');
@@ -144,9 +144,9 @@ void main() {
 
       try {
         await MergePdfsIsolate.mergeMultiplePDFs(
-          inputs: [
-            MergeInput.path(pdfFile.path),
-            MergeInput.bytes(pdfBytes),
+          inputPaths: [
+            pdfFile.path,
+            await DocumentUtils.prepareInput(MergeInput.bytes(pdfBytes)),
           ],
           outputPath: '$tempPath/output.pdf',
         );
@@ -179,7 +179,7 @@ void main() {
       await pdfFile.writeAsBytes(pdfBytes);
 
       final result = await MergePdfsIsolate.mergeMultiplePDFs(
-        inputs: [MergeInput.path(pdfFile.path)],
+        inputPaths: [pdfFile.path],
         outputPath: 'invalid.txt',
       );
       expect(result,
