@@ -203,11 +203,9 @@ class DocumentUtils {
         if (!await tempDir.exists()) {
           await tempDir.create(recursive: true);
         }
-
         final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
         String ext;
         String prefix;
-
         switch (fileType) {
           case FileMagicNumberType.pdf:
             ext = '.pdf';
