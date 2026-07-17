@@ -11,7 +11,7 @@ class ImageScale {
   /// Asserts that [width] and [height] are non-negative.
   const ImageScale({required this.width, required this.height})
       : assert(width >= 0 && height >= 0,
-            'width and height must be higher than 0');
+            'width and height must be greater than or equal to 0.');
 
   /// Factory constructor for representing the original image without scaling.
   ///
@@ -21,11 +21,7 @@ class ImageScale {
   /// Returns `true` if this instance represents the original image (no scaling).
   bool get isOriginal => width == 0 && height == 0;
 
-  /// Creates a new [ImageScale] instance by applying a transformation function
-  /// to the current width and height.
-  ///
-  /// The [mapper] function takes the current width and height as arguments
-  /// and should return a new [ImageScale] instance.
+  /// Converts the [ImageScale] instance to a JSON-compatible map.
   Map<String, dynamic> toMap() {
     return {
       'width': width,
