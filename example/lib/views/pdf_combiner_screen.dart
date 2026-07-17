@@ -314,17 +314,22 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   }
 
   Future<String?> _showUrlInputDialog(BuildContext context) {
-    final controller = TextEditingController(
-        text:
-            'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf');
+    final controller = TextEditingController();
+    const defaultUrl =
+        'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Enter Document URL'),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'https://example.com/document.pdf',
+          decoration: InputDecoration(
+            hintText: defaultUrl,
+            hintStyle: TextStyle(
+              color: Theme.of(context).hintColor.withValues(alpha: 0.5),
+              fontStyle: FontStyle.italic,
+              fontSize: 13.0,
+            ),
           ),
           keyboardType: TextInputType.url,
         ),
@@ -335,7 +340,10 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           ),
           TextButton(
             child: const Text('Add'),
-            onPressed: () => Navigator.of(context).pop(controller.text),
+            onPressed: () {
+              final val = controller.text.trim();
+              Navigator.of(context).pop(val.isEmpty ? defaultUrl : val);
+            },
           ),
         ],
       ),
