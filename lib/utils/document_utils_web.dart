@@ -63,19 +63,16 @@ class DocumentUtils {
   }
 
   static Future<bool> isPDF(MergeInput input) async {
-    late FileMagicNumberType fileType;
-    switch (input.type) {
-      case MergeInputType.path:
-        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(input.path!);
+    final FileMagicNumberType fileType;
+    switch (input) {
+      case PathMergeInput(:final path):
+        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(path);
         fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        break;
-      case MergeInputType.bytes:
-        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
-        break;
-      case MergeInputType.url:
-        final bytes = await getUrlBytes(input.url!);
+      case BytesMergeInput(:final bytes):
         fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        break;
+      case UrlMergeInput(:final url):
+        final bytes = await getUrlBytes(url);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
     }
     return fileType == FileMagicNumberType.pdf;
   }
@@ -85,19 +82,16 @@ class DocumentUtils {
       p.extension(filePath).toLowerCase() == ".pdf";
 
   static Future<bool> isImage(MergeInput input) async {
-    late FileMagicNumberType fileType;
-    switch (input.type) {
-      case MergeInputType.path:
-        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(input.path!);
+    final FileMagicNumberType fileType;
+    switch (input) {
+      case PathMergeInput(:final path):
+        final bytes = await FileMagicNumber.getBytesFromPathOrBlob(path);
         fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        break;
-      case MergeInputType.bytes:
-        fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
-        break;
-      case MergeInputType.url:
-        final bytes = await getUrlBytes(input.url!);
+      case BytesMergeInput(:final bytes):
         fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
-        break;
+      case UrlMergeInput(:final url):
+        final bytes = await getUrlBytes(url);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
     }
     return fileType == FileMagicNumberType.png ||
         fileType == FileMagicNumberType.jpg ||
@@ -136,13 +130,13 @@ class DocumentUtils {
   /// - [MergeInput.bytes]: Creates a blob URL and returns it.
   /// - [MergeInput.url]: Downloads URL, creates a blob URL and returns it.
   static Future<String> prepareInput(MergeInput input) async {
-    switch (input.type) {
-      case MergeInputType.path:
-        return input.path!;
-      case MergeInputType.bytes:
-        return createBlobUrl(input.bytes!);
-      case MergeInputType.url:
-        final bytes = await getUrlBytes(input.url!);
+    switch (input) {
+      case PathMergeInput(:final path):
+        return path;
+      case BytesMergeInput(:final bytes):
+        return createBlobUrl(bytes);
+      case UrlMergeInput(:final url):
+        final bytes = await getUrlBytes(url);
         return createBlobUrl(bytes);
     }
   }

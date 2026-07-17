@@ -2,6 +2,7 @@
 
 ### General
 
+* Refactored `MergeInput` to a Dart 3 `sealed class` hierarchy (`PathMergeInput`, `BytesMergeInput`, `UrlMergeInput`) for improved type safety and pattern matching support, while maintaining full backward compatibility.
 * Added `MergeInput.url` support to dynamically download and merge remote PDFs and images.
 * Implemented automatic URL download caching (`_downloadedUrlBytesCache`) and temporal file cleanup.
 * Decoupled isolate merging logic (`MergePdfsIsolate`) from input model preparation, executing file-path retrieval on the main thread to avoid isolate-specific initialization issues.
