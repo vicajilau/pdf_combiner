@@ -1,15 +1,12 @@
 import 'dart:async';
 
+import 'package:pdf_combiner/communication/pdf_combiner_platform_interface.dart';
 import 'package:pdf_combiner/exception/pdf_combiner_exception.dart';
-import 'package:pdf_combiner/isolates/images_from_pdf_isolate.dart';
+import 'package:pdf_combiner/models/image_from_pdf_config.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/models/pdf_from_multiple_image_config.dart';
 import 'package:pdf_combiner/responses/pdf_combiner_messages.dart';
 import 'package:pdf_combiner/utils/document_utils.dart';
-
-import 'isolates/merge_pdfs_isolate.dart';
-import 'isolates/pdf_from_multiple_images_isolate.dart';
-import 'models/image_from_pdf_config.dart';
 
 /// The `PdfCombiner` class provides functionality for combining multiple PDF files.
 ///
@@ -152,8 +149,8 @@ class PdfCombiner {
             ),
           );
 
-          final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
-            inputPaths: inputPaths,
+          final String? response = await PdfCombinerPlatform.instance.mergeMultiplePDFs(
+            inputs: inputPaths.map((path) => MergeInput.path(path)).toList(),
             outputPath: outputPath,
           );
 
@@ -236,8 +233,8 @@ class PdfCombiner {
             ),
           );
           final String? response =
-              await PdfFromMultipleImagesIsolate.createPDFFromMultipleImages(
-            inputPaths: inputPaths,
+              await PdfCombinerPlatform.instance.createPDFFromMultipleImages(
+            inputs: inputPaths.map((path) => MergeInput.path(path)).toList(),
             outputPath: outputPath,
             config: config,
           );
@@ -313,9 +310,9 @@ class PdfCombiner {
           case PathMergeInput():
             break;
         }
-        final response = await ImagesFromPdfIsolate.createImageFromPDF(
-          inputPath: inputPath,
-          outputDirectory: outputDirPath,
+        final response = await PdfCombinerPlatform.instance.createImageFromPDF(
+          input: MergeInput.path(inputPath),
+          outputPath: outputDirPath,
           config: config,
         );
 
