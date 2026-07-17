@@ -10,7 +10,8 @@ class ImageCompression {
   ///
   /// The [value] must be between 0 and 100.
   const ImageCompression.custom(this.value)
-      : assert(value >= 0 && value <= 100, 'Quality must be between 0 and 100.');
+      : assert(
+            value >= 0 && value <= 100, 'Quality must be between 0 and 100.');
 
   /// No compression, with highest quality and largest file size.
   static const none = ImageCompression._(0);

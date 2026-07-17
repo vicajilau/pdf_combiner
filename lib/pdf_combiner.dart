@@ -149,7 +149,8 @@ class PdfCombiner {
             ),
           );
 
-          final String? response = await PdfCombinerPlatform.instance.mergeMultiplePDFs(
+          final String? response =
+              await PdfCombinerPlatform.instance.mergeMultiplePDFs(
             inputs: inputPaths.map((path) => MergeInput.path(path)).toList(),
             outputPath: outputPath,
           );
