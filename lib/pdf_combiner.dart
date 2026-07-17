@@ -133,7 +133,8 @@ class PdfCombiner {
           throw PdfCombinerException(
               PdfCombinerMessages.errorMessageInvalidOutputPath(outputPath));
         } else if (!success) {
-          throw PdfCombinerException(PdfCombinerMessages.errorMessagePDF(failedInputStr));
+          throw PdfCombinerException(
+              PdfCombinerMessages.errorMessagePDF(failedInputStr));
         } else {
           final String? response = await MergePdfsIsolate.mergeMultiplePDFs(
             inputs: inputs,

@@ -52,6 +52,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
       }
     });
   }
+
   Future<Uint8List?> _getOutputFileBytes(String path) {
     return _outputBytesCache.putIfAbsent(path, () {
       return FileMagicNumber.getBytesFromPathOrBlob(path);

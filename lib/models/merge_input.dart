@@ -17,11 +17,18 @@ class MergeInput {
   final MergeInputType type;
 
   const MergeInput(this.type, {this.path, this.bytes, this.url})
-      : assert(
-          (type == MergeInputType.path && path != null && bytes == null && url == null) ||
-          (type == MergeInputType.bytes && bytes != null && path == null && url == null) ||
-          (type == MergeInputType.url && url != null && path == null && bytes == null)
-        );
+      : assert((type == MergeInputType.path &&
+                path != null &&
+                bytes == null &&
+                url == null) ||
+            (type == MergeInputType.bytes &&
+                bytes != null &&
+                path == null &&
+                url == null) ||
+            (type == MergeInputType.url &&
+                url != null &&
+                path == null &&
+                bytes == null));
 
   /// Creates a [MergeInput] from a file path.
   factory MergeInput.path(String path) =>

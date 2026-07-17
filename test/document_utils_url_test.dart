@@ -10,8 +10,10 @@ void main() {
   group('DocumentUtils URL Support', () {
     late HttpServer server;
     late String baseUrl;
-    final pdfBytes = Uint8List.fromList([0x25, 0x50, 0x44, 0x46, 0x00, 0x01, 0x02]); // PDF magic number
-    final pngBytes = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]); // PNG magic number
+    final pdfBytes = Uint8List.fromList(
+        [0x25, 0x50, 0x44, 0x46, 0x00, 0x01, 0x02]); // PDF magic number
+    final pngBytes = Uint8List.fromList(
+        [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]); // PNG magic number
     int requestCount = 0;
 
     setUpAll(() async {

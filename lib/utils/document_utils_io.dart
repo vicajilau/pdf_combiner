@@ -7,7 +7,6 @@ import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
 
-
 /// Utility class for handling document-related checks in a file system environment.
 ///
 /// This implementation is designed for platforms with direct file system access,
@@ -78,12 +77,17 @@ class DocumentUtils {
   static Future<Uint8List> _downloadUrl(String url) async {
     final client = HttpClient();
     try {
-      final request = await client.getUrl(Uri.parse(url)).timeout(const Duration(seconds: 15));
-      final response = await request.close().timeout(const Duration(seconds: 15));
+      final request = await client
+          .getUrl(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
+      final response =
+          await request.close().timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
-        throw Exception('Failed to download: $url (status: ${response.statusCode})');
+        throw Exception(
+            'Failed to download: $url (status: ${response.statusCode})');
       }
-      final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
+      final bytes = await response
+          .fold<List<int>>([], (prev, element) => prev..addAll(element));
       return Uint8List.fromList(bytes);
     } finally {
       client.close();
@@ -199,11 +203,11 @@ class DocumentUtils {
         if (!await tempDir.exists()) {
           await tempDir.create(recursive: true);
         }
-        
+
         final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
         String ext;
         String prefix;
-        
+
         switch (fileType) {
           case FileMagicNumberType.pdf:
             ext = '.pdf';
