@@ -99,7 +99,9 @@ void main() {
         expect(result, '/some/path.pdf');
       });
 
-      test('creates temp file for bytes type input and handles extensions properly', () async {
+      test(
+          'creates temp file for bytes type input and handles extensions properly',
+          () async {
         final tempDir = await Directory.systemTemp.createTemp('prep_test_');
         DocumentUtils.setTemporalFolderPath(tempDir.path);
 

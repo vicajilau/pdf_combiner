@@ -31,6 +31,8 @@ class PdfCombinerViewModel {
               .map((file) async => MergeInput.bytes(await file.readAsBytes())),
         );
         break;
+      case MergeInputType.url:
+        break;
     }
   }
 
@@ -50,6 +52,8 @@ class PdfCombinerViewModel {
             ),
           ),
         );
+        break;
+      case MergeInputType.url:
         break;
     }
 

@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:file_magic_number/file_magic_number.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf_combiner/models/merge_input.dart';
 import 'package:pdf_combiner/pdf_combiner.dart';
-
 
 /// Utility class for handling document-related checks in a file system environment.
 ///
@@ -72,6 +72,45 @@ class DocumentUtils {
   /// ```
   static void setTemporalFolderPath(String path) => _temporalDir = path;
 
+  static final Map<String, Future<Uint8List>> _downloadedUrlBytesCache = {};
+
+  static Future<Uint8List> _downloadUrl(String url) async {
+    final client = HttpClient();
+    try {
+      final request = await client
+          .getUrl(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
+      final response =
+          await request.close().timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200) {
+        throw Exception(
+            'Failed to download: $url (status: ${response.statusCode})');
+      }
+      final bytes = await response
+          .fold<List<int>>([], (prev, element) => prev..addAll(element));
+      return Uint8List.fromList(bytes);
+    } finally {
+      client.close();
+    }
+  }
+
+  /// Retrieves downloaded bytes from cache or downloads them if not present.
+  static Future<Uint8List> getUrlBytes(String url) {
+    return _downloadedUrlBytesCache.putIfAbsent(url, () async {
+      try {
+        return await _downloadUrl(url);
+      } catch (e) {
+        _downloadedUrlBytesCache.remove(url);
+        rethrow;
+      }
+    });
+  }
+
+  /// Clears the cached downloaded bytes.
+  static void clearCache() {
+    _downloadedUrlBytesCache.clear();
+  }
+
   /// Determines whether the given file path corresponds to a PDF file.
   ///
   /// This method uses the file's magic number (file signature) to accurately
@@ -79,7 +118,7 @@ class DocumentUtils {
   /// reliable than checking only the file extension.
   ///
   /// **Parameters:**
-  /// - [filePath]: The absolute path to the file to check
+  /// - [input]: The [MergeInput] to check
   ///
   /// **Returns:** `true` if the file is a valid PDF, `false` otherwise
   /// (including when an error occurs during detection)
@@ -92,6 +131,10 @@ class DocumentUtils {
         break;
       case MergeInputType.bytes:
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        break;
+      case MergeInputType.url:
+        final bytes = await getUrlBytes(input.url!);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
         break;
     }
     return fileType == FileMagicNumberType.pdf;
@@ -106,6 +149,8 @@ class DocumentUtils {
   /// - [filePath]: The file path to check
   ///
   /// **Returns:** `true` if the file has a `.pdf` extension, `false` otherwise
+  /// static bool hasPDFExtension(String filePath) =>
+  ///     p.extension(filePath) == ".pdf";
   static bool hasPDFExtension(String filePath) =>
       p.extension(filePath) == ".pdf";
 
@@ -134,6 +179,10 @@ class DocumentUtils {
       case MergeInputType.bytes:
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
         break;
+      case MergeInputType.url:
+        final bytes = await getUrlBytes(input.url!);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
+        break;
     }
     return fileType == FileMagicNumberType.png ||
         fileType == FileMagicNumberType.jpg ||
@@ -143,7 +192,7 @@ class DocumentUtils {
   /// Prepares a [MergeInput] for processing.
   ///
   /// If the input is a path, it returns the path as is.
-  /// If the input is bytes, it creates a temporary file from the bytes and returns the path to the temporary file.
+  /// If the input is bytes or url, it creates a temporary file from the bytes and returns the path to the temporary file.
   ///
   /// **Parameters:**
   /// - [input]: The [MergeInput] to prepare
@@ -154,16 +203,21 @@ class DocumentUtils {
       case MergeInputType.path:
         return input.path!;
       case MergeInputType.bytes:
+      case MergeInputType.url:
+        final Uint8List bytes;
+        if (input.type == MergeInputType.bytes) {
+          bytes = input.bytes!;
+        } else {
+          bytes = await getUrlBytes(input.url!);
+        }
         final tempDirPath = getTemporalFolderPath();
         final tempDir = Directory(tempDirPath);
         if (!await tempDir.exists()) {
           await tempDir.create(recursive: true);
         }
-        
-        final fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        final fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
         String ext;
         String prefix;
-        
         switch (fileType) {
           case FileMagicNumberType.pdf:
             ext = '.pdf';
@@ -190,7 +244,7 @@ class DocumentUtils {
             '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}$ext';
         final tempPath = p.join(tempDirPath, fileName);
         final file = File(tempPath);
-        await file.writeAsBytes(input.bytes!);
+        await file.writeAsBytes(bytes);
         return tempPath;
     }
   }

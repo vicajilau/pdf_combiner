@@ -34,6 +34,33 @@ class DocumentUtils {
   /// This is primarily for maintaining interface parity with the native
   /// implementation.
   static void setTemporalFolderPath(String path) => _temporalDir = path;
+  static final Map<String, Future<Uint8List>> _downloadedUrlBytesCache = {};
+
+  static Future<Uint8List> _downloadUrl(String url) async {
+    final response = await web.window.fetch(url.toJS).toDart;
+    if (!response.ok) {
+      throw Exception('Failed to download: $url (status: ${response.status})');
+    }
+    final arrayBuffer = await response.arrayBuffer().toDart;
+    return arrayBuffer.toDart.asUint8List();
+  }
+
+  /// Retrieves downloaded bytes from cache or downloads them if not present.
+  static Future<Uint8List> getUrlBytes(String url) {
+    return _downloadedUrlBytesCache.putIfAbsent(url, () async {
+      try {
+        return await _downloadUrl(url);
+      } catch (e) {
+        _downloadedUrlBytesCache.remove(url);
+        rethrow;
+      }
+    });
+  }
+
+  /// Clears the cached downloaded bytes.
+  static void clearCache() {
+    _downloadedUrlBytesCache.clear();
+  }
 
   static Future<bool> isPDF(MergeInput input) async {
     late FileMagicNumberType fileType;
@@ -44,6 +71,10 @@ class DocumentUtils {
         break;
       case MergeInputType.bytes:
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        break;
+      case MergeInputType.url:
+        final bytes = await getUrlBytes(input.url!);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
         break;
     }
     return fileType == FileMagicNumberType.pdf;
@@ -62,6 +93,10 @@ class DocumentUtils {
         break;
       case MergeInputType.bytes:
         fileType = FileMagicNumber.detectFileTypeFromBytes(input.bytes!);
+        break;
+      case MergeInputType.url:
+        final bytes = await getUrlBytes(input.url!);
+        fileType = FileMagicNumber.detectFileTypeFromBytes(bytes);
         break;
     }
     return fileType == FileMagicNumberType.png ||
@@ -99,12 +134,16 @@ class DocumentUtils {
   ///
   /// - [MergeInput.path]: Returns the path as-is.
   /// - [MergeInput.bytes]: Creates a blob URL and returns it.
+  /// - [MergeInput.url]: Downloads URL, creates a blob URL and returns it.
   static Future<String> prepareInput(MergeInput input) async {
     switch (input.type) {
       case MergeInputType.path:
         return input.path!;
       case MergeInputType.bytes:
         return createBlobUrl(input.bytes!);
+      case MergeInputType.url:
+        final bytes = await getUrlBytes(input.url!);
+        return createBlobUrl(bytes);
     }
   }
 }

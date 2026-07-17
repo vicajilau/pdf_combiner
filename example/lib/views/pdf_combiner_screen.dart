@@ -20,6 +20,8 @@ extension on MergeInput {
         return p.basename(path ?? '');
       case MergeInputType.bytes:
         return 'File in bytes $index';
+      case MergeInputType.url:
+        return 'File from URL $index';
     }
   }
 }
@@ -45,6 +47,8 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           return Future.value(input.bytes);
         case MergeInputType.path:
           return FileMagicNumber.getBytesFromPathOrBlob(input.toString());
+        case MergeInputType.url:
+          return Future.value(null);
       }
     });
   }
@@ -282,10 +286,21 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
   int calculateFlexOutputFiles() =>
       _viewModel.outputFiles.length <= _viewModel.selectedFiles.length ? 1 : 2;
 
-  // Function to pick PDF files from the device
+  // Function to pick PDF files or input URL
   Future<void> _pickFiles() async {
     final fileType = await showFileTypeDialog(context);
     if (fileType == null) return;
+    if (!mounted) return;
+
+    if (fileType == MergeInputType.url) {
+      final url = await _showUrlInputDialog(context);
+      if (url == null || url.trim().isEmpty) return;
+      setState(() {
+        _viewModel.selectedFiles.add(MergeInput.url(url.trim()));
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -296,6 +311,43 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<String?> _showUrlInputDialog(BuildContext context) {
+    final controller = TextEditingController();
+    const defaultUrl =
+        'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Document URL'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: defaultUrl,
+            hintStyle: TextStyle(
+              color: Theme.of(context).hintColor.withValues(alpha: 0.5),
+              fontStyle: FontStyle.italic,
+              fontSize: 13.0,
+            ),
+          ),
+          keyboardType: TextInputType.url,
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: const Text('Add'),
+            onPressed: () {
+              final val = controller.text.trim();
+              Navigator.of(context).pop(val.isEmpty ? defaultUrl : val);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   // Function to pick PDF files from the device
@@ -379,6 +431,7 @@ class _PdfCombinerScreenState extends State<PdfCombinerScreen> {
           }
           return;
         case MergeInputType.bytes:
+        case MergeInputType.url:
           return;
       }
     }

@@ -2,6 +2,7 @@ import 'package:file_magic_number/file_magic_number.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:pdf_combiner/models/merge_input.dart';
+import 'package:pdf_combiner/utils/document_utils.dart';
 
 class FileTypeIcon extends StatefulWidget {
   final MergeInput input;
@@ -27,7 +28,8 @@ class _FileTypeIconState extends State<FileTypeIcon> {
     final newInput = widget.input;
     if (oldInput.type != newInput.type ||
         oldInput.path != newInput.path ||
-        oldInput.bytes != newInput.bytes) {
+        oldInput.bytes != newInput.bytes ||
+        oldInput.url != newInput.url) {
       _initFuture();
     }
   }
@@ -38,6 +40,14 @@ class _FileTypeIconState extends State<FileTypeIcon> {
           FileMagicNumber.detectFileTypeFromBytes(widget.input.bytes!)),
       MergeInputType.path =>
         FileMagicNumber.detectFileTypeFromPathOrBlob(widget.input.path!),
+      MergeInputType.url => () async {
+          try {
+            final bytes = await DocumentUtils.getUrlBytes(widget.input.url!);
+            return FileMagicNumber.detectFileTypeFromBytes(bytes);
+          } catch (_) {
+            return FileMagicNumberType.unknown;
+          }
+        }(),
     };
   }
 
@@ -49,6 +59,7 @@ class _FileTypeIconState extends State<FileTypeIcon> {
           case MergeInputType.path:
             OpenFile.open(widget.input.path!);
           case MergeInputType.bytes:
+          case MergeInputType.url:
             null;
         }
       },

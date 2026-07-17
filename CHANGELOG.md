@@ -1,6 +1,10 @@
-## 6.1.1
+## 6.2.0
 
 ### General
+
+* Added `MergeInput.url` support to dynamically download and merge remote PDFs and images.
+* Implemented automatic URL download caching (`_downloadedUrlBytesCache`) and temporal file cleanup.
+* Decoupled isolate merging logic (`MergePdfsIsolate`) from input model preparation, executing file-path retrieval on the main thread to avoid isolate-specific initialization issues.
 
 * Improved `DocumentUtils.prepareInput` to dynamically detect file formats (PDF, PNG, JPG, HEIC) using magic numbers for byte inputs instead of forcing `.png` extension.
 * Added unit tests to verify proper file extension creation for byte arrays in `prepareInput`.

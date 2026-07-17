@@ -54,8 +54,7 @@ void main() {
     test('MergePdfsIsolate returns error message for invalid output path',
         () async {
       final result = await MergePdfsIsolate.mergeMultiplePDFs(
-          inputs: [MergeInput.path('example/assets/document_1.pdf')],
-          outputPath: 'output/');
+          inputPaths: ['example/assets/document_1.pdf'], outputPath: 'output/');
       expect(
           result, PdfCombinerMessages.errorMessageInvalidOutputPath('output/'));
     });
