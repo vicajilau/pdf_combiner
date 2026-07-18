@@ -60,7 +60,10 @@ sudo apt-get install libheif-dev
 
 ### MergeInput
 
-The `MergeInput` class represents an input for PDF operations. It can be created from a file path or from raw bytes (Uint8List).
+The `MergeInput` class is a Dart 3 `sealed class` representing the input source for PDF operations. It provides type safety and pattern matching support with three concrete implementations:
+- `PathMergeInput` (via `MergeInput.path`)
+- `BytesMergeInput` (via `MergeInput.bytes`)
+- `UrlMergeInput` (via `MergeInput.url`)
 
 **Creating from a file path:**
 
@@ -75,19 +78,43 @@ final Uint8List fileBytes = await getFileBytes(); // Your method to get bytes
 final input = MergeInput.bytes(fileBytes);
 ```
 
-**Mixing paths and bytes:**
+**Creating from a remote URL:**
 
-You can mix both approaches in the same list, allowing you to combine files from disk with files loaded from network or memory:
+```dart
+final input = MergeInput.url("https://example.com/file.pdf");
+```
+
+**Mixing paths, bytes, and URLs:**
+
+You can mix all three approaches in the same list, allowing you to combine files from disk, memory, or remote URLs in a single operation:
 
 ```dart
 final inputs = [
   MergeInput.path("path/to/local_file.pdf"),
   MergeInput.bytes(fileBytes),
-  MergeInput.path("path/to/another_file.pdf"),
+  MergeInput.url("https://example.com/remote_file.pdf"),
 ];
 ```
 
-This flexibility allows you to work with files stored on disk or with files loaded in memory (useful for web platforms or when working with files from network requests).
+This flexibility is useful when dealing with multiple sources (e.g., local files, dynamically generated charts/images in memory, and remote resources).
+
+#### Pattern Matching with sealed class
+
+Since `MergeInput` is a sealed class, you can leverage Dart 3 pattern matching to safely handle the different input types:
+
+```dart
+switch (input) {
+  case PathMergeInput(path: final p):
+    print("Local file path: $p");
+  case BytesMergeInput(bytes: final b):
+    print("In-memory bytes size: ${b.length}");
+  case UrlMergeInput(url: final u):
+    print("Remote URL: $u");
+}
+```
+
+> [!WARNING]
+> **CORS Restrictions on Web:** When using `MergeInput.url` on the Web platform, the browser will attempt to download the file using `fetch`. If the hosting server does not configure appropriate CORS headers (Cross-Origin Resource Sharing), the request will fail. Ensure your remote server allows origin-specific requests or download the file as bytes using a backend proxy before passing it as a `MergeInput.bytes`.
 
 ### Create PDF From Multiple Documents
 
