@@ -19,15 +19,15 @@ class PdfCombinerViewModel {
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'png', 'heic'],
     );
-    if (result == null) return;
+    if (result.isEmpty) return;
     switch (fileType) {
       case MergeInputType.path:
         selectedFiles +=
-            result.files.map((file) => MergeInput.path(file.path!)).toList();
+            result.map((file) => MergeInput.path(file.path!)).toList();
         break;
       case MergeInputType.bytes:
         selectedFiles += await Future.wait(
-          result.files
+          result
               .map((file) async => MergeInput.bytes(await file.readAsBytes())),
         );
         break;
