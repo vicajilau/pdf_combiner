@@ -16,6 +16,7 @@
 
 * Fixed a crash (`IllegalArgumentException`) when extracting a PDF to a single combined image with original dimensions (0, 0).
 * Aligned image rescaling logic for individual page extraction with iOS (individual pages are now resized if a scale is configured).
+* Removed the pinned Kotlin Gradle plugin version so the library inherits the version declared by the consuming Flutter project, avoiding version conflicts.
 
 ### iOS & macOS
 
