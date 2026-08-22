@@ -55,5 +55,4 @@ flutter:
     ffiPlugin: true
 
   assets:
-    - example/assets/
     - lib/web/assets/js/pdf_combiner.js
