@@ -1,3 +1,13 @@
+## 6.2.2
+
+### Android
+
+* Migrated `jvmTarget` configuration from the removed `kotlinOptions` DSL to the `compilerOptions` DSL, fixing a build failure with Kotlin Gradle Plugin 2.3+ introduced in 6.2.1.
+
+### General
+
+* Removed `example/assets/` from the package's bundled assets so it is no longer shipped to consuming apps.
+
 ## 6.2.1
 
 ### Android
