@@ -11,9 +11,30 @@ updates:
       interval: "weekly"
       time: "09:00"
       timezone: Europe/Madrid
+    groups:
+      pub-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
   - package-ecosystem: "pub"
     directory: "/example/"
     schedule:
       interval: "weekly"
       time: "09:00"
       timezone: Europe/Madrid
+    groups:
+      pub-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      time: "09:00"
+      timezone: Europe/Madrid
+    groups:
+      github-actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
