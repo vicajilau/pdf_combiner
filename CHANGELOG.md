@@ -1,3 +1,13 @@
+## 6.3.0
+
+### Android
+
+* Migrated the Android plugin to built-in Kotlin by no longer applying the Kotlin Gradle plugin, so apps can build with `android.builtInKotlin=true` on AGP 9+.
+
+### General
+
+* Updated the minimum supported SDK version to Flutter 3.44/Dart 3.12.
+
 ## 6.2.2
 
 ### Android
