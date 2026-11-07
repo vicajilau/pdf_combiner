@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
 }
 
 group = "com.victorcarreras.pdf_combiner"
@@ -35,7 +34,7 @@ kotlin {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
     testImplementation("org.mockito:mockito-core:5.1.1")
 
     implementation("androidx.annotation:annotation:1.9.1")
