@@ -25,7 +25,7 @@ jobs:
         run: echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Setup Flutter SDK
-        uses: flutter-actions/setup-flutter@v4
+        uses: flutter-actions/setup-flutter@v5
 
       - name: Install Flutter Dependencies
         run: flutter pub get
